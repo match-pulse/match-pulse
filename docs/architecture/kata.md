@@ -1,15 +1,23 @@
 # MatchPulse — Architectural Kata
 
 ## Description
-A football tournament platform that engages fans through match predictions, rewards, and data-driven insights for soccer clubs.
+
+MatchPulse is a platform for football tournaments where fans predict match results and collect points based on how accurate their predictions are. Tournament organizers use the platform to manage matches and publish results, while participating clubs can use aggregated prediction data to understand how fans expect upcoming matches to unfold.
 
 ## Users
-Tournament organizers, participants and fans, and soccer clubs.
+
+- **Tournament organizers:** Create tournaments, schedule matches, and publish official results.
+- **Fans and participants:** Submit predictions, track their points, and compete with other participants.
+- **Football clubs:** Access aggregated reports about fan predictions and changes in expectations throughout a tournament.
 
 ## Requirements
-- Organizers manage tournaments, matches, and results.
-- Participants predict match outcomes and earn points redeemable for future ticket discounts.
-- The platform aggregates user-linked behavioral data and sells predictive crowd-sentiment analysis to soccer clubs.
+
+- Organizers can create and manage tournaments, matches, and official results.
+- Participants can predict match outcomes before kickoff and earn points according to the accuracy of their predictions.
+- Participants can accumulate points and redeem them for eligible ticket discounts.
+- The platform collects prediction activity and produces aggregated reports for participating clubs.
+- Clubs can purchase access to these reports to analyze fan expectations across matches and tournaments.
 
 ## Additional Context
-The business combines fan engagement and ticket incentives with data monetization, turning prediction activity into strategic insights for clubs.
+
+The platform has two main sources of value: encouraging fans to participate throughout a tournament and selling aggregated prediction reports to football clubs. The business depends on keeping match information and results accurate, applying the same scoring rules to all participants, and generating reports that remain useful as new predictions and results come in.
