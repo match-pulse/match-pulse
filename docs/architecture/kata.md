@@ -9,7 +9,7 @@ A platform for managing local football tournaments where spectators buy tickets,
   - spectators buy tickets and receive prediction points
   - spectators view the live scoreboard, timer, and available predictions on their phones
   - spectators wager points on match outcomes
-  - referees update scores, triggering reward calculations
+  - match scores are updated during games, triggering reward calculations
   - spectators redeem points for future ticket discounts
   - club representatives access and export aggregated prediction data
 
