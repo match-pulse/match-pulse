@@ -1,6 +1,6 @@
 # MatchPulse
 
-A platform for local football tournaments where spectators buy tickets, receive prediction points, and wager points on live match outcomes. The platform sells aggregated prediction data to football clubs.
+A platform for managing local football tournaments where spectators buy tickets, wager prediction points on live match outcomes, and earn rewards redeemable for ticket discounts. The platform sells aggregated prediction data to football clubs to support their strategic decisions.
 
 - **Users:** Spectators, tournament staff, and football club representatives.
 
@@ -17,3 +17,4 @@ A platform for local football tournaments where spectators buy tickets, receive 
   - traffic peaks during matches, with hundreds of concurrent spectators
   - point balances must remain consistent under concurrent requests
   - revenue comes from selling prediction data to football clubs to support strategic decisions
+  - prediction points cannot be converted into cash
