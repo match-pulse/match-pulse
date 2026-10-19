@@ -1,8 +1,9 @@
 # Execution Plan — Invariant Evidence and the Registration Path
 
 - **Issue:** #50 (plan owner; full plan spans #50–#55)
-- **Status:** Approved
+- **Status:** Executed
 - **Approved:** 2026-10-19
+- **Executed:** 2026-10-19
 - **Governance:** AI executes this approved scope. No product, architecture, schema or scope decision is delegated to AI. Merges require explicit human authorisation.
 
 ## 1. Intent
@@ -111,3 +112,41 @@ Dependencies: #54 requires #51 (the uniqueness constraint it tests). #53 require
 ## 10. Stop conditions
 
 Execution stops and returns to the human owner if: the burst test produces different numbers than documented; a migration fails against a replayed schema; the registration path cannot be completed without authentication; or any change would require weakening a test or an invariant.
+
+---
+
+## 11. Execution record
+
+| Issue | PR | Outcome |
+| :--- | :--- | :--- |
+| #50 | #56 | Merged. Kata aligned; measurable targets added; claims withdrawn. |
+| #52 | #57 | Merged. Methodology corrected; AI log populated. |
+| #51 | #58 | Merged. Schema enforces INV-01 and INV-02. |
+| #53 | #59 | Merged. Registration reachable end to end. |
+| #54 | #60 | Merged. Suite can fail; runs in CI. |
+| #55 | #61 | Merged. `docker build` succeeds; no secret in image. |
+
+### Acceptance criteria
+
+| # | Criterion | Result |
+| :--- | :--- | :--- |
+| 1 | Suite exits non-zero on capacity breach, counter divergence or duplicate acceptance | Met — demonstrated twice by fault injection, exit 1 |
+| 2 | Suite proven able to fail | Met — two injections, both reverted |
+| 3 | Suite runs on every pull request | Met — CI job executes all 7 named tests |
+| 4 | Every invariant implemented-and-tested or marked not implemented | Met — INV-01/02 verified, INV-03/04/05 recorded as gaps |
+| 5 | No unmeasured performance or scaling claim stated as fact | Met |
+| 6 | Kata contains the increment's behaviour | Met |
+| 7 | `typecheck`, `lint`, `build` pass with real credentials | Met locally and in CI |
+| 8 | AI transparency log records material contributions | Met — 8 entries plus a standing gap |
+| 9 | Another person can follow the README alone | **Partially met.** Documented and `docker build` verified; the built container was not observed serving a request (Docker WSL interop failure). |
+
+### Deviations from the plan
+
+1. **`@types/bun` added** as a dev dependency. Required for `bun:test` types; not anticipated. Surfaced in PR #60 rather than added silently.
+2. **Build-stage Supabase placeholders** introduced in PR #61. All Supabase access is server-side, so real values are read at runtime. Not anticipated; needed because `src/lib/supabase.ts` validates at module load and a bare `docker build` failed.
+3. **A finding reversed the diagnosis.** Fault injection showed the original capacity guard was already correct and the defect was uniqueness. Recorded rather than absorbed.
+4. **The container smoke test was not completed.** Reported as unverified.
+
+### Still open after execution
+
+INV-03 (kickoff deadline), INV-04 (atomic point accounting) and INV-05 (authentication, RLS, grants) are unchanged. INV-05 means the system is **not** a security boundary. The open question raised in `02-architecture-characteristics.md` §6 — whether data integrity under concurrency belongs in the selected characteristics — remains a human decision and is not resolved by this plan.

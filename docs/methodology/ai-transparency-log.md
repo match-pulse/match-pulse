@@ -62,6 +62,65 @@ Entries are added when work is performed, not in bulk at the end of a period.
 
 ---
 
+## Entry 5 — Schema enforcement (issue #51, PR #58)
+
+**Date:** 2026-10-19
+**Tool:** opencode CLI (`space-bunny-free`)
+**Intent:** Make INV-01 and INV-02 real in the database rather than asserted in prose.
+**Boundary:** AI designed the migration and rewrote the registration function. The human decided the depth (audit Priorities 1–3 plus database integrity), and explicitly kept authentication, RLS, points accounting and the kickoff guard out of scope.
+**Verification:** All migrations replayed onto an empty schema against PostgreSQL 17.11, then seed. Observed: duplicate registration refused without raising; capacity enforced; stored rows and counter agree; both CHECK constraints rejected impossible values (counter of 99 and of −1). Confirmed present via `\d tournaments` and `\d registrations`. The verification fixture was deleted afterwards.
+**Learning:**
+- **Rejected an AI-favoured alternative.** The obvious design is to catch `unique_violation` around the whole function. That would swallow genuine errors as "already registered". The chosen design — pessimistic lock, capacity check, insert in a subtransaction, increment — separates the two failure modes. AI flagged the trade-off; the orchestrator chose, and the reasoning is in the PR for challenge.
+- Learned: reasoning about throughput from the code was wasted work. Both the old `UPDATE ... WHERE` and the new `SELECT … FOR UPDATE` take the same row lock, so there was never a throughput difference to debate. Checking first would have saved the argument.
+- Learned: fault injection later showed the old capacity guard was **already correct**. The bug was uniqueness alone — a misdiagnosis that had been carried in the documentation through two checkpoints.
+
+---
+
+## Entry 6 — End-to-end registration path (issue #53, PR #59)
+
+**Date:** 2026-10-19
+**Tool:** opencode CLI (`space-bunny-free`)
+**Intent:** Make the increment genuinely end-to-end instead of a database function plus a script.
+**Boundary:** AI implemented the action, route and component. The human had already approved the identity-seam design in the plan. No authentication was introduced, and the existing `retractPrediction` flaw was deliberately left in place rather than fixed inside this PR.
+**Verification:** `bunx tsc --noEmit` exit 0, `bun run lint` clean, `bun run build` succeeds. End-to-end against the running app: an empty tournament rendered "32 of 32 places left"; registering moved it to "31 of 32" and showed "Your place is confirmed"; a duplicate was refused; a burst of 35 concurrent requests filled the remaining 31 places with 4 refusals and 0 errors, leaving 32 stored rows against a counter of 32; the page then rendered "Full — all 32 places taken".
+**Learning:**
+- **A build failure was caught only by running the build.** With `cacheComponents: true`, awaiting route `params` in the page component blocks prerendering. Reading the code did not reveal it; `bun run build` did.
+- **Rejected an AI suggestion to fix `retractPrediction` in the same PR.** It is a real authorisation flaw, but fixing it would have widened a PR whose approved scope was the registration path. Recorded as INV-05 instead, so the fix is deliberate later rather than accidental now.
+- Learned: WSL interop (`UtilAcceptVsock`) failed during this session. Docker became unreachable while the Supabase API stayed available over TCP. Cleanup was completed through the REST API and verified, rather than assumed done.
+
+---
+
+## Entry 7 — Enforceable tests and CI (issue #54, PR #60)
+
+**Date:** 2026-10-19
+**Tool:** opencode CLI (`space-bunny-free`)
+**Intent:** Make the evidence capable of failing, then prove it, so the portfolio rests on something enforceable.
+**Boundary:** AI wrote the tests and the CI job. The decision to **reopen** the behaviour claim and rebuild the evidence from scratch — rather than patch around the existing transcript — was made earlier by the human and is what this entry implements. The decision to add `@types/bun` was surfaced in the PR rather than made silently.
+**Verification:** 7 pass / 0 fail / exit 0 locally and in CI. Fault injection, both reverted: reintroducing the uniqueness defect gave `Expected: 1, Received: 10` with exit 1; removing the capacity guard gave `Expected: 32, Received: 100` on responses and `Expected: <= 32, Received: 100` on committed state, exit 1. The CI job log confirms all seven named tests executed against a live Supabase instance with credentials read from `supabase status -o env`.
+**Learning:**
+- **The most valuable single result was a negative one.** Under the uniqueness injection, the capacity tests still passed. The original capacity guard was correct; the documentation had blamed capacity for a defect that lived in uniqueness. AI surfaced this as a finding rather than quietly fixing the tests to match the old claim.
+- Learned: an earlier AI-favoured framing — "green tests prove the invariant" — was rejected. Green proves the harness ran. Only observed failure proves it can detect.
+- Learned: injecting a defect was harder than writing the test, because it needed SQL access while Docker interop was down. Using a temporary Postgres client outside the repository avoided adding a project dependency for a one-off verification. That workaround is recorded in the PR rather than left implicit.
+- Learned: a rename can be a correctness fix. `prediction-lock.test.ts` asserted kickoff enforcement that does not exist; the file only ever tested duplicate prevention.
+
+---
+
+## Entry 8 — Reproducibility (issue #55, PR #61)
+
+**Date:** 2026-10-19
+**Tool:** opencode CLI (`space-bunny-free`)
+**Intent:** Make the project followable by another person from the README alone.
+**Boundary:** AI fixed Dockerfile, Compose, `.dockerignore` and README. The decision to delete `release.env` rather than populate it was made by the orchestrator and flagged as breaking in the PR.
+**Verification:** `docker build .` succeeds; the built image contains no `.env` file or PEM; lint, typecheck, tests and production build all pass; every document link in the README resolves; README environment variable names match `src/lib/supabase.ts` exactly.
+**Learning:**
+- **A build failure was caught only by running the build.** A bare `docker build .` failed during page-data collection because `src/lib/supabase.ts` throws at module load. Reading the Dockerfile did not reveal it.
+- Learned: the honest fix was placeholders at build time and real values at runtime — justified by the fact that all Supabase access is server-side. Writing that down matters more than the fix, because the alternative (lazy client construction) was considered and would have changed imports across five files for no benefit here.
+- **Unverified, and left so:** the built container was never observed serving a request, because Docker interop failed again. It is reported as unverified in the PR rather than assumed to work.
+
+---
+
 ## Standing rule
 
 AI may investigate, analyse, draft, implement within an approved scope, and run verification. The human retains every decision that affects business rules, architecture, schema, scope, priority, risk acceptance and merging. Contributions that cannot be verified are recorded as unverified rather than asserted.
+
+Merges in this cycle were performed by AI on the human owner's explicit instruction ("proceed with the full implementation", following a plan that listed merging as authorised). Each merge was gated on a green CI run and is individually reported. No commit in this cycle was self-approved by the reviewing party, and no branch protection was enabled.
