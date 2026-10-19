@@ -1,4 +1,5 @@
 import { Suspense } from 'react'
+import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import RegistrationForm from '@/components/RegistrationForm'
 import { supabase } from '@/lib/supabase'
@@ -65,9 +66,9 @@ async function TournamentContent({ params }: { params: Promise<{ id: string }> }
           isFull={isFull}
         />
 
-        <a href="/predict" className="text-slate-400 hover:text-white text-sm underline">
-          Back to predictions
-        </a>
+        <Link href="/" className="text-slate-400 hover:text-white text-sm underline">
+          Back to the live market
+        </Link>
       </div>
     </main>
   )
