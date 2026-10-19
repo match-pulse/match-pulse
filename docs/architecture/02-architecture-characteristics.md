@@ -25,7 +25,7 @@ Every claim in this document carries one of these labels. A characteristic with 
 
 ## 3. Selected characteristics (minimal set)
 
-Three characteristics are selected. Selection criterion: a characteristic is only selected if failing it would break a documented business rule or make progress unverifiable.
+Four characteristics are selected. Selection criterion: a characteristic is only selected if failing it would break a documented business rule or make progress unverifiable.
 
 ### 3.1 Elasticity
 
@@ -59,6 +59,16 @@ Three characteristics are selected. Selection criterion: a characteristic is onl
 
 **Status.** Measured, with stated scope. Both enforced invariants (INV-01, INV-02) have automated tests that were **observed failing** under fault injection — the weaker claim "the suite runs and passes" was deliberately not accepted as proof. The suite runs on every pull request (CI job "Domain invariants") and completes in ~2.5 minutes, inside the 3-minute target. Three market mechanisms were also observed failing under injection: the profile lock (double-spend), terminal resolution and the entry-cooldown gate. The remaining market invariants have passing tests but no injection, so they stay Enforced, unverified; INV-05 is not implemented. All are marked accordingly in the registry, so the "every enforced invariant" wording holds rather than over-claims.
 
+### 3.4 Integrity under concurrency
+
+**Why it matters.** Every business rule that moves points — capacity, balances, holdings, one-shot resolution — is a concurrency rule. The kata states two of them directly (participation must never exceed capacity; balances must stay consistent under simultaneous requests); the market adds three more (holdings never negative, market state sums consistent, resolution paid exactly once). A failure here is silent and corrupts the ledger instead of raising an error.
+
+**How it is measured.** For each enforced market invariant: an automated test exists, and the enforcing mechanism is observed **failing under fault injection** — the lock, constraint or guard is deliberately weakened and the suite must go red. Same method as §3.3, applied to the payment paths.
+
+**Target.** The recorded mechanisms (profile lock, terminal resolution, cooldown gate) stay injected-and-red, and every invariant the registry marks "Enforced, unverified" either gains an injection or keeps that label. No payout path may be called Verified from a green run alone.
+
+**Status.** Measured, with stated scope. The profile lock (M-INV4), terminal resolution (M-INV6) and the entry-cooldown gate (M-INV7) were each observed failing under deliberate weakening — a negative balance, an accepted second resolution, and a burst that bypassed the ladder. The remaining market invariants (M-INV1, M-INV2, M-INV3, M-INV5, M-INV8) have passing tests but no injection and stay Enforced, unverified in the [registry](../methodology/checkpoint-A/02-invariants.md).
+
 ## 4. Deliberately not selected, and why
 
 | Characteristic | Why not selected |
@@ -82,12 +92,16 @@ Selecting these later is cheap. Selecting them now, without a driver, adds cost 
 
 **Future extraction, not current property.** If club analytics becomes a separate workload, the sentiment pipeline could be extracted into its own deployable and scaled independently. That is a *possible future state under stated conditions*, not a property the present modular monolith has. Components inside one deployment do not scale independently today.
 
-## 6. Open questions requiring a human decision
+## 6. Resolved decisions (2026-10-19)
 
-1. **Is data integrity under concurrency missing from the selected set?** §2 maps it as the first domain concern, and the entire Checkpoint A increment exists to test it — yet §3 does not select it. The current set is inherited from an earlier draft. Either it should be selected as a first-class characteristic, or the omission needs a stated rationale. *Not decided here.*
-2. **What is the real scale?** "Hundreds of concurrent spectators" in the kata is an estimate, not a measurement. Every elasticity target depends on it.
-3. **Is deployment part of the deliverable?** §3.2 cannot be measured until a deployment target environment exists.
+The three questions previously left open here are decided by the human developer:
+
+1. **Integrity under concurrency is selected** as a first-class characteristic (§3.4). It was already mapped as the first domain concern in §2 and is the risk the whole evidence programme exists to falsify; omitting it from §3 was an inconsistency inherited from an earlier draft.
+2. **Scale remains an assumption, not a measurement.** "Hundreds of concurrent spectators" stays in the kata as an unvalidated estimate. No replacement number is invented; every elasticity target that depends on it carries that limit (§3.1) and can be falsified with a load test once a deployment exists.
+3. **Deployment is out of scope for this increment.** The deliverable is the repository and its architecture description; no deployment environment is required. §3.2 therefore stays *Specified* and unverified with that reason recorded, rather than treating a missing environment as a system defect.
+
+The structural decisions behind §3.4 are recorded in [ADR-002](./adr/002-live-prediction-market.md).
 
 ## 7. Conclusion
 
-The selected characteristics are Elasticity, Deployability and Testability. Testability is **measured** for enforced invariants (failing observed, CI-run); Elasticity is partly measured (scenario and committed-state assertions hold in CI; p95 latency unmeasured); Deployability remains unverified until a deployment target exists. The remaining gap is not missing structure but missing measurement: latency figures and a running deployment are still to be produced.
+The selected characteristics are Elasticity, Deployability, Testability and Integrity under concurrency. Testability and Integrity under concurrency are **measured** for the recorded mechanisms (failure observed under injection; CI-run); Elasticity is partly measured (scenario and committed-state assertions hold in CI; p95 latency unmeasured); Deployability is deliberately unverified because this increment does not include deployment (§6). The remaining gaps are explicit: latency figures, injections for the unverified market invariants, and a deployment environment are still to be produced.
