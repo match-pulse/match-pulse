@@ -25,7 +25,7 @@ Critical business rules are enforced **inside the database**, as transactional f
 | Option | Why it was not chosen |
 | :--- | :--- |
 | **Spring Boot + PostgreSQL** — the stack introduced in the Software Architectures lectures | Technically sound and fully capable. Rejected because adopting a Java stack purely to match lecture material is an argument from convention, not from the system's requirements. It would also add a second language and toolchain to a one-person project. The course explicitly permits other technologies and assesses justification. This remains a reasonable choice for someone already productive in it. |
-| **Next.js + self-hosted PostgreSQL on a VPS** | Retains the application stack while removing vendor coupling and giving direct control over connection limits. Rejected at this stage because operating a database instance adds recurring operational work and a second failure surface, and because no measured requirement yet demands control that managed Postgres withholds. Reconsider if elasticity targets cannot be met (see `02-architecture-characteristics.md` §3.1). |
+| **Next.js + self-hosted PostgreSQL on a VPS** | Retains the application stack while removing vendor coupling and giving direct control over connection limits. Rejected at this stage because operating a database instance adds recurring operational work and a second failure surface, and because no measured requirement yet demands control that managed Postgres withholds. Reconsider if elasticity targets cannot be met (see `03-architecture-characteristics.md` §3.1). |
 | **Event-driven architecture (broker + consumers) for predictions** | Would decouple write and reward processing. Rejected because no stated requirement needs asynchronous processing, and it introduces eventual consistency exactly where the domain demands an immediate, unambiguous answer about whether a prediction was accepted. |
 | **Microservices** | Rejected. The domain is one bounded context with one database and one team of one. Splitting it would add network failure modes and deployment overhead with no corresponding benefit. |
 
@@ -49,5 +49,6 @@ Earlier revisions of this ADR asserted "instant CI/CD", an "Edge network" benefi
 
 ## Related
 
-- [`02-architecture-characteristics.md`](../02-architecture-characteristics.md) — selected characteristics, targets and their status
-- [`01-system-overview.md`](../01-system-overview.md) — domain model and invariants
+- [`03-architecture-characteristics.md`](../03-architecture-characteristics.md) — selected characteristics, targets and their status
+- [`01-system-overview.md`](../01-system-overview.md) — purpose, users and data flows
+- [`02-domain-model.md`](../02-domain-model.md) — entities, journeys and invariants
