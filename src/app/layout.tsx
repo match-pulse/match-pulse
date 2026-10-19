@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "MatchPulse | Predict, Play, Win",
-  description: "A football tournament platform for match predictions, rewards, and data-driven insights.",
+  title: "MatchPulse | Trade the Match",
+  description: "A football tournament platform with a live match prediction market, rewards, and data-driven insights.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

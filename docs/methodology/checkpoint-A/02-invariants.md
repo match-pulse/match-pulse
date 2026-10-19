@@ -10,11 +10,11 @@ This registry records each critical business rule, where it is enforced, and **w
 | **INV-02** | A participant cannot register for the same tournament twice; retries must not consume a second place. | Unique constraint `registrations_tournament_user_unique`, plus a `unique_violation` subtransaction in the function that returns `false` instead of raising. | **Verified.** `registration-uniqueness.test.ts`, confirmed by fault injection. |
 | **INV-03** | *Withdrawn — owner decision, 2026-10-19.* The pre-kickoff fixed-score prediction deadline no longer exists; the market opens at kickoff (see M-INV1). | — | **Withdrawn.** Superseded by M-INV1. |
 | **INV-04** | *Withdrawn — owner decision, 2026-10-19.* Fixed-score prediction storage and its ledger are retired; market trade atomicity is governed by M-INV2. | — | **Withdrawn.** Superseded by M-INV2. |
-| **INV-05** | Only authorised users may act on their own data; club analytics must respect data-sharing rules. | *Planned:* Supabase Auth, Row Level Security policies and grants. | **Not implemented.** Zero RLS policies, zero grants. Verified by probing the local API with an arbitrary key: `anon` has full read and write on every table. `retractPrediction` additionally accepts a user id from its caller. |
+| **INV-05** | Only authorised users may act on their own data; club analytics must respect data-sharing rules. | *Planned:* Supabase Auth, Row Level Security policies and grants. | **Not implemented.** Zero RLS policies, zero grants. Verified by probing the local API with an arbitrary key: `anon` has full read and write on every table and can call the trade and resolution RPCs. The app resolves a fixed demo identity server-side, which is not authentication. |
 
 ### Market invariants (specified for the live market increment)
 
-These replace the withdrawn prediction invariants. Enforcement is landing across issues #65 and #66. A rule is labeled **Enforced, unverified** when code and passing tests exist but the suite has not yet been observed failing under fault injection; it becomes `Verified` only after that observation.
+These replace the withdrawn prediction invariants. Enforcement and the first evidence landed in #65 and #66; the prototype UI landed in #67. A rule is labeled **Enforced, unverified** when code and passing tests exist but the suite has not yet been observed failing under fault injection; it becomes `Verified` only after that observation.
 
 | ID | Invariant | Enforcement | Status |
 | :--- | :--- | :--- | :--- |
@@ -37,12 +37,11 @@ An earlier version of this table recorded INV-02 as enforced by "unique database
 | :--- | :--- | :--- |
 | `tests/invariants/tournament-capacity.test.ts` | INV-01 | 100 concurrent requests against capacity 32; asserts the accepted/refused split **and** the committed row count, the stored counter, and `counter <= capacity` |
 | `tests/invariants/registration-uniqueness.test.ts` | INV-02 | Sequential and concurrent duplicate registrations; asserts refusal, exactly one stored row, and that the counter advanced only once |
-| `tests/invariants/prediction-duplicate-prevention.test.ts` | — | Concurrent duplicate predictions; asserts duplicate prevention **only**. Retires with the fixed-score feature (#67). |
 | `tests/invariants/market-pricing.test.ts` | M-INV2, M-INV3, M-INV5, M-INV8 (partial M-INV7) | Budget-bounded entry, `ceil` debit, `floor` credit, profit and proportional-loss exits, over-sell and unaffordable-entry refusals, share bookkeeping, and the first cooldown rung; asserts committed balances, positions and trade rows |
 | `tests/invariants/market-lifecycle.test.ts` | M-INV1, M-INV6, M-INV7 | Pre-kickoff refusals, one-shot resolution payout, duplicate-resolution refusal, cooldown ladder/cap/decay/scope and no escalation on refusal |
 | `tests/invariants/market-concurrency.test.ts` | M-INV4, M-INV7 | Cross-market double-spend race and same-market burst; both were observed red under fault injection |
 
-**Renamed.** This file was previously `prediction-lock.test.ts`. It exercises `UNIQUE (user_id, match_id)` and does not test kickoff locking, because that rule (INV-03) was withdrawn with the feature. The file itself is removed in #67; it is not evidence for any market invariant.
+**Retired.** The former `prediction-duplicate-prevention.test.ts` (previously `prediction-lock.test.ts`) exercised `UNIQUE (user_id, match_id)` and never tested kickoff locking, because that rule (INV-03) was withdrawn. It was removed with the fixed-score feature in #67 and is not evidence for any market invariant. The table and `submit_prediction` were dropped by `20261023_retire_predictions.sql`.
 
 ## 3. Verification
 
@@ -58,7 +57,7 @@ bun test v1.4.2 (744846f84)
 Ran 7 tests across 3 files. [768.00ms]
 ```
 
-After the market slices (I4): `18 pass / 0 fail` across 6 files.
+After the market slices and the prediction retirement (I5): `16 pass / 0 fail` across 5 files.
 
 ### The suite was observed failing
 
@@ -92,7 +91,7 @@ Both injections were reverted by replaying all migrations onto an empty schema; 
 
 ### Market engine injections (2026-10-19)
 
-The market suites were observed failing under three deliberate defects. Each was applied only to the local database, then reverted by re-applying the migration's function (and, where noted, restoring the table constraint/key); the full suite returned to 18 pass / 0 fail across 6 files.
+The market suites were observed failing under three deliberate defects. Each was applied only to the local database, then reverted by re-applying the migration's function (and, where noted, restoring the table constraint/key); the full suite then returned to green (18 tests at the time, before the fixed-score suite was retired).
 
 **Injection A — remove the profile lock and both balance guards from `open_trade`.** The layered `points_after >= 0` trade check was also removed, because it otherwise rolled the whole transaction back and the negative balance never persisted.
 
@@ -127,4 +126,4 @@ It establishes that these scenarios hold, on this machine, against a single data
 
 ## 4. Current focus
 
-INV-01 and INV-02 remain verified. INV-03 and INV-04 are withdrawn with the retired fixed-score feature (owner decision, 2026-10-19); M-INV1–M-INV8 replace them. M-INV4 (profile lock / double-spend), M-INV6 (one-shot resolution) and the gate of M-INV7 (cooldown) are **Verified** by observed failure under fault injection. M-INV1, M-INV2, M-INV3, M-INV5 and M-INV8, plus the ladder/decay details of M-INV7, are **Enforced, unverified**: passing tests, no injection yet. INV-05 remains open and is deliberately not implied by the results above: this increment is **not** a security boundary, and anyone who can reach the database can act as any participant.
+INV-01 and INV-02 remain verified. INV-03 and INV-04 are withdrawn with the retired fixed-score feature (owner decision, 2026-10-19); M-INV1–M-INV8 replace them. M-INV4 (profile lock / double-spend), M-INV6 (one-shot resolution) and the gate of M-INV7 (cooldown) are **Verified** by observed failure under fault injection. M-INV1, M-INV2, M-INV3, M-INV5 and M-INV8, plus the ladder/decay details of M-INV7, are **Enforced, unverified**: passing tests, no injection yet. The prototype market page enters and exits through server actions that use the identity seam, and the fixed-score feature is removed, but this is UI evidence only — not fault-injection evidence. INV-05 remains open and is deliberately not implied by any result above: this increment is **not** a security boundary, and anyone who can reach the database can act as any participant.

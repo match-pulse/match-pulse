@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
 
+const DEMO_MARKET_ID = '33333333-3333-3333-3333-333333333333'
+
 export default function Home() {
-  // Automatically send the user to the prediction page
-  redirect('/predict')
+  redirect(`/market/${DEMO_MARKET_ID}`)
 }

@@ -6,26 +6,26 @@ MatchPulse is a football tournament web application that engages fans through ma
 
 ## Current status
 
-This is an early-stage project. **Tournament registration is implemented and tested.** Everything else in the kata — predictions, points rewards, ticket discounts, club analytics — is documented but largely unimplemented.
+This is an early-stage project. **Tournament registration and a live prediction market are implemented.** The market engine is tested and was observed failing under fault injection; the UI is an unprotected prototype. Rewards redemption and club analytics are not implemented.
 
 What exists today:
 
 | Area | State |
 | :--- | :--- |
 | Tournament registration with capacity enforcement | **Implemented and verified** |
-| Prediction submission | Partial — duplicate prevention only. No kickoff enforcement |
-| Points and rewards | Not implemented |
+| Live prediction market (LMSR entry, exit, resolution) | **Implemented** — engine verified; prototype UI |
+| Points and rewards | Points balance and payouts only; ticket-discount redemption not implemented |
 | Authentication and row-level security | **Not implemented** |
-| Club analytics | Not implemented |
+| Club analytics | Not implemented — the trade log is recorded, not aggregated or exported |
 
 The system is **not** a security boundary. Anyone who can reach the database can act as any participant. See [Known gaps](#known-gaps).
 
 ## Features
 
 - **Tournament Management:** Organize tournaments, teams, matches, and results. *(partial)*
-- **Match Predictions:** Let fans predict match outcomes before kickoff. *(no kickoff enforcement)*
-- **Rewards:** Award points for correct predictions, redeemable for future ticket discounts. *(not implemented)*
-- **Crowd-Sentiment Analytics:** Aggregate prediction behavior to generate insights for soccer clubs. *(not implemented)*
+- **Live Prediction Market:** Buy and sell HOME/DRAW/AWAY shares while the match is live. Prices follow an LMSR curve; entry is cooled down per user and market; the winning side pays one point per share at resolution. *(implemented, unprotected prototype)*
+- **Rewards:** Points are redeemable for future ticket discounts. *(redemption not implemented)*
+- **Crowd-Sentiment Analytics:** Aggregate market activity into insights for soccer clubs. *(not implemented; trades are recorded)*
 
 ## Tech Stack
 
@@ -49,7 +49,8 @@ MatchPulse follows a **modular monolith** architecture, emphasising data integri
 - [Checkpoint A — Context, Claims and Evidence](docs/methodology/checkpoint-A/README.md)
 - [Checkpoint B — Operating Model and Feedback](docs/methodology/checkpoint-B/README.md)
 - [AI Transparency Log](docs/methodology/ai-transparency-log.md)
-- [Execution Plan — Invariant Evidence and the Registration Path](docs/methodology/exec-plans/50-invariant-evidence-and-registration-path.md)
+- [Execution Plan — Live Prediction Market](docs/methodology/exec-plans/live-prediction-market.md)
+- [Execution Plan — Invariant Evidence and the Registration Path](docs/methodology/exec-plans/50-invariant-evidence-and-registration-path.md) *(superseded)*
 - [AI Agent Instructions](AGENTS.md)
 
 ---
@@ -128,7 +129,9 @@ The invariant suites need a running database — complete steps 3 and 4 first. M
 | :--- | :--- |
 | `tests/invariants/tournament-capacity.test.ts` | 100 concurrent requests against capacity 32; accepted/refused split **and** committed rows, stored counter, `counter <= capacity` |
 | `tests/invariants/registration-uniqueness.test.ts` | A repeated registration is refused and consumes no second place |
-| `tests/invariants/prediction-duplicate-prevention.test.ts` | Concurrent duplicate predictions for one match |
+| `tests/invariants/market-pricing.test.ts` | Budget-bounded entry with `ceil` debit, `floor` credit on exit, over-sell and overspend refusals, share bookkeeping |
+| `tests/invariants/market-lifecycle.test.ts` | Pre-kickoff and post-resolution refusals, one-shot resolution payout, cooldown ladder/cap/decay/scope |
+| `tests/invariants/market-concurrency.test.ts` | Cross-market double-spend race and same-market entry burst |
 
 These suites were confirmed **capable of failing**: reintroducing each defect in turn produced a non-zero exit. See the invariants registry for the recorded output.
 
@@ -155,10 +158,11 @@ Compose reads these from your shell or a root `.env` file. `release.env` was rem
 
 Recorded so they are not mistaken for delivered work. Full detail in the [invariants registry](docs/methodology/checkpoint-A/02-invariants.md).
 
-- **No authentication, no Row Level Security, no grants.** `anon` currently has full read and write on every table.
-- **No kickoff enforcement.** `submit_prediction` checks match status and never reads `kickoff_time`, so a prediction can be submitted after kickoff while the match still shows `SCHEDULED`.
-- **Point accounting is not atomic.** The prediction insert and the point deduction are separate operations.
-- **`retractPrediction` accepts a user id from its caller.** The registration action added later does not; this one still does.
+- **No authentication, no Row Level Security, no grants.** `anon` currently has full read and write on every table and can call `open_trade`, `close_trade` and `resolve_market` directly. Server actions resolve a fixed demo identity; that is not authentication.
+- **Five market invariants are enforced but not fault-injected.** M-INV1, M-INV2, M-INV3, M-INV5 and M-INV8 have passing tests; only M-INV4, M-INV6 and the M-INV7 gate were observed failing under injection.
+- **No idempotency keys.** If a request is retried after the cooldown expires, it is accepted as a new entry. The cooldown is the anti-churn mitigation, not a retry key.
+- **No load or latency measurement.** The suites cover correctness under a burst, not throughput or p95 latency.
+- **No ticket-discount redemption and no club analytics aggregation.** The trade log exists; nothing consumes it yet.
 
 ## Project Roles
 
