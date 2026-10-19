@@ -19,7 +19,10 @@ CREATE TABLE predictions (
     UNIQUE(user_id, match_id) 
 );
 
--- Atomic RPC for the Kickoff Lock (Invariant 1)
+-- Atomic RPC for duplicate prediction prevention (the UNIQUE constraint below).
+-- NOTE: kickoff is NOT enforced here — the function checks match status only.
+-- The kickoff deadline was withdrawn as a product rule on 2026-10-19 in favour
+-- of a live prediction market whose window opens at kickoff; see ADR-002.
 CREATE OR REPLACE FUNCTION submit_prediction(
     p_user_id UUID, 
     p_match_id UUID, 

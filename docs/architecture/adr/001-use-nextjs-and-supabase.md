@@ -34,7 +34,7 @@ Critical business rules are enforced **inside the database**, as transactional f
 ### Intended benefits (not yet observed)
 
 - **Deployability** — managed platforms remove infrastructure work from the critical path. *No deployment is configured in this repository; this benefit is intended, not measured.*
-- **Atomic invariants** — transactional PostgreSQL functions make the capacity and uniqueness rules enforceable in one place. *Enforcement exists in the schema; the tests that would prove it cannot currently fail a build.*
+- **Atomic invariants** — transactional PostgreSQL functions make the capacity and uniqueness rules enforceable in one place. *Enforcement exists in the schema and is verified by a test suite demonstrated capable of failing (fault injection), running in CI.*
 - **Reduced operational surface** — a smaller number of components is cheaper to run and to reason about.
 
 ### Observed trade-offs (accepted)

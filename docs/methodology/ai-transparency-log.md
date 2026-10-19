@@ -119,6 +119,20 @@ Entries are added when work is performed, not in bulk at the end of a period.
 
 ---
 
+## Entry 9 — Consistency audit of the completed cycle (issue #63)
+
+**Date:** 2026-10-19
+**Tool:** opencode CLI (`space-bunny-free`)
+**Intent:** Establish whether the seven merged PRs left the repository consistent — documentation matching implementation, no stale claims — before new work.
+**Boundary:** Read-only audit plus an approved remediation slice. The human approved remediation on 2026-10-19 ("okay good") and separately initiated a product pivot; remediation stayed strictly within the audit's findings.
+**Verification:** Three layers cross-checked rather than trusting any one: documents read against code; code read against the live database (constraint and grant counts queried via `psql`); issue/PR state read from GitHub (6 closed, 7 merged, `main` green). Secret hygiene re-verified: `release.env` in history contains only `APP_VERSION`/`NODE_ENV`; `.env.local` was never committed. Confirmed findings: three stale status claims in `02-architecture-characteristics.md` (§3.1, §3.3, §7), one in ADR-001, a false seam claim in `session.ts`, a mislabeled "Kickoff Lock (Invariant 1)" comment in the init migration, an order-of-operations comment contradicting the code in the integrity migration, and a nullable `current_players` that quietly contradicted the "unrepresentable" claim. Non-findings recorded too: the `rg -r` flags initially mis-displayed matches as corruption — re-run without the flag before concluding anything.
+**Learning:**
+- Learned: green merges do not update stale prose. Every PR in the previous cycle was green and individually correct, and documentation drift still accumulated — nothing in CI checks that narrative documents keep up with code.
+- Learned: the strongest audit findings were *representability* claims — a CHECK constraint that passes on NULL. Reading the migration text was not enough; the live schema query is what put a number on it (`rls_enabled_tables=0`, `grant_to_anon=35`).
+- Unverified, and left so: the built container has never been observed serving a request (Docker WSL interop failures in both sessions). Remains honestly unfinished.
+
+---
+
 ## Standing rule
 
 AI may investigate, analyse, draft, implement within an approved scope, and run verification. The human retains every decision that affects business rules, architecture, schema, scope, priority, risk acceptance and merging. Contributions that cannot be verified are recorded as unverified rather than asserted.
