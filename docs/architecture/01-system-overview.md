@@ -40,6 +40,8 @@ MatchPulse follows a modular monolith architecture using Next.js and Supabase, w
 
 Critical operations — tournament registration, market entries and exits, and resolution — enforce their invariants inside the database transaction rather than relying on frontend or application-level checks.
 
+The file-level mapping of these elements — pages, Server Actions, database functions and tests — is in [`03-code-map.md`](./03-code-map.md).
+
 Prediction activity is linked to profiles internally and aggregated into crowd-sentiment insights for clubs. Access to underlying user data must follow defined authorization and privacy rules; those rules are **not yet implemented**.
 
 ## 4. Data Flows

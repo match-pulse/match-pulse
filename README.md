@@ -42,6 +42,7 @@ MatchPulse follows a **modular monolith** architecture, emphasising data integri
 - [System Overview & Domain Model](docs/architecture/01-system-overview.md)
 - [Architectural Kata](docs/architecture/kata.md)
 - [Architecture Characteristics](docs/architecture/02-architecture-characteristics.md)
+- [Code Map](docs/architecture/03-code-map.md)
 - [Architecture Decision Records](docs/architecture/adr/)
 
 ### Development Methodology
@@ -68,7 +69,7 @@ The Supabase CLI is a project dependency and is invoked through Bun.
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/zantgo/match-pulse.git
+git clone https://github.com/match-pulse/match-pulse.git
 cd match-pulse
 ```
 
