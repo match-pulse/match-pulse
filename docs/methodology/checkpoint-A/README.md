@@ -52,7 +52,7 @@ Full detail in [`02-invariants.md`](./02-invariants.md) §3.
 - **Decision:** the behaviour claim (capacity) and the uniqueness claim are now **verified by a suite demonstrated capable of failing**.
 - **Completed:** #51 schema enforcement, #53 end-to-end path, #54 enforceable tests and CI.
 - **Next:**
-  1. INV-03, the kickoff deadline — documented as a rule, not implemented. `submit_prediction` never reads `kickoff_time`. This is the most important remaining gap in the prediction domain.
-  2. INV-04, atomic prediction and point accounting.
-  3. INV-05, authentication and Row Level Security. Until this is done the system is **not** a security boundary, and nothing here should be read as a security claim.
+  1. Live market increment: M-INV1–M-INV8 are specified in `02-invariants.md`; enforcement and failable evidence land in #65/#66.
+  2. INV-05, authentication and Row Level Security. Until this is done the system is **not** a security boundary, and nothing here should be read as a security claim.
+- **Superseded (2026-10-19):** INV-03 and INV-04 were withdrawn when the owner replaced fixed-score predictions with a live market that opens at kickoff. See [`../../architecture/adr/002-live-prediction-market.md`](../../architecture/adr/002-live-prediction-market.md).
 - **Superseded:** an earlier version of this document stated the behaviour claim "holds true" and moved straight to building the UI. That conclusion came from evidence that could not fail. The claim was reopened, the evidence made trustworthy, and only then re-closed.

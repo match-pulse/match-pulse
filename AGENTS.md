@@ -36,24 +36,29 @@ If documentation conflicts with the implementation, identify the discrepancy rat
 
 These rules define required domain behavior. Enforce critical invariants in PostgreSQL rather than relying solely on frontend validation or Server Actions.
 
-### Prediction deadline
+### Market window
 
-A prediction may be submitted only when the match is scheduled and the authoritative database time is before its kickoff timestamp.
+A position may be entered only while the market is open: the authoritative database time is at or after the match kickoff timestamp and the market has not been resolved. The market opens at kickoff (owner decision, 2026-10-19); the previous pre-kickoff fixed-score prediction deadline is withdrawn.
 
-- Reject submissions at or after kickoff, even if the match status has not yet changed to `LIVE`.
-- Establish a consistent acceptance point for concurrent submissions and kickoff transitions.
-- When acquiring database locks, evaluate the cutoff using an appropriate wall-clock check after the necessary locks have been acquired. Do not blindly rely on PostgreSQL `now()` or `CURRENT_TIMESTAMP` for a strict real-time cutoff.
+- Evaluate the window inside the transaction after acquiring the market lock.
+- Reject entries before kickoff and at or after resolution, even if the match status has not yet changed.
+- Exiting a position is always permitted while the market is open; it is never blocked or charged.
 
-### Prediction and point accounting
+### Trade and point accounting
 
-- Every accepted new prediction costs one point.
-- Withdrawing a prediction does not refund its spent points.
-- Correct predictions earn points according to the defined scoring rules after results are finalized.
+- Entering a position costs points priced by the market maker; exiting returns points at the current price.
+- Debit entry cost with `ceil` and credit exit proceeds with `floor`; shares are exact and positions never become negative.
+- The platform takes no commission of any kind on entry, exit or settlement.
 - Points may be redeemed for future ticket discounts.
-- Duplicate requests or retries must not accidentally charge for the same operation more than once.
-- Keep prediction records, point deductions, and corresponding ledger entries consistent within the same database transaction.
+- Duplicate requests or retries must not charge or pay twice.
+- Keep positions, point debits and credits, and trade-log rows consistent within the same database transaction.
+- Lock the profile row and never allow a negative balance, including under concurrent requests.
 
-Follow the documented rules for withdrawing and subsequently resubmitting predictions. Do not invent different behavior.
+### Entry cooldown
+
+- Entry into the same market is cooled down per user and market. The first re-entry waits 5 seconds, then a linear ladder adds 15 seconds per accepted entry (5, 15, 30, 45, 60, …), capped at 600 seconds.
+- The cooldown decays one level per five quiet minutes. Refused attempts never escalate it.
+- Exits are never restricted by the cooldown.
 
 ### Tournament capacity
 
@@ -61,9 +66,11 @@ Registrations must never exceed `max_capacity`, including when multiple users re
 
 Enforce capacity through an appropriate atomic database operation or transaction. Application-level checks alone are insufficient.
 
-### Match results and rewards
+### Market resolution
 
-Only authorized organizers may perform permitted tournament-management and result-recording operations. Finalized results must be used consistently when calculating and recording prediction rewards.
+- Only authorized organizers may finalize results and resolve markets.
+- A market resolves once and terminally; the finalized result is used consistently for every payout.
+- Each winning share pays exactly one point and losing shares pay nothing; payouts are recorded once per holder.
 
 ### Security and privacy
 
@@ -340,6 +347,28 @@ A pull request must include:
 6. **AI transparency:** A reference to material AI contributions recorded in `docs/methodology/ai-transparency-log.md`, when applicable.
 
 Run the relevant checks before proposing a pull request. Review the complete diff for unrelated changes, generated files, secrets, and accidental modifications.
+
+### Issue, Commit and Pull Request Text
+
+Keep every issue, commit message and pull request **brief, human-readable and in the same format every time**.
+
+**Every issue must have its claim type selected** — never leave the picker empty:
+
+- **Problem Claim** — consequential user friction existing independent of the software.
+- **Behaviour Claim** — verifiable system rules, actions and state changes.
+- **Outcome Claim** — measurable real-world impact after the software is used.
+- **ADR (Architecture Decision)** — recorded structural choices, their context and trade-offs.
+
+Issue format (keep the whole body under roughly 15 lines):
+
+- **Claim type:** one of the four above.
+- **Goal:** two or three sentences.
+- **Scope:** short bullet list.
+- **Done when:** short bullet list of observable conditions.
+
+Commit format: Conventional Commit subject; body of at most five short lines saying what changed and why.
+
+Pull request format: **Summary** (two or three sentences), **Closes #issue**, **Changes** (short bullets), **Verification** (short table or bullets with observed results), **Risks** (or "None"). Do not restate the issue, do not pad with prose. State the claim type in one line.
 
 ### Git Approval Gates
 
