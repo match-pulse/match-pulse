@@ -208,6 +208,23 @@ Entries are added when work is performed, not in bulk at the end of a period.
 
 ---
 
+## Entry 15 — Overview/domain split, C4 views, Docker repair, cooldown-exit test (issues #83–#85, PRs #86–#88)
+
+**Date:** 2026-10-19
+**Tool:** opencode CLI (`deepseek-v4.1-flash-free`)
+**Intent:** Separate the system overview from the domain model, provide verifiable C4 and ER views, make the repository description readable, verify the Docker path, and close the test gap for exits during an active entry cooldown.
+**Boundary:** Documentation, diagrams, Docker configuration and one test; no domain rule, schema, RLS or application behaviour changed. The owner's instruction that the PRs be completed ("prs done and everything") was treated as the merge instruction.
+**Verification:**
+- #86: a relative-link scan over README, AGENTS and `docs/architecture` found zero broken links. Context, container and component diagrams plus the ER diagram rendered through mermaid.ink (HTTP 200) and were inspected. The local Mermaid CLI could not run (Chromium lacks `libnspr4` and sudo requires a password); Kroki timed out.
+- #87: the image built with the local Supabase values; `/` returned 307 to the seeded market, which returned 200 with "Live — the market is open"; container logs were clean; missing build variables produced the intended required-variable error; `docker compose down` removed the stack. The first run exposed that Next.js inlines `NEXT_PUBLIC_*` at build time: it resolved `placeholder.supabase.co` even though runtime environment entries were set.
+- #88: `bun test --env-file=.env.local tests/invariants/market-lifecycle.test.ts` passed 5 tests with 61 assertions, including the new assertion that a full exit succeeds during an active cooldown and leaves the cooldown unchanged.
+**Learning:**
+- The Dockerfile previously claimed runtime environment entries were authoritative for the Supabase values. The observed `ENOTFOUND placeholder.supabase.co` disproved that; the configuration now requires the values as build arguments and the README explains that the image is tied to them.
+- The existing cooldown suite exercised the gate, ladder, scope and no-escalation but never asserted the exemption for exits. The new test covers the missing rule without changing the implementation.
+- No independent agent reviewed these changes; the evidence is CI and the commands recorded here.
+
+---
+
 ## Standing rule
 
 AI may investigate, analyse, draft, implement within an approved scope, and run verification. The human retains every decision that affects business rules, architecture, schema, scope, priority, risk acceptance and merging. Contributions that cannot be verified are recorded as unverified rather than asserted.

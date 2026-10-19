@@ -1,5 +1,6 @@
 /**
- * Market lifecycle: window, resolution payout, cooldown ladder and scope.
+ * Market lifecycle: window, resolution payout, cooldown ladder, scope and the
+ * exit exemption.
  *
  * The cooldown tests advance the gate by moving `next_entry_at` into the past
  * instead of sleeping for minutes. That manipulates the same row the RPC reads;
@@ -328,6 +329,37 @@ describe('entry cooldown (M-INV7)', () => {
       cooldown = await cooldownOf(marketId, userId)
       expect(cooldown.level).toBe(9)
       expectWait(cooldown.next_entry_at, 120)
+    },
+    TEST_TIMEOUT_MS
+  )
+
+  test(
+    'accepts exits while the entry cooldown is active',
+    async () => {
+      const marketId = await createMarket()
+      const userId = await createProfile(1000)
+
+      const entry = await openTrade(marketId, userId, 'HOME', 50)
+      expect(entry.error).toBeNull()
+      const shares = num(entry.row!.shares)
+      const cooldownBefore = await cooldownOf(marketId, userId)
+      const balanceBefore = await pointsOf(userId)
+
+      // The next entry is gated, but selling must not be.
+      const exit = await closeTrade(marketId, userId, 'HOME', shares)
+      expect(exit.error).toBeNull()
+      const proceeds = num(exit.row!.proceeds)
+      expect(proceeds).toBeGreaterThan(0)
+      expect(num(exit.row!.points_after)).toBe(balanceBefore + proceeds)
+      expect(await pointsOf(userId)).toBe(balanceBefore + proceeds)
+
+      const position = await positionOf(marketId, userId, 'HOME')
+      expect(num(position!.shares)).toBe(0)
+
+      // Exiting neither resets nor escalates the entry cooldown.
+      const cooldownAfter = await cooldownOf(marketId, userId)
+      expect(cooldownAfter.level).toBe(cooldownBefore.level)
+      expect(cooldownAfter.next_entry_at).toBe(cooldownBefore.next_entry_at)
     },
     TEST_TIMEOUT_MS
   )
