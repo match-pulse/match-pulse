@@ -26,12 +26,16 @@ MatchPulse is a football tournament web application that engages fans through ma
 
 MatchPulse follows a **modular monolith** architecture, emphasizing data integrity, clear module boundaries, and reliable prediction processing.
 
-Architecture documentation:
-
+- **System Overview & Domain Model:** [`docs/architecture/01-system-overview.md`](docs/architecture/01-system-overview.md)
 - **Architectural Kata:** [`docs/architecture/kata.md`](docs/architecture/kata.md)
-- **Architecture Decision Records (ADRs):** [`docs/architecture/adr/`](docs/architecture/adr/)
 - **Architecture Characteristics:** [`docs/architecture/02-architecture-characteristics.md`](docs/architecture/02-architecture-characteristics.md)
-- **Development Methodology:** [`docs/methodology/`](docs/methodology/)
+- **Architecture Decision Records (ADRs):** [`docs/architecture/adr/`](docs/architecture/adr/)
+
+### Development Methodology
+
+- **Bounded Proposal:** [`docs/methodology/bounded-proposal-01.md`](docs/methodology/bounded-proposal-01.md)
+- **AI Transparency Log:** [`docs/methodology/ai-transparency-log.md`](docs/methodology/ai-transparency-log.md)
+- **AI Agent Instructions:** [`AGENTS.md`](AGENTS.md)
 
 ## Getting Started
 
