@@ -63,20 +63,26 @@ export default function PredictionForm({
             name="homeScore" 
             defaultValue={existingPrediction?.predicted_home_score ?? 0} 
             min="0" 
-            className="w-16 p-2 text-center text-black rounded font-bold" 
+            disabled={!!existingPrediction}
+            className="w-16 p-2 text-center text-black rounded font-bold disabled:opacity-50 disabled:cursor-not-allowed" 
           />
-          <span className="font-bold text-xl">-</span>
+          <span className="font-bold text-xl text-slate-400">-</span>
           <input 
             type="number" 
             name="awayScore" 
             defaultValue={existingPrediction?.predicted_away_score ?? 0} 
             min="0" 
-            className="w-16 p-2 text-center text-black rounded font-bold" 
+            disabled={!!existingPrediction}
+            className="w-16 p-2 text-center text-black rounded font-bold disabled:opacity-50 disabled:cursor-not-allowed" 
           />
         </div>
 
-        <button type="submit" className="bg-blue-600 hover:bg-blue-700 py-2 rounded font-bold transition-colors">
-          {existingPrediction ? 'Change Prediction' : 'Submit Prediction'}
+        <button 
+          type="submit" 
+          disabled={!!existingPrediction}
+          className="bg-blue-600 hover:bg-blue-700 py-2 rounded font-bold transition-colors disabled:bg-slate-600 disabled:cursor-not-allowed disabled:text-slate-400"
+        >
+          Submit Prediction
         </button>
       </form>
 
