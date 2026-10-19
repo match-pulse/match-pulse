@@ -44,3 +44,15 @@ BEGIN
     RETURN affected_rows > 0;
 END;
 $$ LANGUAGE plpgsql;
+
+
+-- Create Profiles table for User Points
+CREATE TABLE profiles (
+    id UUID PRIMARY KEY,
+    username TEXT NOT NULL,
+    points INT NOT NULL DEFAULT 1
+);
+
+-- Insert our dummy test user with 1 point
+INSERT INTO profiles (id, username, points) 
+VALUES ('00000000-0000-0000-0000-000000000000', 'Fan_123', 1);
