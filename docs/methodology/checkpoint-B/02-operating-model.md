@@ -25,13 +25,13 @@ The course materials distinguish the two. In an AI-driven workflow, AI decides w
 
 ## 3. Flow and feedback
 
-- **Flow:** GitHub Issues, labelled by course (`[DM]`, `[SA]`) and by type (`Setup`, `Test`, `Feature`, `Refactor`). Each issue maps to exactly one branch and one pull request.
+- **Flow:** GitHub Issues tagged by course (`[DM]`, `[SA]`) and kind (`Setup`, `Test`, `Feature`, `Methodology`) in the title, carrying an explicit claim type since #63. Each implementation issue maps to one branch and one pull request; the single documentation wrap-up PR #62 had no issue and is recorded as a deviation in [03-flow-evidence.md](./03-flow-evidence.md).
 - **Work in progress:** one increment open at a time.
 - **Feedback:** continuous integration runs on every pull request and every push to `main`.
 
 **Correction to an earlier draft:** the previous version stated that work is tracked on a "GitHub Project Board" with columns `Enter → Build → Review → Release`. No such board was created; the repository had no project scope. Issues are the actual work history, and this document now describes what exists. *Strengthen this:* the pull-request and issue history is genuine evidence of a work flow and of how it changed — it should be read as such, not as decoration.
 
-**What the feedback loop does not yet cover:** continuous integration currently runs lint and build only. It does **not** run the domain invariant tests, so a green check does not yet mean the business rules hold. Adding that is the point of issue #54. Until then, "CI is green" is not evidence of correctness, and must not be reported as such.
+**A feedback gap that was real, and is closed:** continuous integration originally ran lint and build only and did not execute the domain invariant tests, so a green check could not mean the business rules held. That was corrected in #60 (merged 2026-10-19); the "Domain invariants" job now runs the suites on every pull request and every push to `main`. A green check now covers the invariants those suites execute, and no others.
 
 ## 4. Change absorption policy
 
@@ -57,4 +57,4 @@ AI can propose a change to any of these. It cannot apply one.
 
 - Single developer: there is no second reviewer, so "review" means structured self-review plus automated checks. This is a real weakness — it is why enabling required review on `main` was considered and then declined as infeasible with one account.
 - One AI-assisted contributor means the portfolio cannot demonstrate multi-person collaboration, which the course assesses. This is a limitation of the current setup, not a solved problem.
-- The verification loop has been weaker than this document described, and is only now being corrected.
+- The verification loop was weaker than this document described; it was corrected on 2026-10-19 (#60).
