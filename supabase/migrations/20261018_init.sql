@@ -53,10 +53,6 @@ CREATE TABLE profiles (
     points INT NOT NULL DEFAULT 1
 );
 
--- Insert our dummy test user with 1 point
-INSERT INTO profiles (id, username, points) 
-VALUES ('00000000-0000-0000-0000-000000000000', 'Fan_123', 1);
-
 -- Create Tournaments table
 CREATE TABLE tournaments (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
@@ -73,27 +69,7 @@ CREATE TABLE registrations (
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- Atomic RPC to register a user (Prevents overbooking)
-CREATE OR REPLACE FUNCTION register_for_tournament(
-    p_tournament_id UUID,
-    p_user_id UUID
-) RETURNS boolean AS $$
-DECLARE
-    affected_rows INT;
-BEGIN
-    -- Atomic check-and-increment
-    UPDATE tournaments
-    SET current_players = current_players + 1
-    WHERE id = p_tournament_id AND current_players < max_capacity;
-    
-    GET DIAGNOSTICS affected_rows = ROW_COUNT;
-    
-    IF affected_rows = 1 THEN
-        INSERT INTO registrations (tournament_id, user_id)
-        VALUES (p_tournament_id, p_user_id);
-        RETURN true;
-    ELSE
-        RETURN false;
-    END IF;
-END;
-$$ LANGUAGE plpgsql;
+-- Registrations for a capacity-limited tournament.
+-- The register_for_tournament function that writes to these tables is defined
+-- in 20261019_registration_integrity.sql, together with the constraints that
+-- make the capacity and uniqueness rules enforceable.
