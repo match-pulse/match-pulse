@@ -37,13 +37,18 @@ The system is **not** a security boundary. Anyone who can reach the database can
 
 ## Architecture
 
-MatchPulse follows a **modular monolith** architecture, emphasising data integrity, clear module boundaries, and reliable registration processing.
+MatchPulse follows a **modular monolith** architecture, emphasising data
+integrity, clear module boundaries, and reliable registration processing.
 
-- [System Overview & Domain Model](docs/architecture/01-system-overview.md)
-- [Architectural Kata](docs/architecture/kata.md)
-- [Architecture Characteristics](docs/architecture/02-architecture-characteristics.md)
-- [Code Map](docs/architecture/03-code-map.md)
-- [Architecture Decision Records](docs/architecture/adr/)
+Read the architecture documents in this order:
+
+1. [Architectural Kata](docs/architecture/kata.md) — the problem and its constraints
+2. [System Overview](docs/architecture/01-system-overview.md) — users, boundaries and data flows
+3. [Domain Model](docs/architecture/02-domain-model.md) — entities, relationships and business rules
+4. [C4 Diagrams](docs/architecture/05-c4-diagrams.md) — context, containers and market components
+5. [Architecture Characteristics](docs/architecture/03-architecture-characteristics.md) — priorities and measurements
+6. [Code Map](docs/architecture/04-code-map.md) — documents and rules mapped to files and tests
+7. [Architecture Decision Records](docs/architecture/adr/) — the decisions behind the structure
 
 ### Development Methodology
 

@@ -51,6 +51,6 @@ The domain still requires correctness under concurrency: balances and holdings n
 ## Related
 
 - [`../../methodology/exec-plans/live-prediction-market.md`](../../methodology/exec-plans/live-prediction-market.md) — approved execution plan
-- [`../01-system-overview.md`](../01-system-overview.md) — domain model and journeys
+- [`../02-domain-model.md`](../02-domain-model.md) — entities, journeys and invariants
 - [`../../methodology/checkpoint-A/02-invariants.md`](../../methodology/checkpoint-A/02-invariants.md) — invariant registry
-- [`../02-architecture-characteristics.md`](../02-architecture-characteristics.md) — characteristics and measurements
+- [`../03-architecture-characteristics.md`](../03-architecture-characteristics.md) — characteristics and measurements
