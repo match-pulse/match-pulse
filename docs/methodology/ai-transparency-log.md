@@ -190,6 +190,24 @@ Entries are added when work is performed, not in bulk at the end of a period.
 
 ---
 
+## Entry 14 — Compliance audit and remediation: code map, flow evidence, decisions, real issue types (issues #75–#78, PRs #79–#82)
+
+**Date:** 2026-10-19
+**Tool:** opencode CLI (`deepseek-v4.1-flash-free`)
+**Intent:** Close the gaps found when auditing the repository against the course deliverables: a missing code map, checkpoint B claiming flow evidence that did not exist, unresolved architecture-characteristics decisions, and an issue picker that could not hold the project's claim types.
+**Boundary:** One issue and one focused PR per slice; documentation, issue and PR text, issue types, repository transfer and settings. No application code, schema, RLS or CI behaviour changed. The owner approved the slices, the description wording, the protection payload and the merge instruction.
+**Verification:**
+- Slices A–C merged as #79–#81; slice D merged as #82 after CI. Locally lint, typecheck and build were clean and 16 tests passed. CI runs 39304566313, 39304570357, 39304579082 and 39304586382 were green; the first #82 attempt failed at Supabase CLI setup on a release-resolution rate limit and passed on rerun.
+- Four issue types were created in the `match-pulse` organization after the owner granted `admin:org`. All 39 issues were re-read through GraphQL with a non-null type (8 ADR, 31 Behaviour); #50–#55 now open with the mirrored line; #75–#77 were closed manually because the PR-body closing keywords did not fire (observed, cause not investigated).
+- The repository moved to `match-pulse/match-pulse`; the remote, description, nine topics and protection were re-read at the new owner. Protection requires both CI jobs, linear history, and forbids force-push and deletion; administrator bypass is allowed on the owner's decision.
+**Learning:**
+- Issue types are organization-only. With the `user` scope the types could be created on the personal account, but every assignment mutation returned null while `GET /repos/.../issue-types` listed them. The owner chose the transfer (community discussion #175785).
+- Mutation payloads can be null while the write succeeds; verification must re-read state rather than trust the response.
+- Mapping historical methodology issues onto four claim types is a judgment call. Behaviour was chosen where a verifiable repository change was the only honest fit; issues #1–#39 keep their original bodies without the mirrored line.
+- The audit and remediation were performed by the same assistant without an independent agent; the evidence is the rerun checks and the GitHub state, not independent review.
+
+---
+
 ## Standing rule
 
 AI may investigate, analyse, draft, implement within an approved scope, and run verification. The human retains every decision that affects business rules, architecture, schema, scope, priority, risk acceptance and merging. Contributions that cannot be verified are recorded as unverified rather than asserted.

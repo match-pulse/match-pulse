@@ -1,0 +1,29 @@
+name: Problem Claim
+description: Consequential user friction existing independent of the software.
+title: "[Problem] "
+type: "Problem Claim"
+body:
+  - type: markdown
+    attributes:
+      value: "**Claim type:** Problem Claim"
+  - type: textarea
+    id: goal
+    attributes:
+      label: Goal
+      description: Who is affected, and what meaningful problem is being addressed?
+    validations:
+      required: true
+  - type: textarea
+    id: scope
+    attributes:
+      label: Scope
+      description: What is included, and what is deliberately excluded?
+    validations:
+      required: true
+  - type: textarea
+    id: done-when
+    attributes:
+      label: Done when
+      description: Observable conditions that end the task.
+    validations:
+      required: true

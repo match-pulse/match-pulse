@@ -359,6 +359,8 @@ Keep every issue, commit message and pull request **brief, human-readable and in
 - **Outcome Claim** — measurable real-world impact after the software is used.
 - **ADR (Architecture Decision)** — recorded structural choices, their context and trade-offs.
 
+The picker is the repository's native GitHub issue type; the first body line mirrors it. Open an issue through the matching form under `.github/ISSUE_TEMPLATE/` (it sets the type), or set the type from the CLI: `createIssue` accepts `issueTypeId`, and an existing issue is updated through the `updateIssueIssueType` GraphQL mutation (`gh api graphql`).
+
 Issue format (keep the whole body under roughly 15 lines):
 
 - **Claim type:** one of the four above.
