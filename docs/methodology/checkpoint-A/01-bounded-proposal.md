@@ -1,16 +1,16 @@
 # MatchPulse — Bounded Proposal & Scope
 
 ## 1. User & Problem Context
-**User:** Football fans participating in local tournaments.
-**Problem:** Fans need a reliable points balance when making match predictions. Concurrent requests (e.g., double-clicking or opening multiple tabs) that spend the same points more than once could undermine fair play, create negative balances, and destroy trust in the platform.
+**User:** Tournament organizers running local competitions.
+**Problem:** Organizers need a reliable registration system. Concurrent requests (e.g., multiple users clicking register at the exact same second) that exceed the maximum capacity could cause overbooking, create logistical failures, and destroy trust in the platform.
 
 ## 2. Thin End-to-End Behaviour
-A user submits a score prediction for a specific match. The system validates the request, atomically deducts 1 point from their profile, and confirms the prediction. Retracting a prediction does not refund the point.
+A user attempts to register for a specific tournament. The system validates the request, atomically increments the tournament's current player count, and confirms the registration. If the tournament has reached its maximum capacity, the request is rejected.
 
 ## 3. Core Uncertainty
-**Concurrency & Atomicity:** If a user with 1 available point fires two concurrent prediction requests for different matches, will the system allow both to succeed (spending the same point twice), or will it correctly enforce that at most one request succeeds?
+**Concurrency & Atomicity:** If a tournament has exactly 32 available slots and 100 users fire concurrent registration requests at the exact same second, will the system allow all of them to register (overbooking), or will it correctly enforce that at most 32 requests succeed?
 
 ## 4. Deliberate Non-Goals
 - No real-time API integration for match scores.
-- No complex points calculation or leaderboard logic in this increment.
-- No ticket discount payouts or sentiment analysis dashboards.
+- No payment processing or ticket sales integration in this increment.
+- No complex bracket generation or match scheduling logic.
