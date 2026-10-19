@@ -26,7 +26,7 @@
 3. Consider a queue only if asynchronous processing satisfies prediction-deadline and consistency requirements.
 4. Establish launch-readiness criteria based on measured capacity, latency, and error rates before accepting production traffic.
 
-**Ask:** The human project owner must review the evidence, agree on acceptable capacity and error-rate targets, and approve the next action. No mitigation, launch delay, or acceptance of residual risk is authorized by this assessment alone.
+**Ask:** The project owner must review the evidence, agree on acceptable capacity and error-rate targets, and approve the next action. No mitigation, launch delay, or acceptance of residual risk is authorized by this assessment alone.
 
 ## 3. Escalation Record
 
