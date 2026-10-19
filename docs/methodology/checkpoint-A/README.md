@@ -19,35 +19,40 @@
 
 The scenario is implemented in `tests/invariants/tournament-capacity.test.ts`: 100 concurrent registration requests against a tournament of capacity 32.
 
-A run was recorded on 2026-10-19:
-
 ```text
-⏳ Running Invariant Test: Tournament Capacity Burst
-1. Simulating 100 concurrent registration requests for 32 slots...
-Results: 32 succeeded, 68 rejected, 0 network errors.
-✅ PASS: The atomic capacity lock successfully prevented overbooking.
+$ bun run test
+bun test v1.4.2 (744846f84)
+
+ 7 pass
+ 0 fail
+ 26 expect() calls
+Ran 7 tests across 3 files. [768.00ms]
 ```
 
-### This evidence is currently unverified
+Environment: local Supabase, PostgreSQL 17.11, all migrations replayed onto an empty schema, seed applied.
 
-The transcript above is a record of a run, **not** a verified result. Two defects were found by inspecting the harness:
+### The suite was observed failing
 
-1. **The test cannot fail.** It prints `FAIL` and exits 0. Nothing in the process reports the failure, so a green run is indistinguishable from a broken one.
-2. **It asserts only response counts.** It never checks the committed registration rows or the stored `current_players` value, so it would not detect a database that accepted 32 registrations but recorded a different counter.
+A green run proves little on its own. Two defects were deliberately reintroduced and the suite re-run:
 
-Additionally, the test is not executed by continuous integration.
+| Injected defect | Observed | Exit |
+| :--- | :--- | :--- |
+| Uniqueness constraint removed, original function restored | `Expected: 1, Received: 10` duplicate admissions | 1 |
+| Capacity guard and CHECK constraints removed | `Expected: 32, Received: 100`; committed state `Expected: <= 32, Received: 100` | 1 |
 
-**Consequence:** the behaviour claim in [`03-product-claims.md`](./03-product-claims.md) is recorded but **unverified**, and no downstream document may treat it as established.
+Both were reverted by replaying the migrations; the suite returned to 7 pass / 0 fail.
+
+**Finding.** Under the first injection the capacity tests **still passed**. The original capacity guard was already correct — it took a row lock. The real defect was uniqueness, and the earlier documentation had attributed it to capacity. This is why fault injection matters more than a green run.
+
+Full detail in [`02-invariants.md`](./02-invariants.md) §3.
 
 ## 4. Decision map and next action
 
 - **Decision owner:** the project owner (human). AI proposes; the human decides and merges.
-- **Decision:** the behaviour claim remains open pending evidence that can actually fail.
-- **Next actions, in order:**
-  1. Make the invariant enforceable and testable in the schema (#51) — including the uniqueness rule that was documented but absent.
-  2. Convert the tests so that a violated invariant produces a non-zero exit, assert committed state, and clean up after itself (#54).
-  3. Prove the harness can fail, by deliberately breaking a constraint and observing the suite go red (#54).
-  4. Only then record the result as evidence and update the claims document.
-  5. Connect registration to a user-facing path so the increment is genuinely end-to-end (#53).
-
-**Superseded:** an earlier version of this document stated that the behaviour claim "holds true" and that the next action was to build the registration UI. That conclusion was drawn from evidence that cannot fail. The claim is reopened and the UI step is preceded by making the evidence trustworthy.
+- **Decision:** the behaviour claim (capacity) and the uniqueness claim are now **verified by a suite demonstrated capable of failing**.
+- **Completed:** #51 schema enforcement, #53 end-to-end path, #54 enforceable tests and CI.
+- **Next:**
+  1. INV-03, the kickoff deadline — documented as a rule, not implemented. `submit_prediction` never reads `kickoff_time`. This is the most important remaining gap in the prediction domain.
+  2. INV-04, atomic prediction and point accounting.
+  3. INV-05, authentication and Row Level Security. Until this is done the system is **not** a security boundary, and nothing here should be read as a security claim.
+- **Superseded:** an earlier version of this document stated the behaviour claim "holds true" and moved straight to building the UI. That conclusion came from evidence that could not fail. The claim was reopened, the evidence made trustworthy, and only then re-closed.

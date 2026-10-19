@@ -16,14 +16,21 @@ Three claims, kept separate because they carry different weight and different ev
 
 **Claim.** Given a tournament with a maximum capacity of 32, one hundred concurrent registration requests must produce at most 32 accepted registrations. The stored registration count must be 32, the stored `current_players` value must be 32, and it must never exceed `max_capacity`.
 
-**Evidence.** `tests/invariants/tournament-capacity.test.ts` runs this scenario against the local database. A run was recorded on 2026-10-19 reporting 32 accepted, 68 rejected and 0 transport errors.
+**Evidence.** `tests/invariants/tournament-capacity.test.ts` runs this scenario against the local database (PostgreSQL 17.11). Observed:
 
-**Status of that evidence: unverified.** Two reasons, both established by inspecting the harness rather than by re-running it:
+```text
+$ bun run test
+ 7 pass
+ 0 fail
+ 26 expect() calls
+Ran 7 tests across 3 files. [768.00ms]
+```
 
-1. **The test cannot fail.** It writes `FAIL` to the console and exits 0. A passing exit status therefore carries no information about the invariant, and the recorded output cannot be distinguished from a fabricated one.
-2. **It asserts too little.** It counts responses. It never queries the committed registration rows or the stored counter, so even a correct-looking run would not establish that the database is internally consistent.
+**Status: verified, with a stated method.** The suite is not merely green — it was observed failing. Reintroducing the capacity defect produced `Expected: 32, Received: 100` on the response split and `Expected: <= 32, Received: 100` on committed state, with exit code 1. Details in [`02-invariants.md`](./02-invariants.md) §3.
 
-**Limit even once the harness can fail.** A green run would establish only that this scenario holds, on this machine, against a single database instance. It would not establish behaviour under sustained load, across multiple application instances, or where connections are dropped upstream before reaching a business decision.
+**Limit even so.** This establishes the scenario on this machine, against one database instance, at this scale. It does not establish behaviour under sustained load, across multiple application instances, or where connections are dropped upstream before reaching a business decision.
+
+**Second claim, also verified.** A repeated registration by the same participant is refused and consumes no second place (INV-02), confirmed by the same fault-injection method.
 
 ## 3. Outcome claim
 
@@ -46,5 +53,6 @@ This is the right uncertainty to prioritise because the decision depends on it. 
 | Claim | Status |
 | :--- | :--- |
 | Problem | Asserted. Untested. |
-| Behaviour | Recorded, unverified. Harness cannot fail. → #54 |
+| Behaviour (capacity) | **Verified**, by a suite observed failing under fault injection. → #54 |
+| Behaviour (uniqueness) | **Verified** by the same method. |
 | Outcome | Asserted. No evidence. Not claimed as delivered. |
