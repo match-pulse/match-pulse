@@ -11,13 +11,11 @@ COPY . .
 
 # Build the Next.js app.
 #
-# All Supabase access is server-side (Server Components and Server Actions), so
-# the values are read from the environment at runtime, not inlined into a client
-# bundle. The build only needs *some* value, because src/lib/supabase.ts
-# validates them at module load. Pass real values as build arguments if you want
-# them baked in; otherwise supply them to the container at runtime.
-ARG NEXT_PUBLIC_SUPABASE_URL=https://placeholder.supabase.co
-ARG NEXT_PUBLIC_SUPABASE_ANON_KEY=placeholder-anon-key
+# NEXT_PUBLIC_* values are compiled into the server bundle at build time; they
+# are not read from the container environment at runtime. Pass the local
+# Supabase URL and anon key as build arguments (docker-compose.yml does).
+ARG NEXT_PUBLIC_SUPABASE_URL
+ARG NEXT_PUBLIC_SUPABASE_ANON_KEY
 ENV NEXT_PUBLIC_SUPABASE_URL=$NEXT_PUBLIC_SUPABASE_URL
 ENV NEXT_PUBLIC_SUPABASE_ANON_KEY=$NEXT_PUBLIC_SUPABASE_ANON_KEY
 RUN bun run build
