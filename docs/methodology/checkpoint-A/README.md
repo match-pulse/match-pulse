@@ -2,8 +2,8 @@
 
 ## 1. The 60-Second Pitch
 **Project:** MatchPulse, a football tournament platform.
-**User:** Football fans participating in local tournaments.
-**Claim:** Fans need reliable points. We believe enforcing atomic database transactions at the prediction level will prevent double-spending and maintain system integrity.
+**User:** Tournament organizers running local competitions.
+**Claim:** Organizers need reliable capacity limits. We believe enforcing atomic database transactions at the registration level will prevent overbooking and maintain platform integrity.
 
 ## 2. Document Index
 - [Bounded Proposal & Scope](./01-bounded-proposal.md)
@@ -12,19 +12,19 @@
 - [Governance & Escalation](./04-governance.md)
 
 ## 3. Executable Evidence (The Invariant Test)
-To reduce the uncertainty around double spending, we created an automated test (`tests/invariants/prediction-lock.test.ts`).
+To reduce the uncertainty around overbooking, we created an automated test (`tests/invariants/tournament-capacity.test.ts`).
 
-**Command Executed:** `bun run tests/invariants/prediction-lock.test.ts`
+**Command Executed:** `bun run tests/invariants/tournament-capacity.test.ts`
 
 **Terminal Output:**
 ```text
-⏳ Running Invariant Test: Prediction Kickoff Lock
-1. Simulating 20 concurrent prediction requests...
-Results: 1 succeeded, 19 rejected, 0 network errors.
-✅ PASS: The atomic lock successfully prevented double-predictions.
+⏳ Running Invariant Test: Tournament Capacity Burst
+1. Simulating 100 concurrent registration requests for 32 slots...
+Results: 32 succeeded, 68 rejected, 0 network errors.
+✅ PASS: The atomic capacity lock successfully prevented overbooking.
 ```
 
 ## 4. Decision Map & Next Action
 - **Decision Owner:** Tournament Organizer (represented by the Solo Developer for this project).
-- **Evidence:** The Behaviour Claim holds true. The atomic lock prevents duplicate entries.
-- **Next Action:** Proceed to implement the dedicated `points-accounting.test.ts` to explicitly verify the point deduction invariant (INV-01).
+- **Evidence:** The Behaviour Claim holds true. The atomic lock prevents overbooking.
+- **Next Action:** Proceed to build the Next.js UI for the tournament registration form, knowing the backend foundation strictly enforces capacity limits.
