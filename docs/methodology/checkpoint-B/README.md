@@ -1,24 +1,43 @@
 # Checkpoint B: Operating Model & Feedback
 
-## 1. Document Index
-- [System Dynamics](./01-system-dynamics.md)
-- [Operating Model (SDLC)](./02-operating-model.md)
+## 1. Document index
+
+- [System Dynamics](./01-system-dynamics.md) — stock, flow, delay and competing mechanisms
+- [Operating Model](./02-operating-model.md) — lifecycle, flow, feedback and change rights
 - [AI Transparency Log](../ai-transparency-log.md)
 
-## 2. Executable Evidence (The Burst Test)
-To reduce the uncertainty around tournament capacity under burst traffic, we created an automated test (`tests/invariants/tournament-capacity.test.ts`).
+## 2. Evidence status
 
-**Command Executed:** `bun run tests/invariants/tournament-capacity.test.ts`
+Checkpoint B previously reused the Checkpoint A burst test as its evidence. That reuse is withdrawn as a source of operating-model evidence, for three reasons:
 
-**Terminal Output:**
-```text
-⏳ Running Invariant Test: Tournament Capacity Burst
-1. Simulating 100 concurrent registration requests for 32 slots...
-Results: 32 succeeded, 68 rejected, 0 network errors.
-✅ PASS: The atomic capacity lock successfully prevented overbooking.
-```
+1. **It does not measure what an operating model is about.** It reports a database result. It says nothing about cycle time, queue length, work-in-progress, or how long a decision waited for evidence.
+2. **It is the same unverified run.** The harness cannot fail and asserts only response counts (see [`../checkpoint-A/README.md`](../checkpoint-A/README.md)). Using one unverified result to support two independent claims doubles its apparent weight without adding any.
+3. **It was reused because it was available.** Evidence was selected for convenience rather than because it answered the question at hand. That is the specific failure this checkpoint should catch, and it is recorded rather than hidden.
 
-## 3. System Dynamics & SDLC Reflection
-The burst test proves that the database acts as a reliable stock-keeper (capacity limit) even when the inflow (100 users) massively exceeds the threshold. 
+**What genuine evidence for this checkpoint requires** — none of which exists yet:
 
-The AI-DLC operating model enabled the rapid creation of this test and the underlying SQL function. However, human oversight was required to ensure the test accurately reflected the expected burst traffic scenarios and that the database locks prevented any overbooking.
+| Question | Evidence needed |
+| :--- | :--- |
+| How long does an increment take from issue to merge? | Timestamps across issues and pull requests |
+| Where does work wait? | Time spent in review, and time spent blocked on a decision |
+| How long from merge to evidence? | Time between merge and an observed test result |
+| Which decisions changed because of evidence? | A dated decision record, not a retrospective claim |
+
+## 3. What the evidence does establish
+
+One genuine, if limited, observation: **the feedback loop was weaker than the operating model claimed.**
+
+The operating model described continuous integration as protection against regressions. In fact CI ran lint and build only, so it could not detect a broken business rule at all. The documentation asserted a control that did not exist. That is a real finding about this project's verification system, and it is now being corrected (issue #54).
+
+## 4. Decision
+
+| Belief | Evidence | Limit | Decision |
+| :--- | :--- | :--- | :--- |
+| Capacity is enforced under burst | Response counts only | Cannot fail; stored state unchecked; single machine | **Reopen.** Build evidence that can fail before believing it. |
+| CI protects domain correctness | CI ran; it passed | It never executed a domain test | **Corrected.** Add invariant execution to CI (#54). |
+| Verification keeps pace with claims | Documents asserted guarantees not implemented | — | **Corrected.** Invariants now carry explicit status (#52). |
+| Work is tracked on a board | None | No board existed | **Corrected.** Issues are the actual work history. |
+
+## 5. Limits
+
+Everything above is derived from one local environment and one developer. There is no production telemetry, no deployment, and no second reviewer. Claims about operational behaviour beyond this setup remain unverified.
