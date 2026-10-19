@@ -3,15 +3,15 @@ services:
     build:
       context: .
       args:
-        NEXT_PUBLIC_SUPABASE_URL: ${NEXT_PUBLIC_SUPABASE_URL:-}
-        NEXT_PUBLIC_SUPABASE_ANON_KEY: ${NEXT_PUBLIC_SUPABASE_ANON_KEY:-}
+        # NEXT_PUBLIC_* values are compiled into the server bundle at build
+        # time. They must be supplied here; runtime environment entries cannot
+        # override them.
+        NEXT_PUBLIC_SUPABASE_URL: ${NEXT_PUBLIC_SUPABASE_URL:?export NEXT_PUBLIC_SUPABASE_URL (see README)}
+        NEXT_PUBLIC_SUPABASE_ANON_KEY: ${NEXT_PUBLIC_SUPABASE_ANON_KEY:?export NEXT_PUBLIC_SUPABASE_ANON_KEY (see README)}
     ports:
       - "3000:3000"
-    # Variables come from the shell or a root .env file. `env_file` only sets
-    # variables inside the container and does NOT satisfy ${...} interpolation,
-    # which is why the Supabase values are passed as build arguments and
-    # environment entries rather than through release.env.
-    environment:
-      NEXT_PUBLIC_SUPABASE_URL: ${NEXT_PUBLIC_SUPABASE_URL:-}
-      NEXT_PUBLIC_SUPABASE_ANON_KEY: ${NEXT_PUBLIC_SUPABASE_ANON_KEY:-}
-      NODE_ENV: production
+    # The app runs in a container, so 127.0.0.1 is the container itself, not
+    # the host. Compose maps the host gateway so the container can reach the
+    # Supabase stack published on the host.
+    extra_hosts:
+      - "host.docker.internal:host-gateway"

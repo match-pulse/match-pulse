@@ -147,13 +147,26 @@ The CI job reads its credentials from the running stack at job time via `supabas
 
 ## Docker
 
+Start the database first (steps 3–4), then run the app in a container. Inside
+the container `127.0.0.1` is the container itself, so point the app at the host
+gateway that Compose defines:
+
 ```bash
-export NEXT_PUBLIC_SUPABASE_URL=http://127.0.0.1:54321
+export NEXT_PUBLIC_SUPABASE_URL=http://host.docker.internal:54321
 export NEXT_PUBLIC_SUPABASE_ANON_KEY=your-local-anon-key
 docker compose up --build
 ```
 
-Compose reads these from your shell or a root `.env` file. `release.env` was removed: it contained only an unused `APP_VERSION` and no Supabase values, and `env_file` does not satisfy `${...}` interpolation.
+Open [http://localhost:3000](http://localhost:3000). The `extra_hosts` entry in
+`docker-compose.yml` maps `host.docker.internal` to the host on Linux as well as
+Docker Desktop. Compose reads the variables from your shell or a root `.env`
+file and fails with a clear message if they are missing.
+
+These values are compiled into the image **at build time** (Next.js inlines
+`NEXT_PUBLIC_*`), so rebuild after changing them and do not expect runtime
+environment entries to override them. `release.env` was removed: it contained
+only an unused `APP_VERSION` and no Supabase values, and `env_file` does not
+satisfy `${...}` interpolation.
 
 ## Known gaps
 
