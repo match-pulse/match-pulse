@@ -49,16 +49,17 @@ Entries are added when work is performed, not in bulk at the end of a period.
 
 ---
 
-## Entry 4 — Gap in earlier AI disclosure (human action required)
+## Entry 4 — Initial design: human-authored; AI used for brainstorming and research
 
 **Date:** 2026-10-19
-**Tool:** n/a — recorded by the orchestrator
-**Intent:** Record honestly that earlier AI use is **not** fully disclosed.
-**Boundary:** No disclosure was invented on the human's behalf.
-**Verification:** `docs/methodology/ai-transparency-log.md` existed with an empty table. The commit history shows the Checkpoint A and B documents, the ADR, the characteristics document and the system overview were all created in single-commit changes consistent with AI-assisted drafting, but **the commits themselves do not record whether AI was involved**, and nothing in the repository establishes it either way.
+**Tool:** n/a — owner disclosure, recorded by the orchestrator
+**Intent:** Disclose AI use during the initial design phase, which an earlier version of this log left unrecorded.
+**Boundary:** The owner confirms that the initial design — including the Checkpoint A and B documents, ADR-001, the architecture characteristics document and the system overview — was authored by the human solo developer. During that phase AI was used only for brainstorming and research, not to draft the documents.
+**Verification:** The earlier version of this log left this entry open. No contemporaneous record exists, so the completion rests on the owner's recollection and is not independently verified. The previous inference that single-commit changes indicated AI-assisted drafting is withdrawn: commit shape cannot establish authorship.
 **Learning:**
-- The human owner must complete this entry from their own recollection: which documents were AI-assisted, what was reviewed, and what was corrected. It has been deliberately left as a visible gap rather than filled with a plausible reconstruction.
-- This gap is itself portfolio-relevant evidence about a real weakness in the AI-use process, and is better recorded than concealed.
+- The disclosure gap was real, but the suspected cause was wrong. The initial design was human-authored; the missing entry reflected an unrecorded process, not undisclosed AI drafting.
+- AI input during brainstorming and research is still AI use and belongs in the log, even when no text was adopted.
+- AI use should be recorded when it happens. Retrospective disclosure relies on memory and cannot be independently checked.
 
 ---
 
@@ -114,8 +115,8 @@ Entries are added when work is performed, not in bulk at the end of a period.
 **Verification:** `docker build .` succeeds; the built image contains no `.env` file or PEM; lint, typecheck, tests and production build all pass; every document link in the README resolves; README environment variable names match `src/lib/supabase.ts` exactly.
 **Learning:**
 - **A build failure was caught only by running the build.** A bare `docker build .` failed during page-data collection because `src/lib/supabase.ts` throws at module load. Reading the Dockerfile did not reveal it.
-- Learned: the honest fix was placeholders at build time and real values at runtime — justified by the fact that all Supabase access is server-side. Writing that down matters more than the fix, because the alternative (lazy client construction) was considered and would have changed imports across five files for no benefit here.
-- **Unverified, and left so:** the built container was never observed serving a request, because Docker interop failed again. It is reported as unverified in the PR rather than assumed to work.
+- Learned: the fix at the time used placeholders at build time and real values at runtime, on the assumption that server-side access made runtime values authoritative. **Corrected in Entry 15:** Next.js inlines `NEXT_PUBLIC_*` at build time, so the current configuration requires the values as build arguments. The alternative (lazy client construction) was considered and rejected for this scope.
+- **Unverified at the time:** the built container was never observed serving a request because Docker interop failed again. **Resolved in Entry 15:** the container served the seeded market.
 
 ---
 
@@ -124,12 +125,17 @@ Entries are added when work is performed, not in bulk at the end of a period.
 **Date:** 2026-10-19
 **Tool:** opencode CLI (`space-bunny-free`)
 **Intent:** Establish whether the seven merged PRs left the repository consistent — documentation matching implementation, no stale claims — before new work.
-**Boundary:** Read-only audit plus an approved remediation slice. The human approved remediation on 2026-10-19 ("okay good") and separately initiated a product pivot; remediation stayed strictly within the audit's findings.
-**Verification:** Three layers cross-checked rather than trusting any one: documents read against code; code read against the live database (constraint and grant counts queried via `psql`); issue/PR state read from GitHub (6 closed, 7 merged, `main` green). Secret hygiene re-verified: `release.env` in history contains only `APP_VERSION`/`NODE_ENV`; `.env.local` was never committed. Confirmed findings: three stale status claims in `02-architecture-characteristics.md` (§3.1, §3.3, §7), one in ADR-001, a false seam claim in `session.ts`, a mislabeled "Kickoff Lock (Invariant 1)" comment in the init migration, an order-of-operations comment contradicting the code in the integrity migration, and a nullable `current_players` that quietly contradicted the "unrepresentable" claim. Non-findings recorded too: the `rg -r` flags initially mis-displayed matches as corruption — re-run without the flag before concluding anything.
+**Boundary:** Read-only audit plus an approved remediation slice. The human approved remediation on 2026-10-19 and separately initiated a product pivot; remediation stayed strictly within the audit's findings.
+**Verification:** Three layers cross-checked rather than trusting any one:
+- Documents read against code.
+- Code read against the live database (constraint and grant counts via `psql`).
+- Issue/PR state read from GitHub (6 closed, 7 merged, `main` green).
+
+Secret hygiene re-verified: `release.env` in history contains only `APP_VERSION`/`NODE_ENV`; `.env.local` was never committed. Confirmed findings: three stale status claims in `02-architecture-characteristics.md` (§3.1, §3.3, §7), one in ADR-001, a false seam claim in `session.ts`, a mislabeled "Kickoff Lock (Invariant 1)" comment in the init migration, an order-of-operations comment contradicting the code in the integrity migration, and a nullable `current_players` that quietly contradicted the "unrepresentable" claim. Non-findings recorded too: the `rg -r` flags initially mis-displayed matches as corruption — re-run without the flag before concluding anything.
 **Learning:**
 - Learned: green merges do not update stale prose. Every PR in the previous cycle was green and individually correct, and documentation drift still accumulated — nothing in CI checks that narrative documents keep up with code.
 - Learned: the strongest audit findings were *representability* claims — a CHECK constraint that passes on NULL. Reading the migration text was not enough; the live schema query is what put a number on it (`rls_enabled_tables=0`, `grant_to_anon=35`).
-- Unverified, and left so: the built container has never been observed serving a request (Docker WSL interop failures in both sessions). Remains honestly unfinished.
+- **Unverified at the time:** the built container had never been observed serving a request (Docker WSL interop failures in both sessions). **Resolved in Entry 15.**
 
 ---
 
@@ -139,7 +145,7 @@ Entries are added when work is performed, not in bulk at the end of a period.
 **Tool:** opencode CLI (`deepseek-v4.1-flash-free`)
 **Intent:** Record the owner's pivot from fixed-score predictions to a live credit market and make the documents the contract for the next slices.
 **Boundary:** The owner made every domain decision: window opens at kickoff, three outcomes, LMSR, zero commission, cooldown ladder/decay, database enforcement. AI rewrote the kata and overview, added ADR-002, updated the invariants and characteristics, the AGENTS domain rules, the execution plan, and the issue/commit/PR text standard. No implementation or test evidence is claimed here.
-**Verification:** Documents cross-checked against the decision register (D1–D9); a sweep of the touched files found no remaining pre-kickoff deadline claims; the plan marks V1–V37 as planned checks, not results. M-INV1–M-INV8 are labeled **Specified**, not Verified; enforcement is deferred to #65/#66. Issues #63–#68 were rewritten in the brief format with a claim type after the owner flagged that the GitHub Claim Type picker had been left empty. The repository API exposes only Task/Bug/Feature, so the four custom claim types could not be set programmatically; the type is recorded in each issue body and the picker still needs a manual selection.
+**Verification:** Documents cross-checked against the decision register (D1–D9); a sweep of the touched files found no remaining pre-kickoff deadline claims; the plan marks V1–V37 as planned checks, not results. M-INV1–M-INV8 are labeled **Specified**, not Verified; enforcement is deferred to #65/#66. Issues #63–#68 were rewritten in the brief format with a claim type after the owner flagged that the GitHub Claim Type picker had been left empty. The repository API exposed only Task/Bug/Feature at the time, so the four custom claim types could not be set programmatically; the type was recorded in each issue body and the picker still needed a manual selection. **Resolved in Entry 14:** the four types were created at organization level and assigned to every issue.
 **Learning:**
 - AI first mapped "claim type" to the methodology labels. The owner corrected that the four values are the GitHub issue-type picker (Problem/Behaviour/Outcome/ADR); the standard now requires the type in the issue body and in one PR line.
 - Rejected: inventing a commission or maker fee to absorb rounding — the owner's no-commission rule is the constraint, and dust is left uncredited.
@@ -186,7 +192,7 @@ Entries are added when work is performed, not in bulk at the end of a period.
 **Learning:**
 - The React purity lint rejected `Date.now()` inside the server component; the time check moved to a helper. Worth remembering that this is display-only — the database window guard remains the enforcement.
 - Rejected adding a browser-automation dependency for a click-through; it would need owner approval and is disproportionate here. V35 is therefore recorded as **partial**, not passed.
-- Left standing: no idempotency keys (a retry after cooldown expiry is a new entry), p95 latency unmeasured, and the container has still never been observed serving a request.
+- Left standing: no idempotency keys (a retry after cooldown expiry is a new entry) and p95 latency unmeasured. The container was later observed serving the seeded market (Entry 15).
 
 ---
 
@@ -198,7 +204,7 @@ Entries are added when work is performed, not in bulk at the end of a period.
 **Boundary:** One issue and one focused PR per slice; documentation, issue and PR text, issue types, repository transfer and settings. No application code, schema, RLS or CI behaviour changed. The owner approved the slices, the description wording, the protection payload and the merge instruction.
 **Verification:**
 - Slices A–C merged as #79–#81; slice D merged as #82 after CI. Locally lint, typecheck and build were clean and 16 tests passed. CI runs 39304566313, 39304570357, 39304579082 and 39304586382 were green; the first #82 attempt failed at Supabase CLI setup on a release-resolution rate limit and passed on rerun.
-- Four issue types were created in the `match-pulse` organization after the owner granted `admin:org`. All 39 issues were re-read through GraphQL with a non-null type (8 ADR, 31 Behaviour); #50–#55 now open with the mirrored line; #75–#77 were closed manually because the PR-body closing keywords did not fire (observed, cause not investigated).
+- Four issue types were created in the `match-pulse` organization after the owner granted `admin:org`. All 39 issues were re-read through GraphQL with a non-null type (8 ADR, 31 Behaviour); #50–#55 now carry the mirrored line; #75–#78 were closed manually because the PR-body closing keywords did not fire (observed, cause not investigated).
 - The repository moved to `match-pulse/match-pulse`; the remote, description, nine topics and protection were re-read at the new owner. Protection requires both CI jobs, linear history, and forbids force-push and deletion; administrator bypass is allowed on the owner's decision.
 **Learning:**
 - Issue types are organization-only. With the `user` scope the types could be created on the personal account, but every assignment mutation returned null while `GET /repos/.../issue-types` listed them. The owner chose the transfer (community discussion #175785).
@@ -213,11 +219,12 @@ Entries are added when work is performed, not in bulk at the end of a period.
 **Date:** 2026-10-19
 **Tool:** opencode CLI (`deepseek-v4.1-flash-free`)
 **Intent:** Separate the system overview from the domain model, provide verifiable C4 and ER views, make the repository description readable, verify the Docker path, and close the test gap for exits during an active entry cooldown.
-**Boundary:** Documentation, diagrams, Docker configuration and one test; no domain rule, schema, RLS or application behaviour changed. The owner's instruction that the PRs be completed ("prs done and everything") was treated as the merge instruction.
+**Boundary:** Documentation, diagrams, Docker configuration, the repository About description and one test; no domain rule, schema, RLS or application behaviour changed. The owner's instruction that the PRs be completed was treated as the merge instruction.
 **Verification:**
 - #86: a relative-link scan over README, AGENTS and `docs/architecture` found zero broken links. Context, container and component diagrams plus the ER diagram rendered through mermaid.ink (HTTP 200) and were inspected. The local Mermaid CLI could not run (Chromium lacks `libnspr4` and sudo requires a password); Kroki timed out.
 - #87: the image built with the local Supabase values; `/` returned 307 to the seeded market, which returned 200 with "Live — the market is open"; container logs were clean; missing build variables produced the intended required-variable error; `docker compose down` removed the stack. The first run exposed that Next.js inlines `NEXT_PUBLIC_*` at build time: it resolved `placeholder.supabase.co` even though runtime environment entries were set.
-- #88: `bun test --env-file=.env.local tests/invariants/market-lifecycle.test.ts` passed 5 tests with 61 assertions, including the new assertion that a full exit succeeds during an active cooldown and leaves the cooldown unchanged.
+- #88: `bun test --env-file=.env.local tests/invariants/market-lifecycle.test.ts` passed 5 tests with 61 assertions, including the new assertion that a full exit succeeds during an active cooldown and leaves the cooldown unchanged. The full suite then passed 17 tests with 160 assertions.
+- The repository About description was replaced with a plain-language summary and re-read from the API.
 **Learning:**
 - The Dockerfile previously claimed runtime environment entries were authoritative for the Supabase values. The observed `ENOTFOUND placeholder.supabase.co` disproved that; the configuration now requires the values as build arguments and the README explains that the image is tied to them.
 - The existing cooldown suite exercised the gate, ladder, scope and no-escalation but never asserted the exemption for exits. The new test covers the missing rule without changing the implementation.
@@ -225,8 +232,21 @@ Entries are added when work is performed, not in bulk at the end of a period.
 
 ---
 
+## Entry 16 — AI log consistency review
+
+**Date:** 2026-10-19
+**Tool:** opencode CLI (`deepseek-v4.1-flash-free`)
+**Intent:** Complete Entry 4 from the owner's disclosure and check the whole log for contradictions, stale statements and unclear wording.
+**Boundary:** Documentation only. The owner supplied the disclosure; AI edited this log and made no application changes.
+**Verification:** Re-read all 15 earlier entries. Completed Entry 4 from the owner's disclosure and corrected stale statements in Entries 8, 9, 10, 13 and 14 by cross-reference. Confirmed issue #78 was closed manually from the GitHub timeline and branch protection from the API. Checked entry order and Markdown links.
+**Learning:**
+- Where the record changes, keep the original conclusion and point to the correction so the history remains visible. Entry 4 is the exception: it explicitly held a place for the owner's missing statement.
+- Disclosure written after the fact depends on memory; Entry 4 is the concrete example.
+
+---
+
 ## Standing rule
 
 AI may investigate, analyse, draft, implement within an approved scope, and run verification. The human retains every decision that affects business rules, architecture, schema, scope, priority, risk acceptance and merging. Contributions that cannot be verified are recorded as unverified rather than asserted.
 
-Merges in this cycle were performed by AI on the human owner's explicit instruction ("proceed with the full implementation", following a plan that listed merging as authorised). Each merge was gated on a green CI run and is individually reported. No commit in this cycle was self-approved by the reviewing party, and no branch protection was enabled.
+Merges in this cycle were performed by AI on the human owner's explicit instructions, each gated on a green CI run and individually reported. Branch protection is enabled on `main` and was re-read after the move to the organization (Entry 14): it requires both CI jobs and linear history, and forbids force-push and deletion, with administrator bypass allowed on the owner's decision. No commit in this cycle was self-approved by AI; the human owner authorized the merges.
