@@ -2,26 +2,26 @@
 
 ## 1. Problem Claim
 
-Fans need a reliable points balance when making match predictions. Concurrent requests that spend the same points more than once could undermine fair play and trust in the platform.
+Tournament organizers need a reliable registration system when hosting local competitions. Concurrent requests that exceed the maximum capacity could undermine operational stability and destroy trust in the platform.
 
-- **Limit:** This problem hypothesis does not establish that double spending currently occurs or how strongly it affects user trust. It identifies a risk that the system must prevent.
+- **Limit:** This problem hypothesis does not establish that overbooking currently occurs or how strongly it affects organizer trust. It identifies a risk that the system must prevent.
 
 ## 2. Behaviour Claim
 
-Given a participant with one available point, two concurrent prediction requests for different eligible matches must not both spend that point. At most one request succeeds; the balance never becomes negative, and the database records no more than one point deduction.
+Given a tournament with a maximum capacity of 32, one hundred concurrent registration requests must not result in more than 32 successful registrations. At most 32 requests succeed; the player count never exceeds the maximum capacity, and the database records no more than 32 new registrations.
 
-- **Evidence:** A dedicated PostgreSQL integration test in `tests/invariants/points-accounting.test.ts`.
-- **Limit:** The existing prediction-lock and tournament-capacity tests do not, by themselves, prove that concurrent point spending is safe. The claim remains unverified until the dedicated test passes against PostgreSQL.
+- **Evidence:** A dedicated PostgreSQL integration test in `tests/invariants/tournament-capacity.test.ts`.
+- **Limit:** The existing tests do not, by themselves, prove that concurrent capacity enforcement is safe under all deployment conditions. The claim remains unverified until the dedicated test passes against PostgreSQL.
 
 ## 3. Outcome Claim
 
-Preventing duplicate spending is expected to reduce point-accounting errors and disputes over prediction participation.
+Preventing overbooking is expected to reduce registration errors and disputes over tournament participation.
 
-- **Evidence:** Point-ledger audits, rejected concurrent spending attempts, and reported accounting disputes across tournament cycles.
-- **Limit:** Correct point accounting does not, by itself, prove increased user trust, engagement, or revenue.
+- **Evidence:** Registration audits, rejected concurrent capacity attempts, and reported disputes across tournament cycles.
+- **Limit:** Correct capacity enforcement does not, by itself, prove increased user trust, engagement, or revenue.
 
 ## 4. Uncertainty Worth Reducing
 
-This increment prioritizes the **Behaviour Claim**: can PostgreSQL prevent concurrent prediction requests from spending the same available points more than once?
+This increment prioritizes the **Behaviour Claim**: can PostgreSQL prevent concurrent registration requests from exceeding the maximum capacity?
 
-The test must verify accepted requests, committed predictions, the final balance, and ledger entries. Prediction creation, point deduction, and ledger recording must succeed or fail atomically. Only observed test results should be reported as evidence.
+The test must verify accepted requests, committed registrations, the final player count, and capacity limits. Registration creation and capacity increment must succeed or fail atomically. Only observed test results should be reported as evidence.
