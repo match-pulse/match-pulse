@@ -1,0 +1,41 @@
+# Keep local secrets, dependencies and build output out of the build context.
+# Without the environment entries, `COPY . .` bakes a local .env.local into
+# the image and ships it with the app.
+
+# Environment files — never bake these into an image
+.env
+.env.*
+!.env.example
+
+# Dependencies
+node_modules
+.pnp
+.pnp.*
+
+# Next.js build output
+.next
+out
+build
+next-env.d.ts
+
+# Version control and CI
+.git
+.gitignore
+.github
+
+# Docker
+Dockerfile
+.dockerignore
+docker-compose.yml
+docker-compose.*.yml
+
+# Local Supabase tooling state
+supabase/.branches
+supabase/.temp
+
+# Editor, OS and logs
+.vscode
+.idea
+.DS_Store
+*.pem
+*.log
