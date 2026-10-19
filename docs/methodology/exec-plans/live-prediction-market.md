@@ -1,6 +1,6 @@
 # Live prediction market — execution plan
 
-- **Status:** Approved (owner, 2026-10-19)
+- **Status:** Executed and verified (2026-10-19); one check partial (V35, no browser automation) — see §8
 - **Issues:** #64 (documents), #65 (engine), #66 (lifecycle), #67 (UI), #68 (evidence)
 - **Decision owner:** human developer (all decisions below are theirs, dated 2026-10-19)
 
@@ -9,6 +9,8 @@
 Replace the pre-kickoff fixed-score prediction feature with a live, credit-only prediction market. Spectators enter and exit positions while a match is running; PnL is proportional to how the market moved. The aggregated position over time is the dataset MatchPulse sells to clubs. Correctness (no double-spend, no negative balance, no over-sell, one payout) must hold under concurrency.
 
 ## 2. Current state
+
+> **Delivery note (2026-10-19).** Slices I2–I6 were merged as PRs #70, #71, #72, #73 and this wrap. The bullets below are the assessment made at approval time; the post-delivery state is in §8 and the invariants registry.
 
 - Registration is implemented and verified (INV-01, INV-02; fault-injected, CI).
 - The fixed-score prediction path exists but is flawed: no kickoff enforcement (INV-03 was never implemented), no atomic balance/ledger write (INV-04), and `retractPrediction` trusts a caller-supplied user id.
@@ -72,49 +74,51 @@ Each slice: commit → push → brief PR (`Closes #issue`, claim type) → green
 
 ## 8. Verification
 
-Environment: local Supabase via Docker when available; otherwise the TCP SQL client fallback. CI job "Domain invariants" replays all migrations onto an empty schema and runs the suites. Rows marked `Specified` are planned checks, not results.
+Environment: local Supabase (Docker when available, TCP SQL fallback otherwise), PostgreSQL 17.11. Local state was brought forward slice by slice; CI job "Domain invariants" replayed every migration onto an empty schema and ran the suites on each PR. All fault injections were applied only to the local database and reverted; CI proves the restored code.
 
-| ID | Check | Slice |
+| ID | Check | Result |
 | :--- | :--- | :--- |
-| V1 | `bun run lint` clean | I2–I6 |
-| V2 | `bun run typecheck` exit 0 | I2–I6 |
-| V3 | `bun run test` all suites pass | I3–I5 |
-| V4 | `bun run build` succeeds | I2–I5 |
-| V5 | Both CI jobs green on every slice PR | I2–I6 |
-| V6 | Docs state agrees with D1–D9 across kata, overview, ADR-002, invariants, AGENTS | I2, I6 |
-| V7 | Sweep finds no stale pre-kickoff deadline or fixed-score claims | I2, I6 |
-| V8 | No commission/fee path in migrations, RPCs or actions | I3, I6 |
-| V9 | Entry before kickoff refused with no writes | I4 |
-| V10 | Entry at or after resolution refused with no writes | I4 |
-| V11 | Exit while open succeeds, including during cooldown | I3/I4 |
-| V12 | Prices lie in `[0,1]` and sum to 1 | I3 |
-| V13 | Cost is monotonic in shares and never exceeds the budget | I3 |
-| V14 | Entry debits `ceil(cost)`; exit credits `floor(proceeds)` | I3 |
-| V15 | Insufficient balance refused; balance never negative | I3 |
-| V16 | Enter near 50%, exit after price rises near 80% → proportional profit | I3 |
-| V17 | Enter high, exit after price falls → proportional loss, not the whole stake | I3 |
-| V18 | Shares exact and never negative | I3 |
-| V19 | Over-sell refused | I3 |
-| V20 | Σ position shares equals `q` after every trade | I3 |
-| V21 | Cross-market racing spends: exactly one succeeds, balance ≥ 0 | I4 |
-| V22 | Same-market burst: exactly one entry accepted, others cooldown-refused | I4 |
-| V23 | First re-entry waits 5 s | I3/I4 |
-| V24 | Ladder is 5, 15, 30, 45, 60, … capped at 600 s | I3/I4 |
-| V25 | Cooldown decays one level per five quiet minutes | I4 |
-| V26 | Refused attempts do not escalate | I4 |
-| V27 | Cooldown is per user × market; other user/market unaffected | I4 |
-| V28 | Resolution pays one point per winning share once; losers get nothing | I4 |
-| V29 | Duplicate resolution refused with no second payout | I4 |
-| V30 | Resolved market is terminal for entries and exits | I4 |
-| V31 | Fault injection 1 (remove profile lock/points guard) turns negative-balance test red; restored by replay | I4 |
-| V32 | Fault injection 2 (repeatable resolution) turns double-payout test red; restored by replay | I4 |
-| V33 | Fault injection 3 (remove cooldown gate) turns rapid re-entry test red; restored by replay | I4 |
-| V34 | Prediction feature removed (route, action, components, test, imports) | I5 |
-| V35 | UI enter/exit works end to end with server-side identity only | I5 |
-| V36 | Seed provides a `b = 100` market and balance 200; README matches | I5 |
-| V37 | Final contradiction sweep: every doc claim matches code/CI evidence; gaps listed honestly | I6 |
+| V1 | `bun run lint` clean | Passed (#70–#73 and this wrap) |
+| V2 | `bun run typecheck` exit 0 | Passed (#70–#73 and this wrap) |
+| V3 | `bun run test` all suites pass | Passed: 12 tests at #71, 18 at #72, 16 after the fixed-score suite was retired at #73 |
+| V4 | `bun run build` succeeds | Passed (#70–#73 and this wrap) |
+| V5 | Both CI jobs green on every slice PR | Passed on #70, #71, #72, #73 |
+| V6 | Docs agree with D1–D9 | Passed: I2 sweep and this wrap |
+| V7 | No stale pre-kickoff deadline or fixed-score claims | Passed: I2 text sweep; remaining fixed-score code, table, function and test removed at #73 |
+| V8 | No commission/fee path | Passed: no maker account or fee branch in any RPC; pricing suite asserts `ceil` debit and `floor` credit |
+| V9 | Entry before kickoff refused | Passed: `market-lifecycle.test.ts` |
+| V10 | Entry at or after resolution refused | Passed: `market-lifecycle.test.ts` |
+| V11 | Exit while open succeeds, including during cooldown | Passed: `close_trade` never reads the cooldown row; pricing suite exits immediately after entry |
+| V12 | Prices lie in `[0,1]` and sum to 1 | Passed: `market-pricing.test.ts` |
+| V13 | Cost is monotonic and never exceeds the budget | Passed: `market-pricing.test.ts` |
+| V14 | `ceil` debit / `floor` credit | Passed: `market-pricing.test.ts` |
+| V15 | Insufficient balance refused; balance never negative | Passed: refusal test; the negative-balance path itself was observed only under injection A |
+| V16 | Profit after a favourable price move | Passed: `market-pricing.test.ts` |
+| V17 | Proportional loss after an unfavourable move | Passed: `market-pricing.test.ts` |
+| V18 | Shares exact and never negative | Passed: `market-pricing.test.ts` |
+| V19 | Over-sell refused | Passed: `market-pricing.test.ts` |
+| V20 | Σ position shares equals `q` | Passed: `market-pricing.test.ts` |
+| V21 | Cross-market racing spends: exactly one succeeds | Passed: `market-concurrency.test.ts`; injection A turned it red |
+| V22 | Same-market burst: exactly one accepted | Passed: `market-concurrency.test.ts`; injection C turned it red |
+| V23 | First re-entry waits 5 s | Passed: `market-lifecycle.test.ts` |
+| V24 | Ladder 5, 15, 30, 45, … capped at 600 s | Passed: `market-lifecycle.test.ts` |
+| V25 | Decay of one level per five quiet minutes | Passed: `market-lifecycle.test.ts` (10 → 9, 120 s wait) |
+| V26 | Refused attempts do not escalate | Passed: `market-lifecycle.test.ts` |
+| V27 | Cooldown scope is per user × market | Passed: `market-lifecycle.test.ts` |
+| V28 | One point per winning share, once; losers nothing | Passed: `market-lifecycle.test.ts` |
+| V29 | Duplicate resolution refused with no second payout | Passed; injection B turned it red |
+| V30 | Resolved market is terminal for entries and exits | Passed: `market-lifecycle.test.ts` |
+| V31 | Injection A (profile lock/points guard removed) red; restored | Passed: both spends accepted, balance observed **−40**; restored by re-applying the original function and constraint |
+| V32 | Injection B (repeatable resolution) red; restored | Passed: second resolution accepted instead of refused; restored by re-applying the migration |
+| V33 | Injection C (cooldown gate removed) red; restored | Passed: 10 of 10 burst entries accepted; original function re-applied |
+| V34 | Prediction feature removed | Passed: route, actions, components, suite, table and function gone; sweep finds no imports |
+| V35 | UI enter/exit end to end, server-side identity only | **Partial.** The production server rendered the market page with match, live state, form and balance; actions resolve identity through `session.ts`; the RPC path is covered by tests. A real browser click-through was not observed — no browser-automation dependency was added (it would need approval). |
+| V36 | Seed provides a `b = 100` market and balance 200; README matches | Passed: `supabase/seed.sql`, README status/gaps updated |
+| V37 | Final contradiction sweep | Passed: overview entity/journey states moved from Intended to Implemented; README, registry and this plan match the code; remaining historical notes are marked superseded |
 
-**Evidence rule:** a check is recorded as passed only after its command/observation. Fault injections are reverted by replaying migrations, and the suite must return green. Unrun checks are recorded as unverified, never inferred.
+**Where the evidence lives:** transcripts of the injections are in `docs/methodology/checkpoint-A/02-invariants.md` §3; statuses per invariant are in its registry; CI runs are on PRs #70–#73; the UI observation is the production-server smoke run recorded at #73.
+
+**Unverified, deliberately:** V15's negative-balance path except under injection; V35's browser interaction; p95 latency; container serving (Docker interop never worked in this environment).
 
 ## 9. Risks and recovery
 

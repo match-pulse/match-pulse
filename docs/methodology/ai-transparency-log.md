@@ -148,6 +148,48 @@ Entries are added when work is performed, not in bulk at the end of a period.
 
 ---
 
+## Entry 11 — LMSR market engine and pricing suite (issue #65, PR #71)
+
+**Date:** 2026-10-19
+**Tool:** opencode CLI (`deepseek-v4.1-flash-free`)
+**Intent:** Implement the owner-approved market engine — schema, LMSR pricing, entry and exit RPCs — with a suite that pins the pricing and bookkeeping rules.
+**Boundary:** The engine rules were already fixed by D4–D8; AI implemented them in `supabase/migrations/20261021_market_core.sql` and `tests/invariants/market-pricing.test.ts`. No new domain rule was introduced, and no invariant was moved to Verified.
+**Verification:** Five pricing tests passed locally (budget entry with `ceil` debit, profit and proportional-loss exits, over-sell and overspend refusals, Σ shares = `q`) and in CI, which replays every migration onto an empty schema. The migration was applied locally through the TCP SQL fallback because Docker interop was down, followed by `NOTIFY pgrst, 'reload schema'`. The registry moved M-INV2/3/5/8 to **Enforced, unverified** and M-INV7 to partial.
+**Learning:**
+- AI's first `close_trade` draft locked the position before the profile, contradicting the approved lock order (market → profile → cooldown → position). Checking the code against D9 caught it before commit; a deadlock would not have shown in a single-user test.
+- While writing the cooldown tests, AI found the engine accepts a retried request after the cooldown expires as a new entry, because there are no idempotency keys. This was recorded as a gap rather than silently patched, since a retry key is a new decision.
+- Kept honest: passing tests moved nothing to `Verified`; only observed failure under injection would.
+
+---
+
+## Entry 12 — Resolution, lifecycle and concurrency evidence (issue #66, PR #72)
+
+**Date:** 2026-10-19
+**Tool:** opencode CLI (`deepseek-v4.1-flash-free`)
+**Intent:** Make resolution terminal and payout-once, and obtain evidence that the window, cooldown and double-spend rules hold under races — including observing the suites fail.
+**Boundary:** One migration (`20261022_market_resolution.sql`) and two suites, inside the approved plan and lock order. Fault injections were applied only to the local database; no rule was changed to make a test pass.
+**Verification:** Four lifecycle and two concurrency tests passed. Three injections were then observed red: (A) with the profile lock and point guards removed, both 50-point spends were accepted and the balance reached **−40**; (B) with the terminal check removed and the payout key dropped, a second resolution was accepted; (C) with the cooldown refusal removed, 10 of 10 burst entries were accepted. Each was reverted by re-applying the original function, constraint or migration, and the suite returned green. M-INV4, M-INV6 and the M-INV7 gate moved to **Verified**.
+**Learning:**
+- Injection A initially turned the test red for the wrong reason: the `points_after >= 0` trade check rolled the transaction back and still showed a non-negative balance. Only after also removing that check did the double-spend become visible. Layered guards can mask each other; the transcript records what each layer proves.
+- The concurrency burst test exercises M-INV7 but sits in a suite named for M-INV4; the registry quotes the observed failure line as printed rather than tidying it.
+- Injection evidence is local-database evidence. CI replays migrations and proves the restored code, not each injected run.
+
+---
+
+## Entry 13 — Market UI, prediction retirement and evidence wrap (issues #67–#68, PR #73)
+
+**Date:** 2026-10-19
+**Tool:** opencode CLI (`deepseek-v4.1-flash-free`)
+**Intent:** Deliver the market UI, retire the fixed-score feature completely, and close the plan with statuses that match the evidence.
+**Boundary:** `src/app/market/[id]/page.tsx`, `src/app/actions/market.ts`, `src/components/MarketTrader.tsx`, `supabase/seed.sql`, the deletion of the predict route/actions/components/suite, `20261023_retire_predictions.sql` (drops `predictions` and `submit_prediction`), and documentation. No authentication, no new domain rule, no new dependency.
+**Verification:** Lint, typecheck and build clean; 16 tests across 5 files green; CI green on the PR. A production `next start` smoke run: `/` answered 307 → the seeded market; the market page answered 200 with the match, "Live — the market is open", the buy form, the 200-point balance and an invalid-id path. The registry, README, checkpoint A and the system-overview states were updated to match the delivered code.
+**Learning:**
+- The React purity lint rejected `Date.now()` inside the server component; the time check moved to a helper. Worth remembering that this is display-only — the database window guard remains the enforcement.
+- Rejected adding a browser-automation dependency for a click-through; it would need owner approval and is disproportionate here. V35 is therefore recorded as **partial**, not passed.
+- Left standing: no idempotency keys (a retry after cooldown expiry is a new entry), p95 latency unmeasured, and the container has still never been observed serving a request.
+
+---
+
 ## Standing rule
 
 AI may investigate, analyse, draft, implement within an approved scope, and run verification. The human retains every decision that affects business rules, architecture, schema, scope, priority, risk acceptance and merging. Contributions that cannot be verified are recorded as unverified rather than asserted.
