@@ -1,4 +1,14 @@
-export default function PredictionsList({ predictions }: { predictions: any[] }) {
+// Define the shape of our prediction object
+type Prediction = {
+  id: string
+  user_id: string
+  match_id: string
+  predicted_home_score: number
+  predicted_away_score: number
+  created_at: string
+}
+
+export default function PredictionsList({ predictions }: { predictions: Prediction[] }) {
   if (!predictions || predictions.length === 0) {
     return (
       <div className="text-slate-500 text-center py-8 italic">
