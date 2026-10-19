@@ -1,11 +1,17 @@
-version: '3.8'
 services:
   web:
-    build: .
+    build:
+      context: .
+      args:
+        NEXT_PUBLIC_SUPABASE_URL: ${NEXT_PUBLIC_SUPABASE_URL:-}
+        NEXT_PUBLIC_SUPABASE_ANON_KEY: ${NEXT_PUBLIC_SUPABASE_ANON_KEY:-}
     ports:
       - "3000:3000"
-    env_file:
-      - release.env
+    # Variables come from the shell or a root .env file. `env_file` only sets
+    # variables inside the container and does NOT satisfy ${...} interpolation,
+    # which is why the Supabase values are passed as build arguments and
+    # environment entries rather than through release.env.
     environment:
-      - NEXT_PUBLIC_SUPABASE_URL=${NEXT_PUBLIC_SUPABASE_URL}
-      - NEXT_PUBLIC_SUPABASE_ANON_KEY=${NEXT_PUBLIC_SUPABASE_ANON_KEY}
+      NEXT_PUBLIC_SUPABASE_URL: ${NEXT_PUBLIC_SUPABASE_URL:-}
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ${NEXT_PUBLIC_SUPABASE_ANON_KEY:-}
+      NODE_ENV: production
