@@ -24,8 +24,11 @@ Before modifying the project, inspect the relevant source files, configuration, 
 Use these documents according to their purpose:
 
 - `docs/architecture/kata.md`: domain scope and users.
-- `docs/architecture/01-system-overview.md`: domain entities, user journeys, and business invariants.
-- `docs/architecture/02-architecture-characteristics.md`: architectural priorities and their measurements.
+- `docs/architecture/01-system-overview.md`: purpose, users, architecture style, and data flows.
+- `docs/architecture/02-domain-model.md`: domain entities, relationships, user journeys, and business invariants.
+- `docs/architecture/03-architecture-characteristics.md`: architectural priorities and their measurements.
+- `docs/architecture/04-code-map.md`: structural elements mapped to files, migrations, and tests.
+- `docs/architecture/05-c4-diagrams.md`: C4 context, container, and component views.
 - `docs/architecture/adr/`: significant architectural decisions and their trade-offs.
 - `docs/methodology/`: bounded proposals and development-methodology evidence.
 - `docs/methodology/ai-transparency-log.md`: meaningful AI contributions and their verification.

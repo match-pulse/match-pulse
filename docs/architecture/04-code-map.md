@@ -2,9 +2,10 @@
 
 > **Purpose.** The architecture deliverable must describe the structure of the
 > system with references to the code. This map links each element described in
-> [`01-system-overview.md`](./01-system-overview.md) to the exact files, symbols
-> and migrations that implement it. It is a navigation aid: where this map and
-> the code disagree, the code and the
+> the [system overview](./01-system-overview.md) and the
+> [domain model](./02-domain-model.md) to the exact files, symbols and
+> migrations that implement it. It is a navigation aid: where this map and the
+> code disagree, the code and the
 > [invariants registry](../methodology/checkpoint-A/02-invariants.md) win.
 
 ## 1. Runtime structure (Next.js App Router)
@@ -74,8 +75,10 @@ Per-invariant statuses, targets and fault-injection evidence: [`02-invariants.md
 | Document | Path |
 | :--- | :--- |
 | Kata (domain scope) | [`kata.md`](./kata.md) |
-| System overview and journeys | [`01-system-overview.md`](./01-system-overview.md) |
-| Characteristics and measures | [`02-architecture-characteristics.md`](./02-architecture-characteristics.md) |
+| System overview (purpose, users, data flows) | [`01-system-overview.md`](./01-system-overview.md) |
+| Domain model (entities, relationships, journeys) | [`02-domain-model.md`](./02-domain-model.md) |
+| Characteristics and measures | [`03-architecture-characteristics.md`](./03-architecture-characteristics.md) |
+| C4 views (context, containers, components) | [`05-c4-diagrams.md`](./05-c4-diagrams.md) |
 | Decisions | [`adr/`](./adr/) |
 | Invariants registry and evidence | [`../methodology/checkpoint-A/02-invariants.md`](../methodology/checkpoint-A/02-invariants.md) |
 | Methodology checkpoints | [`../methodology/`](../methodology/) |

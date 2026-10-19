@@ -1,86 +1,110 @@
-# MatchPulse — System Overview & Domain Model
+# MatchPulse — System Overview
 
-> **How to read this document.** It describes the domain model and the intended
-> architecture, not only what exists today. Every entity and journey carries a
-> state: **Implemented**, **Partial**, **Intended** (designed, not yet built) or
-> **Not implemented**. The authoritative registry of enforcement and evidence is
-> [`docs/methodology/checkpoint-A/02-invariants.md`](../methodology/checkpoint-A/02-invariants.md).
+> **How to read this document.** It describes what the system is, who uses it
+> and how a request travels through it. Entities, relationships and business
+> rules live in the [domain model](./02-domain-model.md); diagrams live in the
+> [C4 views](./05-c4-diagrams.md). Every element carries a state:
+> **Implemented**, **Partial**, **Intended** or **Not implemented**. The
+> authoritative enforcement and evidence record is the
+> [invariants registry](../methodology/checkpoint-A/02-invariants.md).
 
-## 1. Domain Entities
+## 1. Purpose and scope
 
-| Entity | Meaning | State |
+MatchPulse is a football tournament web application. Spectators register for a
+tournament, receive prediction points, and trade those points on the outcome of
+a live match. Correct positions pay points that can later be redeemed for ticket
+discounts. Aggregated market activity is intended to become a crowd-sentiment
+product for football clubs.
+
+The application is a **modular monolith**: one Next.js deployment and one
+PostgreSQL database, with business-critical rules enforced inside database
+transactions.
+
+## 2. Users and goals
+
+| Actor | Goal | State |
 | :--- | :--- | :--- |
-| **Profile** | A fan or participant. Stores identity and available prediction points. | Implemented (no authentication; seeded demo profile) |
-| **Tournament** | Contains participating teams and scheduled matches. Defines a maximum participant capacity (`max_capacity`). | Implemented |
-| **Team** | Represents a football team participating in a tournament. | Not implemented as a table; matches store team names as text |
-| **Match** | Represents a fixture between two teams. Stores the home and away teams, kickoff timestamp, and status (`SCHEDULED`, `LIVE`, `FINISHED`). | Implemented |
-| **Registration** | Links a profile to a tournament and ensures participant capacity is respected. | Implemented and verified |
-| **Market** | A three-outcome market (HOME / DRAW / AWAY) attached to a match, priced by an LMSR market maker, open from kickoff until resolution. | Implemented (engine verified; UI is an unprotected prototype) |
-| **Position** | A profile's holding of shares in one outcome of one market, with its cost basis. | Implemented (engine verified; UI is an unprotected prototype) |
-| **Trade** | An accepted entry or exit: timestamp, outcome, shares, cost or proceeds, and implied odds before and after. This is the analytics-of-record dataset. | Implemented (written by the trade RPCs; not yet aggregated or exported) |
-| **Points Ledger** | Records point grants, costs, rewards and redemptions. | Not implemented |
+| **Spectator / fan** | Register for a tournament, trade points during a match, keep winnings for ticket discounts | Registration and trading implemented; redemption not implemented |
+| **Tournament organizer / staff** | Create tournaments, schedule matches, finalise results and resolve markets | Data model and resolution function exist; management UI and authorization not implemented |
+| **Club representative** | Read aggregated crowd sentiment without seeing individuals | Not implemented; the trade log records the raw data |
+| **Developer / operator** | Run the stack locally, replay migrations, verify invariants in CI | Implemented |
 
-## 2. Primary User Journeys
+## 3. Architecture style and boundaries
 
-1. **Organizer:** Creates tournaments, manages teams, schedules matches, and records final results. Resolving a market is an organizer operation; authorization is not yet enforced (INV-05).
-2. **Fan Registration (implemented):** Registers for a tournament while capacity remains, and is told when it is full.
-3. **Fan Trading (implemented; engine verified, UI prototype):** Once the match has started, commits points to one outcome. The LMSR market prices the position from the selected budget. The spectator may exit part or all of the position at any later moment before resolution; exits are never blocked or charged. Exiting settles against the current odds — a gain when the position's implied probability has risen, a proportional loss when it has fallen. Re-entry into the same market is cooled down (5s, 15s, 30s, 45s, … capped, decaying after quiet periods); refused attempts do not escalate.
-4. **Resolution (implemented; verified by test and fault injection):** When staff finalise a result, the market resolves once and terminally: each winning share pays exactly one point, losing shares pay nothing. No trade is accepted afterwards.
-5. **Rewards:** Accumulated points can be redeemed for future ticket discounts. *Not implemented.*
-6. **Club Analytics:** Soccer clubs purchase aggregated crowd-sentiment insights derived from market activity over time. *Not implemented; the trade log is designed to support it. Export and privacy rules are not implemented (INV-05).*
+The system deliberately stays a modular monolith. A single application process
+covers the web UI and the mutation endpoints; PostgreSQL is the source of truth.
 
-## 3. High-Level System Architecture
+- **Interface (Next.js App Router):** React Server Components render pages that
+  read through the database client. Client components hold only form state.
+- **Application layer (Server Actions):** validates input, resolves the caller
+  through `src/lib/session.ts`, calls a database function and refreshes the view.
+- **Domain layer (PostgreSQL):** tables, constraints and transaction-scoped
+  functions (`open_trade`, `close_trade`, `resolve_market`,
+  `register_for_tournament`) enforce the invariants. The application never
+  performs a read-modify-write across requests.
+- **Infrastructure:** Bun for tooling and tests, the Supabase CLI and Docker for
+  local development, GitHub Actions for CI. Deployment is not configured.
 
-MatchPulse follows a modular monolith architecture using Next.js and Supabase, with PostgreSQL as the source of truth for domain data and transactional integrity.
+Two boundaries are intentionally explicit today:
 
-- **Frontend (Next.js App Router):** Renders the web interface using React Server Components.
-- **Application Layer (Next.js Server Actions):** Validates input, resolves the caller's identity through a single server-side seam, invokes database functions, and refreshes affected views.
-- **Database (Supabase / PostgreSQL):** Stores domain data and enforces critical business invariants through constraints, transactions and atomic database functions. **Row Level Security is not implemented** (INV-05); the system is not currently a security boundary.
-- **Infrastructure:** Bun for tooling, Docker for local Supabase development, GitHub Actions for CI. Vercel is the intended hosting target; no deployment is configured.
+1. **There is no security boundary.** Supabase Auth, Row Level Security and
+   grants are not implemented (INV-05). The anon key can read and write every
+   table and call every RPC.
+2. **The market UI is a prototype.** The engine and its functions are tested;
+   the page is not authenticated and is not a hardened interface.
 
-Critical operations — tournament registration, market entries and exits, and resolution — enforce their invariants inside the database transaction rather than relying on frontend or application-level checks.
+The file-level mapping of these elements is in the
+[code map](./04-code-map.md). The runtime views are in
+[05-c4-diagrams.md](./05-c4-diagrams.md).
 
-The file-level mapping of these elements — pages, Server Actions, database functions and tests — is in [`03-code-map.md`](./03-code-map.md).
-
-Prediction activity is linked to profiles internally and aggregated into crowd-sentiment insights for clubs. Access to underlying user data must follow defined authorization and privacy rules; those rules are **not yet implemented**.
-
-## 4. Data Flows
+## 4. Data flows
 
 ### 4.1 Market entry and exit (implemented and verified)
 
-1. The spectator selects an outcome and commits an amount of points through the interface.
-2. The Server Action validates the request shape and resolves the spectator's identity on the server; the identity is never read from the form.
-3. `open_trade` locks the market row, then the profile row, then the cooldown row, and checks the market window: the market must be open and the authoritative database time must be at or after `kickoff_time`.
+1. The spectator selects an outcome and commits an amount of points.
+2. The Server Action validates the request shape and resolves the spectator's
+   identity on the server; identity is never read from the form.
+3. `open_trade` locks the market row, then the profile row, then the cooldown
+   row, and checks the market window: the market must be open and the
+   authoritative database time must be at or after `kickoff_time`.
 4. The cooldown gate is checked. A refusal writes nothing.
-5. The share quantity is solved from the committed budget under the LMSR cost curve. The cost is debited (`ceil`) atomically with the position update, the market state update and the trade log write.
-6. An exit (`close_trade`) is always permitted while the market is open: the requested shares are checked against the holding, the market state is moved back by those shares, and the proceeds (`floor`) are credited atomically with the position update and the trade log write. No fee is charged.
+5. The share quantity is solved from the committed budget under the LMSR cost
+   curve. The cost is debited (`ceil`) atomically with the position update, the
+   market state update and the trade-log write.
+6. An exit (`close_trade`) is always permitted while the market is open: the
+   requested shares are checked against the holding, the market state is moved
+   back by those shares, and the proceeds (`floor`) are credited atomically with
+   the position update and the trade-log write. No fee is charged.
 7. The Server Action returns the result and Next.js refreshes the view.
 
 ### 4.2 Resolution (implemented and verified)
 
-1. Staff finalise the match result and resolve the market with the winning outcome.
-2. `resolve_market` locks the market row, refuses if the market is already resolved, marks it resolved terminally, and pays each holder of winning shares exactly one point per share (floor), once, within the same transaction.
+1. Staff finalise the match result and resolve the market with the winning
+   outcome.
+2. `resolve_market` locks the market row, refuses if the market is already
+   resolved, marks it resolved terminally, and pays each holder of winning
+   shares exactly one point per share (floor), once, in the same transaction.
 3. No entry or exit is accepted after resolution.
 
 ### 4.3 Registration (implemented and verified)
 
 1. A spectator requests a place through the interface.
-2. The Server Action validates the request shape and resolves identity on the server.
-3. `register_for_tournament` locks the tournament row, checks capacity, inserts the registration in a subtransaction (a duplicate is refused without raising), and increments the counter.
+2. The Server Action validates the request shape and resolves identity on the
+   server.
+3. `register_for_tournament` locks the tournament row, checks capacity, inserts
+   the registration in a subtransaction (a duplicate is refused without
+   raising), and increments the counter.
 4. The result is translated into a message and the view refreshes.
 
-## 5. Core Invariants
+## 5. Quality and evidence
 
-| Domain rule | Enforcement | Status |
-| :--- | :--- | :--- |
-| Tournament capacity is never exceeded under concurrency; stored counter matches stored rows | `register_for_tournament` + CHECK constraints | **Verified** (fault-injected, CI) |
-| A participant cannot register twice for a tournament | Unique constraint + idempotent refusal | **Verified** (fault-injected, CI) |
-| Trading opens only at kickoff and stops at resolution | Market window guard in `open_trade`/`close_trade` | **Enforced, unverified** (M-INV1) |
-| Entry/exit, position, balance and trade log succeed or fail together | Single database transaction | **Enforced, unverified** (M-INV2) |
-| Cannot sell shares not held; holdings never negative | Position guard | **Enforced, unverified** (M-INV3) |
-| Balance never negative, including concurrent same-user requests | Profile row lock + conditional debit | **Verified** (M-INV4, fault-injected) |
-| Sum of held shares equals the market's outstanding quantity | Transactional state update | **Enforced, unverified** (M-INV5) |
-| Resolution pays exactly one point per winning share, once, terminally | `resolve_market` | **Verified** (M-INV6, fault-injected) |
-| Entry cooldown ladder and decay; exits never restricted | `open_trade` cooldown gate | **Verified for the gate**; ladder/decay tests pass, not injected (M-INV7) |
-| No commission of any kind on entry, exit or settlement | No fee path in any RPC; exact payout formulas | **Enforced, unverified** (M-INV8) |
-| Authenticated identity, RLS, grants, privacy rules | Supabase Auth, RLS policies, grants | **Not implemented** (INV-05) |
+The project selects four architecture characteristics — elasticity,
+deployability, testability, and integrity under concurrency — and records their
+targets and evidence in
+[03-architecture-characteristics.md](./03-architecture-characteristics.md).
+Invariant coverage and fault-injection results are recorded in the
+[registry](../methodology/checkpoint-A/02-invariants.md).
+
+The system is **not** a security boundary, does not yet implement reward
+redemption or club analytics, and has no deployment environment. Those gaps are
+listed in the README so they are not mistaken for delivered work.
