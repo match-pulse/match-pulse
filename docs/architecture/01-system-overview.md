@@ -15,17 +15,17 @@
 | **Team** | Represents a football team participating in a tournament. | Not implemented as a table; matches store team names as text |
 | **Match** | Represents a fixture between two teams. Stores the home and away teams, kickoff timestamp, and status (`SCHEDULED`, `LIVE`, `FINISHED`). | Implemented |
 | **Registration** | Links a profile to a tournament and ensures participant capacity is respected. | Implemented and verified |
-| **Market** | A three-outcome market (HOME / DRAW / AWAY) attached to a match, priced by an LMSR market maker, open from kickoff until resolution. | Intended (this increment) |
-| **Position** | A profile's holding of shares in one outcome of one market, with its cost basis. | Intended (this increment) |
-| **Trade** | An accepted entry or exit: timestamp, outcome, shares, cost or proceeds, and implied odds before and after. This is the analytics-of-record dataset. | Intended (this increment) |
+| **Market** | A three-outcome market (HOME / DRAW / AWAY) attached to a match, priced by an LMSR market maker, open from kickoff until resolution. | Implemented (engine verified; UI is an unprotected prototype) |
+| **Position** | A profile's holding of shares in one outcome of one market, with its cost basis. | Implemented (engine verified; UI is an unprotected prototype) |
+| **Trade** | An accepted entry or exit: timestamp, outcome, shares, cost or proceeds, and implied odds before and after. This is the analytics-of-record dataset. | Implemented (written by the trade RPCs; not yet aggregated or exported) |
 | **Points Ledger** | Records point grants, costs, rewards and redemptions. | Not implemented |
 
 ## 2. Primary User Journeys
 
 1. **Organizer:** Creates tournaments, manages teams, schedules matches, and records final results. Resolving a market is an organizer operation; authorization is not yet enforced (INV-05).
 2. **Fan Registration (implemented):** Registers for a tournament while capacity remains, and is told when it is full.
-3. **Fan Trading (intended, this increment):** Once the match has started, commits points to one outcome. The LMSR market prices the position from the selected budget. The spectator may exit part or all of the position at any later moment before resolution; exits are never blocked or charged. Exiting settles against the current odds — a gain when the position's implied probability has risen, a proportional loss when it has fallen. Re-entry into the same market is cooled down (5s, 15s, 30s, 45s, … capped, decaying after quiet periods); refused attempts do not escalate.
-4. **Resolution (intended, this increment):** When staff finalise a result, the market resolves once and terminally: each winning share pays exactly one point, losing shares pay nothing. No trade is accepted afterwards.
+3. **Fan Trading (implemented; engine verified, UI prototype):** Once the match has started, commits points to one outcome. The LMSR market prices the position from the selected budget. The spectator may exit part or all of the position at any later moment before resolution; exits are never blocked or charged. Exiting settles against the current odds — a gain when the position's implied probability has risen, a proportional loss when it has fallen. Re-entry into the same market is cooled down (5s, 15s, 30s, 45s, … capped, decaying after quiet periods); refused attempts do not escalate.
+4. **Resolution (implemented; verified by test and fault injection):** When staff finalise a result, the market resolves once and terminally: each winning share pays exactly one point, losing shares pay nothing. No trade is accepted afterwards.
 5. **Rewards:** Accumulated points can be redeemed for future ticket discounts. *Not implemented.*
 6. **Club Analytics:** Soccer clubs purchase aggregated crowd-sentiment insights derived from market activity over time. *Not implemented; the trade log is designed to support it. Export and privacy rules are not implemented (INV-05).*
 
@@ -44,7 +44,7 @@ Prediction activity is linked to profiles internally and aggregated into crowd-s
 
 ## 4. Data Flows
 
-### 4.1 Market entry and exit (intended)
+### 4.1 Market entry and exit (implemented and verified)
 
 1. The spectator selects an outcome and commits an amount of points through the interface.
 2. The Server Action validates the request shape and resolves the spectator's identity on the server; the identity is never read from the form.
@@ -54,7 +54,7 @@ Prediction activity is linked to profiles internally and aggregated into crowd-s
 6. An exit (`close_trade`) is always permitted while the market is open: the requested shares are checked against the holding, the market state is moved back by those shares, and the proceeds (`floor`) are credited atomically with the position update and the trade log write. No fee is charged.
 7. The Server Action returns the result and Next.js refreshes the view.
 
-### 4.2 Resolution (intended)
+### 4.2 Resolution (implemented and verified)
 
 1. Staff finalise the match result and resolve the market with the winning outcome.
 2. `resolve_market` locks the market row, refuses if the market is already resolved, marks it resolved terminally, and pays each holder of winning shares exactly one point per share (floor), once, within the same transaction.
@@ -73,12 +73,12 @@ Prediction activity is linked to profiles internally and aggregated into crowd-s
 | :--- | :--- | :--- |
 | Tournament capacity is never exceeded under concurrency; stored counter matches stored rows | `register_for_tournament` + CHECK constraints | **Verified** (fault-injected, CI) |
 | A participant cannot register twice for a tournament | Unique constraint + idempotent refusal | **Verified** (fault-injected, CI) |
-| Trading opens only at kickoff and stops at resolution | Market window guard in `open_trade`/`close_trade` | Intended (M-INV1) |
-| Entry/exit, position, balance and trade log succeed or fail together | Single database transaction | Intended (M-INV2) |
-| Cannot sell shares not held; holdings never negative | Position guard | Intended (M-INV3) |
-| Balance never negative, including concurrent same-user requests | Profile row lock + conditional debit | Intended (M-INV4) |
-| Sum of held shares equals the market's outstanding quantity | Transactional state update | Intended (M-INV5) |
-| Resolution pays exactly one point per winning share, once, terminally | `resolve_market` | Intended (M-INV6) |
-| Entry cooldown ladder and decay; exits never restricted | `open_trade` cooldown gate | Intended (M-INV7) |
-| No commission of any kind on entry, exit or settlement | No fee path in any RPC; exact payout formulas | Intended (M-INV8) |
+| Trading opens only at kickoff and stops at resolution | Market window guard in `open_trade`/`close_trade` | **Enforced, unverified** (M-INV1) |
+| Entry/exit, position, balance and trade log succeed or fail together | Single database transaction | **Enforced, unverified** (M-INV2) |
+| Cannot sell shares not held; holdings never negative | Position guard | **Enforced, unverified** (M-INV3) |
+| Balance never negative, including concurrent same-user requests | Profile row lock + conditional debit | **Verified** (M-INV4, fault-injected) |
+| Sum of held shares equals the market's outstanding quantity | Transactional state update | **Enforced, unverified** (M-INV5) |
+| Resolution pays exactly one point per winning share, once, terminally | `resolve_market` | **Verified** (M-INV6, fault-injected) |
+| Entry cooldown ladder and decay; exits never restricted | `open_trade` cooldown gate | **Verified for the gate**; ladder/decay tests pass, not injected (M-INV7) |
+| No commission of any kind on entry, exit or settlement | No fee path in any RPC; exact payout formulas | **Enforced, unverified** (M-INV8) |
 | Authenticated identity, RLS, grants, privacy rules | Supabase Auth, RLS policies, grants | **Not implemented** (INV-05) |
