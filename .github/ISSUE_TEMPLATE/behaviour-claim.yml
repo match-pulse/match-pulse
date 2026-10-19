@@ -1,0 +1,29 @@
+name: Behaviour Claim
+description: Verifiable system rules, actions and state changes.
+title: "[Behaviour] "
+type: "Behaviour Claim"
+body:
+  - type: markdown
+    attributes:
+      value: "**Claim type:** Behaviour Claim"
+  - type: textarea
+    id: goal
+    attributes:
+      label: Goal
+      description: What system rule, action or state change will be made verifiable?
+    validations:
+      required: true
+  - type: textarea
+    id: scope
+    attributes:
+      label: Scope
+      description: What is included, and what is deliberately excluded?
+    validations:
+      required: true
+  - type: textarea
+    id: done-when
+    attributes:
+      label: Done when
+      description: Observable conditions that end the task, with the evidence that will verify them.
+    validations:
+      required: true

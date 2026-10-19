@@ -1,0 +1,29 @@
+name: ADR (Architecture Decision)
+description: Recorded structural choices, their context and trade-offs.
+title: "[ADR] "
+type: "ADR (Architecture Decision)"
+body:
+  - type: markdown
+    attributes:
+      value: "**Claim type:** ADR (Architecture Decision)"
+  - type: textarea
+    id: goal
+    attributes:
+      label: Goal
+      description: Which structural decision needs to be recorded, and why now?
+    validations:
+      required: true
+  - type: textarea
+    id: scope
+    attributes:
+      label: Scope
+      description: The options considered, the trade-offs, and the decision recorded.
+    validations:
+      required: true
+  - type: textarea
+    id: done-when
+    attributes:
+      label: Done when
+      description: Where the decision is recorded and what links to it.
+    validations:
+      required: true

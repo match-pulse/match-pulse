@@ -1,0 +1,29 @@
+name: Outcome Claim
+description: Measurable real-world impact after the software is used.
+title: "[Outcome] "
+type: "Outcome Claim"
+body:
+  - type: markdown
+    attributes:
+      value: "**Claim type:** Outcome Claim"
+  - type: textarea
+    id: goal
+    attributes:
+      label: Goal
+      description: What real-world change should be measurable after the software is used?
+    validations:
+      required: true
+  - type: textarea
+    id: scope
+    attributes:
+      label: Scope
+      description: What is included, and what is deliberately excluded?
+    validations:
+      required: true
+  - type: textarea
+    id: done-when
+    attributes:
+      label: Done when
+      description: The measurement and its acceptance threshold.
+    validations:
+      required: true
