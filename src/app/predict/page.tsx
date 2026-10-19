@@ -1,4 +1,5 @@
 import { Suspense } from 'react'
+import Link from 'next/link'
 import PredictionForm from '@/components/PredictionForm'
 import PredictionsList from '@/components/PredictionsList'
 import TopBar from '@/components/TopBar'
@@ -26,6 +27,15 @@ async function PredictionContent({ matchId, userId }: { matchId: string, userId:
   return (
     <>
       <TopBar username={profile?.username || 'Guest'} points={profile?.points || 0} />
+
+      <div className="px-8 pt-4">
+        <Link
+          href="/tournaments/22222222-2222-2222-2222-222222222222"
+          className="text-sm text-blue-400 hover:text-blue-300 underline"
+        >
+          Summer Cup 2026 — tournament registration
+        </Link>
+      </div>
       
       {/* Split Screen Layout */}
       <div className="flex-1 flex flex-col md:flex-row max-w-6xl mx-auto w-full p-8 gap-8">
