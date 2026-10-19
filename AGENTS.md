@@ -341,6 +341,28 @@ A pull request must include:
 
 Run the relevant checks before proposing a pull request. Review the complete diff for unrelated changes, generated files, secrets, and accidental modifications.
 
+### Issue, Commit and Pull Request Text
+
+Keep every issue, commit message and pull request **brief, human-readable and in the same format every time**.
+
+**Every issue must have its claim type selected** — never leave the picker empty:
+
+- **Problem Claim** — consequential user friction existing independent of the software.
+- **Behaviour Claim** — verifiable system rules, actions and state changes.
+- **Outcome Claim** — measurable real-world impact after the software is used.
+- **ADR (Architecture Decision)** — recorded structural choices, their context and trade-offs.
+
+Issue format (keep the whole body under roughly 15 lines):
+
+- **Claim type:** one of the four above.
+- **Goal:** two or three sentences.
+- **Scope:** short bullet list.
+- **Done when:** short bullet list of observable conditions.
+
+Commit format: Conventional Commit subject; body of at most five short lines saying what changed and why.
+
+Pull request format: **Summary** (two or three sentences), **Closes #issue**, **Changes** (short bullets), **Verification** (short table or bullets with observed results), **Risks** (or "None"). Do not restate the issue, do not pad with prose. State the claim type in one line.
+
 ### Git Approval Gates
 
 Creating a task branch may be included in an approved execution plan. The following require separate explicit human authorization unless the human's current instruction explicitly requests the operation:
