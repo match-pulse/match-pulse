@@ -57,7 +57,7 @@ Three characteristics are selected. Selection criterion: a characteristic is onl
 
 **Target.** Every domain invariant recorded in [`docs/methodology/checkpoint-A/02-invariants.md`](../methodology/checkpoint-A/02-invariants.md) has an automated test that fails when the invariant is violated. The suite runs on every pull request. The suite completes in under 3 minutes.
 
-**Status.** Measured, with stated scope. Both enforced invariants (INV-01, INV-02) have automated tests that were **observed failing** under fault injection — the weaker claim "the suite runs and passes" was deliberately not accepted as proof. The suite runs on every pull request (CI job "Domain invariants") and completes in ~2.5 minutes, inside the 3-minute target. The market invariants (M-INV1–M-INV8) are specified but not yet implemented, and INV-05 is not implemented; all are marked accordingly in the registry, so the "every enforced invariant" wording holds rather than over-claims.
+**Status.** Measured, with stated scope. Both enforced invariants (INV-01, INV-02) have automated tests that were **observed failing** under fault injection — the weaker claim "the suite runs and passes" was deliberately not accepted as proof. The suite runs on every pull request (CI job "Domain invariants") and completes in ~2.5 minutes, inside the 3-minute target. The market invariants (M-INV1–M-INV8) are landing in #65/#66: the subset enforced so far has passing tests but no fault-injection evidence yet, so none is called verified; INV-05 is not implemented. All are marked accordingly in the registry, so the "every enforced invariant" wording holds rather than over-claims.
 
 ## 4. Deliberately not selected, and why
 
