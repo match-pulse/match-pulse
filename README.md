@@ -1,36 +1,117 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# ⚽ MatchPulse
+
+MatchPulse is a football tournament web application that engages fans through match predictions, rewards, and data-driven insights for soccer clubs.
+
+**Users:** Football fans, tournament organizers, and soccer clubs.
+
+**Value Proposition:** MatchPulse is designed to enforce prediction deadlines, handle concurrent submissions safely, and turn aggregated prediction activity into strategic crowd-sentiment insights for clubs.
+
+## Features
+
+- **Tournament Management:** Organize tournaments, teams, matches, and results.
+- **Match Predictions:** Let fans predict match outcomes before kickoff.
+- **Rewards:** Award points for correct predictions, redeemable for future ticket discounts.
+- **Crowd-Sentiment Analytics:** Aggregate prediction behavior to generate insights for soccer clubs.
+
+## Tech Stack
+
+- **Framework:** Next.js 16 (App Router, Server Actions)
+- **Database:** Supabase (PostgreSQL, Row Level Security, atomic database operations)
+- **Runtime & Package Manager:** Bun
+- **Local Infrastructure:** Docker and Supabase CLI
+- **Deployment:** Vercel
+- **Continuous Integration:** GitHub Actions
+
+## Architecture
+
+MatchPulse follows a **modular monolith** architecture, emphasizing data integrity, clear module boundaries, and reliable prediction processing.
+
+Architecture documentation:
+
+- **Architectural Kata:** [`docs/architecture/kata.md`](docs/architecture/kata.md)
+- **Architecture Decision Records (ADRs):** [`docs/architecture/adr/`](docs/architecture/adr/)
+- **Architecture Characteristics:** [`docs/architecture/02-architecture-characteristics.md`](docs/architecture/02-architecture-characteristics.md)
+- **Development Methodology:** [`docs/methodology/`](docs/methodology/)
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
+
+Install the following tools:
+
+- [Git](https://git-scm.com/)
+- [Bun](https://bun.sh/)
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/)
+
+The Supabase CLI is managed as a project dependency and invoked through Bun.
+
+### 1. Clone the Repository
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone https://github.com/zantgo/match-pulse.git
+cd match-pulse
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 2. Install Dependencies
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+bun install
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### 3. Configure the Environment
 
-## Learn More
+Create a `.env.local` file in the project root with the local Supabase credentials:
 
-To learn more about Next.js, take a look at the following resources:
+```dotenv
+NEXT_PUBLIC_SUPABASE_URL=http://127.0.0.1:54321
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=your-local-publishable-key
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Obtain the local URL and publishable key from the Supabase CLI output. Keep environment files containing secrets out of version control.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### 4. Start the Local Database
 
-## Deploy on Vercel
+Ensure Docker Desktop is running, then execute:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```bash
+bunx supabase start
+bunx supabase db reset
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+The local Supabase configuration, database migrations, and seed data must be present in the repository. **Warning:** `db reset` recreates the local database and deletes its existing local data.
+
+### 5. Run the Application
+
+```bash
+bun run dev
+```
+
+Open [http://localhost:3000](http://localhost:3000) in your browser.
+
+## Testing
+
+Automated tests will verify domain invariants and protect against invalid states during concurrent requests.
+
+```bash
+# Run the prediction-lock invariant test
+bun test tests/invariants/prediction-lock.test.ts
+
+# Run the tournament-capacity invariant test
+bun test tests/invariants/tournament-capacity.test.ts
+```
+
+These focused commands require the corresponding test files to be implemented. The tests are intended to verify that late or duplicate predictions are rejected and that tournament capacity constraints remain valid under concurrent requests.
+
+## Project Roles
+
+MatchPulse is developed by a solo engineer covering the software development lifecycle:
+
+- **Product Owner:** Defines domain requirements and product goals.
+- **Software Architect:** Documents architectural decisions and characteristics.
+- **Full-Stack Developer:** Implements the application and database logic.
+- **QA Engineer:** Develops automated tests for domain invariants.
+- **DevOps:** Manages local infrastructure, CI, and deployment.
+
+## Development Status
+
+MatchPulse is an early-stage project focused on software architecture, development methodology, and reliable prediction processing. Features and testing capabilities will become available as implementation progresses.
