@@ -18,7 +18,7 @@ Every claim in this document carries one of these labels. A characteristic with 
 | Domain concern (from the kata) | Candidate characteristics |
 | :--- | :--- |
 | **Integrity of participation and points** — capacity must never be exceeded, balances must stay consistent when requests arrive simultaneously | Integrity under concurrency, Security/authorisation |
-| **Fairness** — a prediction must be refused from the moment of kickoff | Integrity under concurrency |
+| **Fairness** — the market opens only at kickoff, exits are never blocked, and re-entry is cooled down so the crowd signal is not churned | Integrity under concurrency |
 | **Time to market** — a solo developer must ship increments without infrastructure work | Deployability, Testability |
 | **Match-time traffic** — "hundreds of concurrent spectators" | Elasticity, Performance |
 | **Club analytics privacy** — aggregated data sold to clubs must not expose individuals | Security/authorisation, Modularity |
@@ -29,7 +29,7 @@ Three characteristics are selected. Selection criterion: a characteristic is onl
 
 ### 3.1 Elasticity
 
-**Why it matters.** The kata states traffic peaks during matches with hundreds of concurrent spectators. Two moments concentrate load: tournament registration launch, and kickoff, when spectators submit last predictions. Neither is a gradual ramp, so the system must absorb a step change rather than a steady increase.
+**Why it matters.** The kata states traffic peaks during matches with hundreds of concurrent spectators. Two moments concentrate load: tournament registration launch, and kickoff, when the market opens and spectators enter positions. Neither is a gradual ramp, so the system must absorb a step change rather than a steady increase.
 
 **How it is measured.** A scripted burst test issues concurrent registrations against a tournament with a known capacity, against the real database (`supabase/migrations/` — `register_for_tournament`). It records accepted, rejected and errored responses, plus p95 latency.
 
@@ -57,7 +57,7 @@ Three characteristics are selected. Selection criterion: a characteristic is onl
 
 **Target.** Every domain invariant recorded in [`docs/methodology/checkpoint-A/02-invariants.md`](../methodology/checkpoint-A/02-invariants.md) has an automated test that fails when the invariant is violated. The suite runs on every pull request. The suite completes in under 3 minutes.
 
-**Status.** Measured, with stated scope. Both enforced invariants (INV-01, INV-02) have automated tests that were **observed failing** under fault injection — the weaker claim "the suite runs and passes" was deliberately not accepted as proof. The suite runs on every pull request (CI job "Domain invariants") and completes in ~2.5 minutes, inside the 3-minute target. INV-03/INV-04/INV-05 are not implemented and marked accordingly in the registry, so the "every enforced invariant" wording holds rather than over-claims.
+**Status.** Measured, with stated scope. Both enforced invariants (INV-01, INV-02) have automated tests that were **observed failing** under fault injection — the weaker claim "the suite runs and passes" was deliberately not accepted as proof. The suite runs on every pull request (CI job "Domain invariants") and completes in ~2.5 minutes, inside the 3-minute target. The market invariants (M-INV1–M-INV8) are specified but not yet implemented, and INV-05 is not implemented; all are marked accordingly in the registry, so the "every enforced invariant" wording holds rather than over-claims.
 
 ## 4. Deliberately not selected, and why
 

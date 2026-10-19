@@ -6,7 +6,7 @@
 
 ## Context
 
-MatchPulse is a football tournament platform built by one developer across two courses, with a hard deliverable deadline. The domain carries rules that are costly to get wrong: participation capacity must never be exceeded, point balances must stay consistent, and a prediction must be refused from the moment of kickoff — including when many requests arrive at the same instant.
+MatchPulse is a football tournament platform built by one developer across two courses, with a hard deliverable deadline. The domain carries rules that are costly to get wrong: participation capacity must never be exceeded, point balances must stay consistent, and market entries and exits must be settled atomically inside the trading window — including when many requests arrive at the same instant.
 
 Three constraints follow from that context:
 

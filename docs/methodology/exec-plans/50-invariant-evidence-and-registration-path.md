@@ -1,5 +1,7 @@
 # Execution Plan — Invariant Evidence and the Registration Path
 
+> **Superseded in part (2026-10-19).** INV-03 and INV-04 were withdrawn when the owner replaced fixed-score predictions with a live market. See [`live-prediction-market.md`](./live-prediction-market.md). This file remains the record of the Checkpoint A increment.
+
 - **Issue:** #50 (plan owner; full plan spans #50–#55)
 - **Status:** Executed
 - **Approved:** 2026-10-19

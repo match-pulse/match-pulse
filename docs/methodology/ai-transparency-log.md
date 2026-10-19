@@ -133,6 +133,21 @@ Entries are added when work is performed, not in bulk at the end of a period.
 
 ---
 
+## Entry 10 — Live market pivot and contract documents (issues #64–#68)
+
+**Date:** 2026-10-19
+**Tool:** opencode CLI (`deepseek-v4.1-flash-free`)
+**Intent:** Record the owner's pivot from fixed-score predictions to a live credit market and make the documents the contract for the next slices.
+**Boundary:** The owner made every domain decision: window opens at kickoff, three outcomes, LMSR, zero commission, cooldown ladder/decay, database enforcement. AI rewrote the kata and overview, added ADR-002, updated the invariants and characteristics, the AGENTS domain rules, the execution plan, and the issue/commit/PR text standard. No implementation or test evidence is claimed here.
+**Verification:** Documents cross-checked against the decision register (D1–D9); a sweep of the touched files found no remaining pre-kickoff deadline claims; the plan marks V1–V37 as planned checks, not results. M-INV1–M-INV8 are labeled **Specified**, not Verified; enforcement is deferred to #65/#66. Issues #63–#68 were rewritten in the brief format with a claim type after the owner flagged that the GitHub Claim Type picker had been left empty. The repository API exposes only Task/Bug/Feature, so the four custom claim types could not be set programmatically; the type is recorded in each issue body and the picker still needs a manual selection.
+**Learning:**
+- AI first mapped "claim type" to the methodology labels. The owner corrected that the four values are the GitHub issue-type picker (Problem/Behaviour/Outcome/ADR); the standard now requires the type in the issue body and in one PR line.
+- Rejected: inventing a commission or maker fee to absorb rounding — the owner's no-commission rule is the constraint, and dust is left uncredited.
+- Rejected: an order book, constant-product maker and parimutuel pool; each conflicts with guaranteed liquidity at kickoff or with free exits during the match.
+- Kept honest: documents-only changes move no invariant to Verified, and the verification table states planned checks rather than observed results.
+
+---
+
 ## Standing rule
 
 AI may investigate, analyse, draft, implement within an approved scope, and run verification. The human retains every decision that affects business rules, architecture, schema, scope, priority, risk acceptance and merging. Contributions that cannot be verified are recorded as unverified rather than asserted.
