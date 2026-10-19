@@ -35,7 +35,7 @@ Three characteristics are selected. Selection criterion: a characteristic is onl
 
 **Target.** Given 100 concurrent requests against a tournament of capacity 32: exactly 32 accepted, exactly 68 rejected with a business reason, 0 unhandled errors, p95 response time under 1 second.
 
-**Status.** Specified. The burst test exists (`tests/invariants/tournament-capacity.test.ts`) but, at the time of writing, cannot fail the build and does not assert stored state. Enforcement is tracked in issue #54.
+**Status.** Partially measured. The burst test exists and now **asserts committed state** (`tests/invariants/tournament-capacity.test.ts`) — accepted, refused, committed rows, stored counter and `counter <= capacity`. It was demonstrated capable of failing by fault injection (recorded in the invariants registry). It runs on every pull request in CI ("Domain invariants" job, ~2.5 min). The p95 latency figure in the target is still **not measured** — the suite does not record latency, so that part of the target remains unverified.
 
 **Explicitly not claimed.** The figure of "10,000 fans logging in at kickoff" previously stated here was an unsourced illustrative number, not a requirement. It is removed. The only stated scale is the kata's "hundreds of concurrent spectators", which is itself an unvalidated estimate — see §6.
 
@@ -57,7 +57,7 @@ Three characteristics are selected. Selection criterion: a characteristic is onl
 
 **Target.** Every domain invariant recorded in [`docs/methodology/checkpoint-A/02-invariants.md`](../methodology/checkpoint-A/02-invariants.md) has an automated test that fails when the invariant is violated. The suite runs on every pull request. The suite completes in under 3 minutes.
 
-**Status.** Specified. Not met. As of this document, no test in the repository can fail a build, and the suite does not run in CI. Tracked in issue #54.
+**Status.** Measured, with stated scope. Both enforced invariants (INV-01, INV-02) have automated tests that were **observed failing** under fault injection — the weaker claim "the suite runs and passes" was deliberately not accepted as proof. The suite runs on every pull request (CI job "Domain invariants") and completes in ~2.5 minutes, inside the 3-minute target. INV-03/INV-04/INV-05 are not implemented and marked accordingly in the registry, so the "every enforced invariant" wording holds rather than over-claims.
 
 ## 4. Deliberately not selected, and why
 
@@ -90,4 +90,4 @@ Selecting these later is cheap. Selecting them now, without a driver, adds cost 
 
 ## 7. Conclusion
 
-The selected characteristics are Elasticity, Deployability and Testability, each with a defined measurement and a target. Of these, none currently reaches `Measured`, and that is stated plainly rather than implied. The most important gap is not a missing characteristic but missing evidence: until the invariant suite can fail, this document describes intentions.
+The selected characteristics are Elasticity, Deployability and Testability. Testability is **measured** for enforced invariants (failing observed, CI-run); Elasticity is partly measured (scenario and committed-state assertions hold in CI; p95 latency unmeasured); Deployability remains unverified until a deployment target exists. The remaining gap is not missing structure but missing measurement: latency figures and a running deployment are still to be produced.

@@ -29,9 +29,10 @@ ALTER TABLE tournaments
 -- The capacity guard is defined here rather than in 20261018_init.sql because
 -- it is only correct once the constraints above exist.
 --
--- The implementation increments the counter and then inserts, holding a
--- pessimistic lock on the tournament row first so that the capacity check, the
--- insert and the increment all happen under one lock. A duplicate submission
+-- The implementation inserts first (in a subtransaction, so a duplicate raises
+-- and is swallowed as a refusal), then increments the counter — all while
+-- holding a pessimistic lock on the tournament row, so the capacity check, the
+-- insert and the increment happen under one lock. A duplicate submission
 -- returns false rather than raising, and consumes no second place.
 CREATE OR REPLACE FUNCTION register_for_tournament(
     p_tournament_id UUID,

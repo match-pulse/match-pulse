@@ -9,8 +9,9 @@
  * PROVISIONAL: this returns the seeded demo profile because real
  * authentication is out of scope for this increment. When Supabase Auth lands,
  * replace the body of `getCurrentUserId` with a `supabase.auth.getUser()`
- * lookup. Call sites do not change: the function is already async, and it is
- * already the only place identity is read.
+ * lookup. Note honestly: not every action uses this seam yet — the prediction
+ * actions predate it and hard-code the demo user id. Retiring those actions is
+ * the fix; extending the seam to any new action is mandatory from now on.
  */
 
 const DEMO_USER_ID = '00000000-0000-0000-0000-000000000000'
