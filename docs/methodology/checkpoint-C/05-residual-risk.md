@@ -75,3 +75,13 @@ Revisit the residual risk register when:
 - a peer review is completed.
 
 The register is append-only for history. Decisions are recorded as dated entries, not by rewriting the original risk.
+
+## 7. Addendum 2026-11-07 — RR-01 mitigated
+
+The authorization increment (#95 / PR #96) is implemented and verified in CI run [42397891717](https://github.com/match-pulse/match-pulse/actions/runs/42397891717).
+
+- **RR-01:** mitigated for the platform boundary. Supabase Auth, `profiles.role`, RLS, least-privilege grants, `auth.uid()`-based RPCs and the organizer check in `resolve_market` are in place. The authorization suite passes: anonymous private reads and mutations denied, fan own-row isolation, organizer-only resolution, direct writes denied. Remaining operational concerns: organizer management UI, production session/rate-limit hardening, service-role handling.
+- **RR-04:** fixed. The capacity suite is one self-contained scenario; the uniqueness tests create their own user and tournament. CI passes 21 tests across 6 files.
+- **RR-02, RR-03, RR-05, RR-06, RR-07 and RR-08** remain open. No residual risk is accepted by this addendum; the human decision is still required.
+
+The original table above remains the historical record of the risk before the control. This addendum records the closure evidence and the new residual state.

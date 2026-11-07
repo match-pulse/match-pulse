@@ -10,7 +10,20 @@ This registry records each critical business rule, where it is enforced, and **w
 | **INV-02** | A participant cannot register for the same tournament twice; retries must not consume a second place. | Unique constraint `registrations_tournament_user_unique`, plus a `unique_violation` subtransaction in the function that returns `false` instead of raising. | **Verified.** `registration-uniqueness.test.ts`, confirmed by fault injection. |
 | **INV-03** | *Withdrawn — owner decision, 2026-10-19.* The pre-kickoff fixed-score prediction deadline no longer exists; the market opens at kickoff (see M-INV1). | — | **Withdrawn.** Superseded by M-INV1. |
 | **INV-04** | *Withdrawn — owner decision, 2026-10-19.* Fixed-score prediction storage and its ledger are retired; market trade atomicity is governed by M-INV2. | — | **Withdrawn.** Superseded by M-INV2. |
-| **INV-05** | Only authorised users may act on their own data; club analytics must respect data-sharing rules. | *Planned:* Supabase Auth, Row Level Security policies and grants. | **Not implemented.** Zero RLS policies, zero grants. Verified by probing the local API with an arbitrary key: `anon` has full read and write on every table and can call the trade and resolution RPCs. The app resolves a fixed demo identity server-side, which is not authentication. |
+| **INV-05** | Only authorised users may act on their own data; club analytics must respect data-sharing rules. | Supabase Auth, `profiles.role`, RLS policies, least-privilege grants, `auth.uid()` in every mutation RPC, organizer check in `resolve_market`. | **Verified for the platform boundary.** The authorization suite passes in CI (run [42397891717](https://github.com/match-pulse/match-pulse/actions/runs/42397891717)): anonymous private reads and mutations denied, fan own-row isolation, organizer-only resolution, direct writes denied. The separate club-analytics privacy rule remains **not implemented**; no analytics export exists. |
+
+### Authorization invariants (implemented 2026-11-07)
+
+These are the boundary rules verified by `tests/invariants/authorization.test.ts`.
+They are separate from the market invariants below.
+
+| ID | Invariant | Enforcement | Status |
+| :--- | :--- | :--- | :--- |
+| **A-INV1** | Anonymous visitors may read only public tournament/match/market/trade data and cannot execute mutations. | RLS public-read policies; grants revoked from `anon` for private tables and mutation RPCs. | **Verified.** Authorization suite; CI run 42397891717. |
+| **A-INV2** | A fan may read only their own profile, registration, positions, trades, payouts and cooldown. | Own-row RLS policies using `auth.uid()`; private table grants only to `authenticated`. | **Verified.** Authorization suite; CI run 42397891717. |
+| **A-INV3** | Only an organizer may resolve a market. | `profiles.role = 'ORGANIZER'` check inside `resolve_market`. | **Verified.** Fan refusal and organizer success in the authorization suite. |
+| **A-INV4** | Direct table writes are denied; mutations go through authorized RPCs. | `REVOKE ALL` from `anon`/`authenticated`; no insert/update/delete policies; `SECURITY DEFINER` RPCs with explicit checks. | **Verified.** Direct update/insert attempts are denied in the authorization suite. |
+| **A-INV5** | The public trade feed exposes trades without identity or per-user balance. | `market_public_trades` returns only safe columns. | **Verified.** Response contains no `user_id` or `points_after`. |
 
 ### Market invariants (specified for the live market increment)
 
@@ -40,6 +53,7 @@ An earlier version of this table recorded INV-02 as enforced by "unique database
 | `tests/invariants/market-pricing.test.ts` | M-INV2, M-INV3, M-INV5, M-INV8 (partial M-INV7) | Budget-bounded entry, `ceil` debit, `floor` credit, profit and proportional-loss exits, over-sell and unaffordable-entry refusals, share bookkeeping, and the first cooldown rung; asserts committed balances, positions and trade rows |
 | `tests/invariants/market-lifecycle.test.ts` | M-INV1, M-INV6, M-INV7 | Pre-kickoff refusals, one-shot resolution payout, duplicate-resolution refusal, cooldown ladder/cap/decay/scope, no escalation on refusal and exits accepted during an active cooldown |
 | `tests/invariants/market-concurrency.test.ts` | M-INV4, M-INV7 | Cross-market double-spend race and same-market burst; both were observed red under fault injection |
+| `tests/invariants/authorization.test.ts` | INV-05, A-INV1–A-INV5 | Anonymous access, fan own-row isolation, organizer-only resolution, denied direct writes and the identity-free public trade feed |
 
 **Retired.** The former `prediction-duplicate-prevention.test.ts` (previously `prediction-lock.test.ts`) exercised `UNIQUE (user_id, match_id)` and never tested kickoff locking, because that rule (INV-03) was withdrawn. It was removed with the fixed-score feature in #67 and is not evidence for any market invariant. The table and `submit_prediction` were dropped by `20261023_retire_predictions.sql`.
 
@@ -120,10 +134,33 @@ The second resolution returned success instead of the expected "already resolved
 
 All ten same-market entries were accepted.
 
+### Authorization suite (2026-11-07)
+
+The authorization boundary is enforced at the database and observed in CI:
+
+```text
+Domain invariants: 21 pass, 0 fail, 205 expect() calls, 6 files
+CI run: https://github.com/match-pulse/match-pulse/actions/runs/42397891717
+```
+
+The six authorization tests cover:
+
+- anonymous public reads allowed, private reads and mutation RPCs denied;
+- fan A cannot read fan B's profile, positions, trades or cooldown;
+- a fan cannot resolve; an organizer can;
+- direct table updates/inserts are denied;
+- the public trade feed returns no `user_id` or `points_after`;
+- an anonymous fan is a real auth user with a profile and can trade.
+
+The suite uses authenticated clients for the real path and the service role for
+setup/reads. The service role is not an application runtime credential.
+
 ### What a green run does and does not establish
 
-It establishes that these scenarios hold, on this machine, against a single database instance, at this scale. It does **not** establish behaviour under sustained load, across multiple application instances, or where connections are dropped upstream before reaching a business decision.
+It establishes that these scenarios hold, on this machine, against a single database instance, at this scale. It does **not** establish behaviour under sustained load, across multiple application instances, or where connections are dropped upstream before reaching a business decision. The authorization evidence is local Supabase/PostgreSQL; production session hardening and rate limits are not claimed.
 
 ## 4. Current focus
 
-INV-01 and INV-02 remain verified. INV-03 and INV-04 are withdrawn with the retired fixed-score feature (owner decision, 2026-10-19); M-INV1–M-INV8 replace them. M-INV4 (profile lock / double-spend), M-INV6 (one-shot resolution) and the gate of M-INV7 (cooldown) are **Verified** by observed failure under fault injection. M-INV1, M-INV2, M-INV3, M-INV5 and M-INV8, plus the ladder/decay details of M-INV7, are **Enforced, unverified**: passing tests, no injection yet. The prototype market page enters and exits through server actions that use the identity seam, and the fixed-score feature is removed, but this is UI evidence only — not fault-injection evidence. INV-05 remains open and is deliberately not implied by any result above: this increment is **not** a security boundary, and anyone who can reach the database can act as any participant.
+INV-01 and INV-02 remain verified. INV-03 and INV-04 are withdrawn with the retired fixed-score feature (owner decision, 2026-10-19); M-INV1–M-INV8 replace them. M-INV4 (profile lock / double-spend), M-INV6 (one-shot resolution) and the gate of M-INV7 (cooldown) are **Verified** by observed failure under fault injection. M-INV1, M-INV2, M-INV3, M-INV5 and M-INV8, plus the ladder/decay details of M-INV7, are **Enforced, unverified**: passing tests, no injection yet.
+
+INV-05 and A-INV1–A-INV5 are **Verified** for the platform boundary by the authorization suite in CI. The separate club-analytics privacy rule remains not implemented. The market page is authenticated and reads only the user's own private rows plus the identity-free public trade feed. The remaining open findings are idempotency (FND-003), load/p95 (FND-004), delivery/operations (FND-006), real-user evidence (FND-007) and independent review (FND-008).

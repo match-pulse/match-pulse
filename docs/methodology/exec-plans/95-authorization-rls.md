@@ -1,6 +1,6 @@
 # Execution Plan — Authentication, Authorization, RLS and Grants
 
-- **Status:** Proposed — implementation is blocked until the human owner approves this plan.
+- **Status:** Executed and verified in CI (2026-11-07). See [verification record](../verification/2026-11-95-authorization-rls.md).
 - **Issue:** #95
 - **Branch:** `feat/95-authorization-rls`
 - **Decision owner:** Human developer
@@ -197,3 +197,15 @@ The human owner is asked to approve:
 5. The test rewrite and CI service-role credential.
 
 No implementation begins until this plan is approved.
+
+## 13. Delivery note (2026-11-07)
+
+Approved by the human owner and executed on `feat/95-authorization-rls` (PR #96).
+
+Observed in CI run [42397891717](https://github.com/match-pulse/match-pulse/actions/runs/42397891717):
+
+- Lint, typecheck and build passed in 24s.
+- Domain invariants passed in 2m13s.
+- 21 tests passed across 6 files, including the six authorization tests.
+
+The verification record is [`../verification/2026-11-95-authorization-rls.md`](../verification/2026-11-95-authorization-rls.md). The plan's non-goals remain non-goals: no organizer UI, idempotency, load/p95, deployment, reward redemption or club analytics.

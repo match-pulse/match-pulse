@@ -290,6 +290,30 @@ Secret hygiene re-verified: `release.env` in history contains only `APP_VERSION`
 
 ---
 
+## Entry 19 — Authentication, authorization, RLS and grants
+
+**Date:** 2026-11-07
+**Tool:** opencode CLI (`deepseek-v4.1-flash`)
+**Intent:** Implement the approved security increment: make MatchPulse a real authorization boundary, replace the demo identity with Supabase Auth, restrict private reads with RLS, revoke direct writes, authorize the mutation RPCs, add the organizer-only resolution check, rewrite the invariant tests through authenticated clients, and produce the verification/evidence record.
+**Boundary:** High-risk security and schema change, implemented only after the human approved the formal execution plan. AI designed and implemented the migrations, auth flow, tests and documentation. The human owner approved the plan, the `SECURITY DEFINER` model, the destructive local reset and the `@supabase/ssr` dependency. No merge was performed in this entry.
+**Prior records reviewed:** AGENTS.md security gates, README known gaps, INV-05, Checkpoint C risk map/residual risk (FND-001), ADR-001/ADR-002, system overview, domain model, migrations, RPCs, Server Actions, tests, and the approved execution plan.
+**Verification:**
+- Local: `bun install --frozen-lockfile`, `bun run lint`, `bun run build` and `bun run typecheck` passed. The build generated the Next route types required by typecheck.
+- CI: run [42397891717](https://github.com/match-pulse/match-pulse/actions/runs/42397891717) passed both jobs — **Lint, typecheck and build** in 24s and **Domain invariants** in 2m13s.
+- Test summary: **21 pass, 0 fail, 205 expect() calls, 6 files.** Six authorization tests cover anonymous access, fan own-row isolation, organizer-only resolution, denied direct writes, identity-free public trades and anonymous fan trading.
+- The pre-existing capacity, uniqueness, pricing, lifecycle and concurrency suites still pass through authenticated clients.
+**Learning:**
+- With `auto_expose_new_tables = false`, the service role bypasses RLS but still needs explicit table/function grants. The first CI run failed with `permission denied for table matches`; the fix was to grant the service role explicit local administration/test privileges while keeping anon/authenticated least-privilege.
+- Next.js 16 renamed the `middleware` convention to `proxy`; the session refresh is in `src/proxy.ts`. `cacheComponents` rejects `export const dynamic`; the login gate uses `export const instant = false`.
+- The test suite must use authenticated clients for the real RPC path and the service role only for setup/reads. Using the anon key for setup was the previous weakness; using the service key for the application would be the opposite failure.
+- `SECURITY DEFINER` is necessary because direct table writes are revoked, but it makes every function a high-trust boundary. The explicit `auth.uid()` check, organizer check, fixed `search_path` and authenticated-only execute grants are mandatory.
+- A local `db reset` is required because `profiles` gains an auth identity and the old demo profile is removed.
+**Limitations:** Local Supabase/PostgreSQL only; no production session hardening, rate-limit tuning or deployment. No organizer management UI, idempotency keys, load/p95 or club-analytics privacy rule. There is no independent human review; the human owner must review the PR before merge. The verification record and findings register state these limits.
+
+**Links:** issue #95 · PR #96 · [verification record](verification/2026-11-95-authorization-rls.md) · [ADR-003](../architecture/adr/003-authorization-rls.md) · [execution plan](exec-plans/95-authorization-rls.md)
+
+---
+
 ## Standing rule
 
 AI may investigate, analyse, draft, implement within an approved scope, and run verification. The human retains every decision that affects business rules, architecture, schema, scope, priority, risk acceptance and merging. Contributions that cannot be verified are recorded as unverified rather than asserted.

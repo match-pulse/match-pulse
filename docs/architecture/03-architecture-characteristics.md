@@ -25,7 +25,7 @@ Every claim in this document carries one of these labels. A characteristic with 
 
 ## 3. Selected characteristics (minimal set)
 
-Four characteristics are selected. Selection criterion: a characteristic is only selected if failing it would break a documented business rule or make progress unverifiable.
+Five characteristics are selected. Selection criterion: a characteristic is only selected if failing it would break a documented business rule or make progress unverifiable.
 
 ### 3.1 Elasticity
 
@@ -57,7 +57,7 @@ Four characteristics are selected. Selection criterion: a characteristic is only
 
 **Target.** Every domain invariant recorded in [`docs/methodology/checkpoint-A/02-invariants.md`](../methodology/checkpoint-A/02-invariants.md) has an automated test that fails when the invariant is violated. The suite runs on every pull request. The suite completes in under 3 minutes.
 
-**Status.** Measured, with stated scope. Both enforced invariants (INV-01, INV-02) have automated tests that were **observed failing** under fault injection — the weaker claim "the suite runs and passes" was deliberately not accepted as proof. The suite runs on every pull request (CI job "Domain invariants") and completes in ~2.5 minutes, inside the 3-minute target. Three market mechanisms were also observed failing under injection: the profile lock (double-spend), terminal resolution and the entry-cooldown gate. The remaining market invariants have passing tests but no injection, so they stay Enforced, unverified; INV-05 is not implemented. All are marked accordingly in the registry, so the "every enforced invariant" wording holds rather than over-claims.
+**Status.** Measured, with stated scope. Both enforced invariants (INV-01, INV-02) have automated tests that were **observed failing** under fault injection — the weaker claim "the suite runs and passes" was deliberately not accepted as proof. The suite runs on every pull request (CI job "Domain invariants") and completes in ~2.5 minutes, inside the 3-minute target. Three market mechanisms were also observed failing under injection: the profile lock (double-spend), terminal resolution and the entry-cooldown gate. The remaining market invariants have passing tests but no injection, so they stay Enforced, unverified. The authorization boundary now has its own characteristic and suite (§3.5); all statuses remain explicit in the registry.
 
 ### 3.4 Integrity under concurrency
 
@@ -68,6 +68,32 @@ Four characteristics are selected. Selection criterion: a characteristic is only
 **Target.** The recorded mechanisms (profile lock, terminal resolution, cooldown gate) stay injected-and-red, and every invariant the registry marks "Enforced, unverified" either gains an injection or keeps that label. No payout path may be called Verified from a green run alone.
 
 **Status.** Measured, with stated scope. The profile lock (M-INV4), terminal resolution (M-INV6) and the entry-cooldown gate (M-INV7) were each observed failing under deliberate weakening — a negative balance, an accepted second resolution, and a burst that bypassed the ladder. The remaining market invariants (M-INV1, M-INV2, M-INV3, M-INV5, M-INV8) have passing tests but no injection and stay Enforced, unverified in the [registry](../methodology/checkpoint-A/02-invariants.md).
+
+### 3.5 Security and authorization
+
+**Why it matters.** The system moves points and resolves markets. Before this
+increment, anyone with the anon key could act as any participant and call
+`resolve_market`. The kata's club-analytics privacy concern also requires an
+authorization model that can later distinguish a club reader from a fan.
+
+**How it is measured.** The authorization suite exercises the database as the
+anonymous role, two different fans and an organizer. It checks public reads,
+private own-row reads, cross-user isolation, organizer-only resolution, denied
+direct table writes and the identity-free public trade feed.
+
+**Target.** No anonymous private read or mutation; no cross-user private read;
+only an organizer resolves; direct table writes are denied; the service-role key
+never reaches the client.
+
+**Status.** Measured. CI run
+[42397891717](https://github.com/match-pulse/match-pulse/actions/runs/42397891717)
+passed all 21 tests across 6 files, including the 6 authorization tests. The
+evidence is local Supabase/PostgreSQL; production session and rate-limit
+hardening is not claimed.
+
+**Explicitly not claimed.** There is no organizer management UI, no fine-grained
+club-analytics privacy rule, and no production deployment. The service role is a
+local test/administration credential, not an application runtime key.
 
 ## 4. Deliberately not selected, and why
 
@@ -88,6 +114,8 @@ Selecting these later is cheap. Selecting them now, without a driver, adds cost 
 
 **Deployability via managed services vs. control and cost.** Supabase and Vercel were chosen for deployability and time to market. This trades away infrastructure control, deep connection management, and introduces vendor lock-in. Accepted at this stage; §3.2 records that the benefit is intended rather than measured.
 
+**Security vs. simplicity.** The mutation RPCs are `SECURITY DEFINER` because direct table writes are revoked. That gives a small, auditable mutation surface, but every function becomes a high-trust boundary: it must check `auth.uid()`, check the organizer role where required, validate input and fix `search_path`. RLS alone was not enough; direct grants would let a caller write the table the function is supposed to protect. The cost is review discipline and authorization tests; the benefit is a database boundary that does not depend on the UI.
+
 **No CQRS or event sourcing.** A relational model with transactional functions satisfies every invariant currently stated. Event sourcing would add an operational surface, a projection rebuild path and a second failure mode, none of which address a requirement we have. This is a decision to defer, not a claim that the system is unbounded — the removed "99% of tournaments" figure was never supported.
 
 **Future extraction, not current property.** If club analytics becomes a separate workload, the sentiment pipeline could be extracted into its own deployable and scaled independently. That is a *possible future state under stated conditions*, not a property the present modular monolith has. Components inside one deployment do not scale independently today.
@@ -104,4 +132,4 @@ The structural decisions behind §3.4 are recorded in [ADR-002](./adr/002-live-p
 
 ## 7. Conclusion
 
-The selected characteristics are Elasticity, Deployability, Testability and Integrity under concurrency. Testability and Integrity under concurrency are **measured** for the recorded mechanisms (failure observed under injection; CI-run); Elasticity is partly measured (scenario and committed-state assertions hold in CI; p95 latency unmeasured); Deployability is deliberately unverified because this increment does not include deployment (§6). The remaining gaps are explicit: latency figures, injections for the unverified market invariants, and a deployment environment are still to be produced.
+The selected characteristics are Elasticity, Deployability, Testability, Integrity under concurrency and Security/authorization. Testability, Integrity under concurrency and Security/authorization are **measured** for the recorded mechanisms (failure observed under injection or authorization tests in CI); Elasticity is partly measured (scenario and committed-state assertions hold in CI; p95 latency unmeasured); Deployability is deliberately unverified because this increment does not include deployment (§6). The remaining gaps are explicit: latency figures, injections for the unverified market invariants, an organizer management UI, and a deployment environment are still to be produced.

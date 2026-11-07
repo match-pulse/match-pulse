@@ -202,7 +202,7 @@ The trial must be recorded as a decision, not just a tool installation. It shoul
 ## 7. Limits
 
 - This record describes intentions and current practice; it does not prove that the practices are followed in every slice.
-- The test suite has known independence gaps and unverified invariants (FND-002, FND-005).
+- The test suite has unverified market invariants (FND-002); the previous independence gap (FND-005) is fixed. The authorization suite now uses authenticated clients and observes the database boundary (CI run 42397891717).
 - There is no independent human review (FND-008).
 - There is no load, performance or production evidence (FND-004, FND-006).
 - A future OpenSpec trial could change this decision; until then, the lightweight practice is the current truth.

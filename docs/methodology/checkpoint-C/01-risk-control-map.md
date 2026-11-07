@@ -78,3 +78,18 @@ Revisit this map when:
 - a residual risk is accepted, deferred or closed.
 
 The map is a living record. Changes are dated addenda; historical rows are not rewritten.
+
+## 7. Addendum 2026-11-07 — R-01 control landed
+
+The authorization increment (#95 / PR #96) adds the control that R-01 did not
+have: Supabase Auth, `profiles.role`, RLS, least-privilege grants,
+`auth.uid()`-based RPCs and an organizer check in `resolve_market`. CI run
+[42397891717](https://github.com/match-pulse/match-pulse/actions/runs/42397891717)
+passes the six authorization tests and the existing invariant suites (21 tests
+across 6 files).
+
+R-01 is mitigated for the local platform boundary. The residual operational
+concerns are the missing organizer management UI, production session/rate-limit
+hardening and service-role handling. R-04 (test independence) is fixed; R-02,
+R-03, R-05 and the broader operational risks remain open. No risk is accepted by
+this addendum.

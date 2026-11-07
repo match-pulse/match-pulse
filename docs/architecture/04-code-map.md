@@ -12,26 +12,32 @@
 
 | Element | Location | Responsibility |
 | :--- | :--- | :--- |
-| Root layout | `src/app/layout.tsx` | Shell, metadata, top bar |
+| Root layout | `src/app/layout.tsx` | Shell and metadata |
 | Home route | `src/app/page.tsx` | Redirects to the demo market |
-| Market page (Server Component) | `src/app/market/[id]/page.tsx` | Loads the market, reads prices via the `market_price` RPC, renders the trader |
-| Tournament page (Server Component) | `src/app/tournaments/[id]/page.tsx` | Tournament detail and registration entry point |
+| Login page | `src/app/login/page.tsx` | Fan and organizer entry point; redirects an existing session |
+| Market page (Server Component) | `src/app/market/[id]/page.tsx` | Loads the authenticated user's market, prices, positions and public trades |
+| Tournament page (Server Component) | `src/app/tournaments/[id]/page.tsx` | Tournament detail and authenticated registration entry point |
 | Market client component | `src/components/MarketTrader.tsx` | Entry/exit form; renders prices and holdings |
 | Registration form | `src/components/RegistrationForm.tsx` | Registration form bound to the Server Action |
-| Top bar | `src/components/TopBar.tsx` | Demo identity and points display |
+| Login client component | `src/components/LoginForms.tsx` | Fan anonymous sign-in and organizer password sign-in |
+| Top bar | `src/components/TopBar.tsx` | Authenticated username, points and sign-out |
+| Session proxy | `src/proxy.ts` | Refreshes the Supabase auth cookie on each request |
 
 ## 2. Application layer (Server Actions)
 
 | Action | Location | Database call |
 | :--- | :--- | :--- |
+| Sign in as fan / organizer | `src/app/actions/auth.ts` — `signInAnonymously`, `signInOrganizer` | Supabase Auth |
+| Sign out | `src/app/actions/auth.ts` — `signOut` | Supabase Auth |
 | Enter a market position | `src/app/actions/market.ts` — `enterPosition` | `open_trade` |
 | Exit a position | `src/app/actions/market.ts` — `exitPosition` | `close_trade` |
 | Register for a tournament | `src/app/actions/register.ts` — `registerForTournament` | `register_for_tournament` |
 
 Cross-cutting seams:
 
-- **Identity:** `src/lib/session.ts` — `getCurrentUserId()` resolves a fixed demo identity on the server. It is the single place the system reads the caller from, and it is explicitly **not authentication** (INV-05).
-- **Database client:** `src/lib/supabase.ts` — one Supabase client built from `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY`. Only an anon key is used; no service-role key exists in the repository.
+- **Identity:** `src/lib/session.ts` — `getCurrentUser()` reads the Supabase Auth session; `requireUser()` redirects unauthenticated page requests to `/login`. The database RPCs independently resolve the caller with `auth.uid()`.
+- **Database client:** `src/lib/supabase/server.ts` — a cookie-based `@supabase/ssr` client using `NEXT_PUBLIC_SUPABASE_URL` and the anon key. No service-role key is used by the application runtime.
+- **Service role:** local `scripts/create-organizer.ts` and test setup only. It is never imported by `src/`.
 - **Input validation:** the Server Actions validate form input before it reaches the database; the database functions re-enforce every rule regardless.
 
 ## 3. Database (schema of record)
@@ -46,18 +52,22 @@ Migrations in `supabase/migrations/`, replayed in filename order:
 | `20261021_market_core.sql` | `markets`, `market_positions`, `market_trades`, `market_entry_cooldowns` | `market_cooldown_seconds`, `market_cost`, `market_price`, `open_trade`, `close_trade` |
 | `20261022_market_resolution.sql` | `market_payouts` | `resolve_market` |
 | `20261023_retire_predictions.sql` | — (drops `predictions`) | drops `submit_prediction` |
+| `20261108_auth_profiles.sql` | — (`profiles.role`, auth FK, registration FK) | `handle_new_user`, auth-user trigger |
+| `20261109_rls_grants.sql` | — (RLS policies and grants) | `market_public_trades` |
+| `20261110_rpc_auth.sql` | — | `register_for_tournament`, `open_trade`, `close_trade`, `resolve_market` with auth checks |
 
-`supabase/seed.sql` seeds the demo profile (200 points), one LIVE match and its `b = 100` market.
+`supabase/seed.sql` seeds one LIVE match, its `b = 100` market and one capacity-limited tournament. It does **not** seed a profile: profiles are created by the auth trigger when a user signs in.
 
-The state-changing functions (`open_trade`, `close_trade`, `resolve_market`) are `SECURITY INVOKER` and lock the market row before the profile, cooldown and position rows (ADR-002). Grants and RLS are **not implemented**: every exposed table is currently reachable with the anon key (INV-05).
+The state-changing functions (`register_for_tournament`, `open_trade`, `close_trade`, `resolve_market`) are `SECURITY DEFINER` with `search_path = public, pg_temp` and explicit `auth.uid()` checks; `resolve_market` additionally checks the organizer role. Direct table writes are revoked; RLS restricts private reads to the owner. The lock order remains market → profile → cooldown → position (ADR-002, superseded implementation note in ADR-003).
 
 ## 4. Invariants → enforcement → tests
 
 | Invariant | Enforced in | Tested in |
 | :--- | :--- | :--- |
-| INV-01 tournament capacity | `register_for_tournament` + CHECK constraints (`20261019`, `20261020`) | `tests/invariants/tournament-capacity.test.ts` |
+| INV-01 tournament capacity | `register_for_tournament` + CHECK constraints (`20261019`, `20261020`); authenticated caller | `tests/invariants/tournament-capacity.test.ts` |
 | INV-02 registration uniqueness | `registrations_tournament_user_unique` + exception handling (`20261019`) | `tests/invariants/registration-uniqueness.test.ts` |
-| M-INV1 – M-INV8 market invariants | `20261021_market_core.sql`, `20261022_market_resolution.sql` | `tests/invariants/market-pricing.test.ts`, `market-lifecycle.test.ts`, `market-concurrency.test.ts` |
+| M-INV1 – M-INV8 market invariants | `20261021_market_core.sql`, `20261022_market_resolution.sql`, `20261110_rpc_auth.sql` | `tests/invariants/market-pricing.test.ts`, `market-lifecycle.test.ts`, `market-concurrency.test.ts` |
+| INV-05 / A-INV1 – A-INV5 authorization | `20261108_auth_profiles.sql`, `20261109_rls_grants.sql`, `20261110_rpc_auth.sql` | `tests/invariants/authorization.test.ts` |
 
 Per-invariant statuses, targets and fault-injection evidence: [`02-invariants.md`](../methodology/checkpoint-A/02-invariants.md).
 
@@ -66,7 +76,7 @@ Per-invariant statuses, targets and fault-injection evidence: [`02-invariants.md
 | Concern | Location |
 | :--- | :--- |
 | CI | `.github/workflows/ci.yml` — jobs "Lint, typecheck and build" and "Domain invariants" |
-| Scripts | `package.json` — `dev`, `build`, `start`, `lint`, `typecheck`, `test` |
+| Scripts | `package.json` — `dev`, `build`, `start`, `lint`, `typecheck`, `test`, `auth:organizer` |
 | Local database | `supabase/config.toml`; `bunx supabase start` / `bunx supabase db reset` |
 | Container | `Dockerfile`, `docker-compose.yml` |
 
@@ -79,7 +89,8 @@ Per-invariant statuses, targets and fault-injection evidence: [`02-invariants.md
 | Domain model (entities, relationships, journeys) | [`02-domain-model.md`](./02-domain-model.md) |
 | Characteristics and measures | [`03-architecture-characteristics.md`](./03-architecture-characteristics.md) |
 | C4 views (context, containers, components) | [`05-c4-diagrams.md`](./05-c4-diagrams.md) |
-| Decisions | [`adr/`](./adr/) |
+| Decisions | [`adr/`](./adr/) — ADR-003 is the authorization model |
 | Invariants registry and evidence | [`../methodology/checkpoint-A/02-invariants.md`](../methodology/checkpoint-A/02-invariants.md) |
+| Authorization verification | [`../methodology/verification/2026-11-95-authorization-rls.md`](../methodology/verification/2026-11-95-authorization-rls.md) |
 | Methodology checkpoints | [`../methodology/`](../methodology/) |
 | Agent instructions and governance | [`../../AGENTS.md`](../../AGENTS.md) |

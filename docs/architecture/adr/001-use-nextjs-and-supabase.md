@@ -47,6 +47,8 @@ Critical business rules are enforced **inside the database**, as transactional f
 
 Earlier revisions of this ADR asserted "instant CI/CD", an "Edge network" benefit for scalability, and that Row-Level Security was in place. None was supported by the repository at the time of writing. All three are withdrawn. Row Level Security is **not implemented**.
 
+**Addendum 2026-11-07:** authentication, roles, RLS and least-privilege grants are now implemented under [ADR-003](./003-authorization-rls.md). This does not rewrite the historical consequence above; it records that the missing control was later added. The service role remains a local test/administration credential, not an application runtime key.
+
 ## Related
 
 - [`03-architecture-characteristics.md`](../03-architecture-characteristics.md) — selected characteristics, targets and their status
