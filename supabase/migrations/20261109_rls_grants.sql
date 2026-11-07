@@ -147,3 +147,21 @@ TO anon, authenticated;
 
 GRANT EXECUTE ON FUNCTION public.market_price(NUMERIC, NUMERIC, NUMERIC, NUMERIC, NUMERIC)
 TO anon, authenticated;
+
+-- The service role is used only by local administration and test setup. It
+-- bypasses RLS, but it still needs explicit privileges when automatic exposure
+-- is disabled. It is never used by the application runtime.
+GRANT ALL ON TABLE
+    public.profiles,
+    public.tournaments,
+    public.registrations,
+    public.matches,
+    public.markets,
+    public.market_positions,
+    public.market_trades,
+    public.market_entry_cooldowns,
+    public.market_payouts
+TO service_role;
+
+GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO service_role;
+GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA public TO service_role;

@@ -533,3 +533,6 @@ GRANT EXECUTE ON FUNCTION public.close_trade(UUID, TEXT, NUMERIC) TO authenticat
 
 REVOKE ALL ON FUNCTION public.resolve_market(UUID, TEXT) FROM PUBLIC, anon, authenticated;
 GRANT EXECUTE ON FUNCTION public.resolve_market(UUID, TEXT) TO authenticated;
+
+-- Local administration and tests use the service role for setup and reads.
+GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA public TO service_role;
