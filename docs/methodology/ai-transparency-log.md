@@ -352,6 +352,25 @@ Secret hygiene re-verified: `release.env` in history contains only `APP_VERSION`
 
 ---
 
+## Entry 22 — Checkpoint C current-state refresh
+
+**Date:** 2026-11-07
+**Tool:** opencode CLI (`deepseek-v4.1-flash`)
+**Intent:** Refresh the Checkpoint C narrative after authentication/RLS and `v1.1.0`: re-rank the remaining risks, update the three-minute script, add a readiness checklist, and state the M-INV4 re-injection limit.
+**Boundary:** Documentation only. AI added the current-state record and a README pointer. No application code, schema, test or CI change. No historical checkpoint content was rewritten; the new record supplements it.
+**Prior records reviewed:** original Checkpoint C package, authorization verification, v1.1.0 release, findings register, release policy, risk-control map and residual-risk addenda.
+**Verification:** Relative-link scan over 60 Markdown files; `git diff --check`. No application or test commands were run because this is a documentation refresh.
+**Learning:**
+- The original C main answers correctly described the pre-auth state but became misleading after R-01 was mitigated. A current-state addendum prevents a reader from presenting a stale risk ranking.
+- The top remaining risk is now idempotency (FND-003), not authorization. The unverified market injections (FND-002) and delivery/operations (FND-006) follow.
+- The M-INV4 fault injection predates the `SECURITY DEFINER` auth version. The suite passes after auth, but the strongest evidence is still the pre-auth injection; this is stated as a limit rather than implied as re-run.
+- C should be presented before D. The L13–L16 materials are not yet in the course folder, so D preparation would otherwise be based on inference.
+**Limitations:** No independent human review (FND-008); no auth-version M-INV4 re-injection; no real-user evidence (FND-007); no portfolio index yet. The current-state record is a presentation aid, not new test evidence.
+
+**Links:** issue #101 · PR #102 · [`07-current-state.md`](checkpoint-C/07-current-state.md) · [`README.md`](checkpoint-C/README.md)
+
+---
+
 ## Standing rule
 
 AI may investigate, analyse, draft, implement within an approved scope, and run verification. The human retains every decision that affects business rules, architecture, schema, scope, priority, risk acceptance and merging. Contributions that cannot be verified are recorded as unverified rather than asserted.
