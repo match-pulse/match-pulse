@@ -149,7 +149,11 @@ Keep the existing column names. The board status must reflect actual work. Do no
 
 Use Conventional Commit subjects, for example `feat: add prediction submission`, `fix: prevent duplicate point deductions`, `test: cover concurrent registrations`, and `refactor: isolate market pricing logic`.
 
-A pull request must state: summary and rationale; scope and non-goals; **linked issue (required)**; prior records reviewed; checks actually run and observed results; security/data/migration/operational risks; the AI transparency record; and the changelog row. Review the complete diff for unrelated files, secrets, generated artifacts, accidental edits, and accidental changes to historical records. Do not create or update a PR, commit, push, or merge without the required authorization.
+A pull request must state: summary and rationale; scope and non-goals; **linked issue (required)**; prior records reviewed; checks actually run and observed results; security/data/migration/operational risks; and the AI transparency record. Add a changelog entry only when the change is notable and the release section is being prepared; otherwise state that no user-facing or developer-facing changelog entry is needed. Review the complete diff for unrelated files, secrets, generated artifacts, accidental edits, and accidental changes to historical records. Do not create or update a PR, commit, push, or merge without the required authorization.
+
+### Releases and Tags
+
+Use annotated Semantic Versioning tags `vMAJOR.MINOR.PATCH` on `main`, after CI is green and the release section, migration notes and `package.json` version are aligned. Tag the release commit, never a feature branch or PR head. Create a GitHub Release from the tag, mark pre-release candidates with `-rc.N`, and never move, delete or reuse a tag. Tag coherent milestones, not every merge. The full checklist is in [`docs/workflows/release-workflow.md`](docs/workflows/release-workflow.md).
 
 ### Issue Format
 
@@ -227,7 +231,7 @@ Every finding gets a unique `FND-NNN` identifier in the findings register, with 
 
 **Anti-loop rule:** two reversals in the same area within 30 days, or within one campaign, stop the work until a root-cause record and a human decision exist. Conflicting open issues or pull requests that affect the same invariant, contract, module, or area are escalated, not merged. Keep one active increment or campaign at a time.
 
-The changelog is append-only. Going forward, add one row per merged pull request in the same PR. Historical rows are reconstructed from Git and PR history and link to their commit; they are not a contemporaneous record. The linked issue, ADR, and PR remain the authoritative statement of their claims; the changelog summarizes and never redefines them.
+The changelog is append-only and records **notable user-facing or developer-facing changes grouped by release/version**, not one row per merged pull request. Prepare the release section when cutting a release, not on every merge. The pre-policy PR table is frozen for traceability and is not updated. The linked issue, ADR, PR and verification record remain the authoritative statement of their claims; the changelog summarizes and never redefines them. Tags and releases follow [`docs/workflows/release-workflow.md`](docs/workflows/release-workflow.md).
 
 ## 13. Response Format
 
