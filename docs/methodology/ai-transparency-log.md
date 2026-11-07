@@ -263,6 +263,8 @@ Secret hygiene re-verified: `release.env` in history contains only `APP_VERSION`
 
 **Addendum 2026-11-07:** CI run [42373836200](https://github.com/match-pulse/match-pulse/actions/runs/42373836200) completed after this entry was written. Observed: "Lint, typecheck and build" passed in 26s; "Domain invariants" passed in 2m3s. This supplements, and does not rewrite, the verification above.
 
+**Addendum 2026-11-07 (CI re-run):** A later CI run failed in "Start local Supabase" because host port 54322 was already in use; the test steps were skipped. The failed job was re-run and passed: "Domain invariants" in 1m43s, "Lint, typecheck and build" in 18s. The failure was an infrastructure port conflict, not a test failure, and is recorded here rather than omitted.
+
 ---
 
 ## Standing rule
