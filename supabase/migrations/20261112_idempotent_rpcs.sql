@@ -137,6 +137,11 @@ BEGIN
                     RAISE EXCEPTION 'request trade not found';
                 END IF;
 
+                shares := v_shares;
+                cost := v_cost;
+                price_before := v_price_before;
+                price_after := v_price_after;
+                points_after := v_points_after;
                 RETURN NEXT;
                 RETURN;
             END IF;
@@ -438,6 +443,10 @@ BEGIN
                     RAISE EXCEPTION 'request trade not found';
                 END IF;
 
+                proceeds := v_proceeds;
+                price_before := v_price_before;
+                price_after := v_price_after;
+                points_after := v_points_after;
                 RETURN NEXT;
                 RETURN;
             END IF;
