@@ -155,7 +155,7 @@ Each slice: one branch/PR only if the human chooses to split; otherwise one PR w
 - Update `INV-05` and add A-INV1–A-INV4 to the invariant registry.
 - Update FND-001 with a lifecycle entry; do not mark it Verified until the verification record supports closure.
 - Add a dated addendum to Checkpoint C residual risk; do not rewrite the original.
-- AI transparency Entry 19; changelog row.
+- AI transparency Entry 20; the authentication/RLS change becomes a `v1.1.0` release note at release preparation, not a per-PR changelog row.
 
 ## 10. Risks and recovery
 

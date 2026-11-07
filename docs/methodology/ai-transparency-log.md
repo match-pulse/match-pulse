@@ -290,7 +290,26 @@ Secret hygiene re-verified: `release.env` in history contains only `APP_VERSION`
 
 ---
 
-## Entry 19 — Authentication, authorization, RLS and grants
+## Entry 19 — Release-based changelog and tag policy
+
+**Date:** 2026-11-07
+**Tool:** opencode CLI (`deepseek-v4.1-flash`)
+**Intent:** Adopt the human-approved release policy: replace the per-PR changelog ledger with a curated, release-grouped history; freeze the existing PR table; and define SemVer tags, GitHub Releases and the release checklist.
+**Boundary:** Documentation and process only. AI rewrote the changelog structure, updated the agent rules and added the release workflow. No application code, schema, test, CI or dependency changed. No historical row was deleted; all 63 chronological rows were preserved in the frozen ledger. No tag was moved or created in this entry.
+**Prior records reviewed:** current `CHANGELOG.md` and rules, `AGENTS.md` §8/§12, the `v1.0.0` annotated tag on `5fadb6c`, the current release state (no GitHub Release; `package.json` 0.1.0), and PR #96.
+**Verification:** Relative-link scan over 56 Markdown files; `git diff --check`; historical row count 63 before and 63 after. No application or test commands were run because this is a documentation/process-only change.
+**Learning:**
+- The project board and the changelog serve different purposes: execution tracking versus permanent release history. A per-PR changelog duplicating GitHub adds volume without adding release meaning.
+- Tags must be defined by a policy, not created ad hoc. A tag is an immutable release snapshot on `main`, not a bookmark for every merge.
+- `v1.0.0` is a historical annotated tag with no GitHub Release and a stale `package.json` version (`0.1.0`). It remains the baseline and will not be moved; the next release (`v1.1.0`) will align the package version and publish a GitHub Release.
+- PR #96 needs reconciliation before merge: its per-PR changelog row is removed and the authentication/RLS change becomes a `v1.1.0` release note at release preparation.
+**Limitations:** Tag protection for `v*` is not yet configured. The release workflow is documented but has not yet been exercised for `v1.1.0`. No independent human review; the human owner must review PR #98.
+
+**Links:** issue #97 · PR #98 · [`CHANGELOG.md`](../../CHANGELOG.md) · [`release-workflow.md`](../workflows/release-workflow.md)
+
+---
+
+## Entry 20 — Authentication, authorization, RLS and grants
 
 **Date:** 2026-11-07
 **Tool:** opencode CLI (`deepseek-v4.1-flash`)
