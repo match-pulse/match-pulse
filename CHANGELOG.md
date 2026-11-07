@@ -17,6 +17,47 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versioning: [S
 
 No unreleased changes yet.
 
+## [1.2.0] - 2026-11-08
+
+Request-key idempotency for entry and exit.
+
+### Added
+
+- `trade_requests` request keys with unique `(user_id, request_id)`, payload comparison, `IN_PROGRESS`/`COMPLETED` status and the resulting trade.
+- M-INV9: retried entries and exits replay the recorded trade; the same key with a different payload is refused.
+- Client-side request-key retention across retries; the key rotates after success or a payload change.
+- Architecture guard updated to check the latest mutation RPC definitions and exact signatures.
+
+### Changed
+
+- `open_trade` and `close_trade` accept an optional request ID; the application always sends one.
+- Existing tests use the explicit legacy null-key path; the idempotency suite uses real keys.
+- Entry/exit request rows are owner-only through RLS; direct writes are denied.
+
+### Fixed
+
+- FND-003: a retry after cooldown no longer creates a duplicate entry or exit.
+
+### Migration / upgrade notes
+
+- Apply `20261111_trade_requests.sql` and `20261112_idempotent_rpcs.sql`; `supabase db reset` replays them locally.
+- The 3-arg RPCs are replaced by 4-arg versions with a default request ID. The app and tests are updated; old callers can still omit the key, but that path is not idempotent.
+- No data reset is required beyond applying the migrations; the new table is additive.
+
+### Known gaps
+
+- No request-key retention/cleanup policy.
+- The legacy null-key path remains non-idempotent.
+- Fault injection for the idempotency unique constraint was not observed locally.
+- M-INV1/2/3/5/8 and the M-INV7 details still lack fault injection.
+- No load/p95, deployment, observability or recovery evidence.
+- The problem/outcome claims still lack real-user evidence, and there is no independent human review.
+
+### Evidence
+
+- Main CI [42425940843](https://github.com/match-pulse/match-pulse/actions/runs/42425940843): 28 tests pass, 0 fail.
+- [Idempotency verification](docs/methodology/verification/2026-11-107-idempotent-trades.md); AI transparency Entry 25; [ADR-002 addendum](docs/architecture/adr/002-live-prediction-market.md).
+
 ## [1.1.0] - 2026-11-07
 
 Authentication and database-enforced authorization.
@@ -175,6 +216,7 @@ This table is the pre-policy execution record. It is kept for traceability and i
 - The first entry after this changelog is established is recorded contemporaneously and links its issue, PR, verification, and AI transparency entry.
 
 
-[Unreleased]: https://github.com/match-pulse/match-pulse/compare/v1.1.0...HEAD
+[Unreleased]: https://github.com/match-pulse/match-pulse/compare/v1.2.0...HEAD
+[1.2.0]: https://github.com/match-pulse/match-pulse/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/match-pulse/match-pulse/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/match-pulse/match-pulse/commit/5fadb6c
