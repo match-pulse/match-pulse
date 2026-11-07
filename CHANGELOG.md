@@ -15,7 +15,53 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versioning: [S
 
 ## [Unreleased]
 
-No unreleased changes yet. When preparing a release, add entries under `Added`, `Changed`, `Deprecated`, `Removed`, `Fixed`, `Security` and `Migration / upgrade notes`, then promote the section to the new version.
+No unreleased changes yet.
+
+## [1.1.0] - 2026-11-07
+
+Authentication and database-enforced authorization.
+
+### Added
+
+- Supabase Auth fan sessions (anonymous) and organizer email/password sign-in; the auth trigger creates a profile with 200 points.
+- Database authorization: `profiles.role`, RLS on every exposed table, least-privilege grants, `auth.uid()`-based mutation RPCs and organizer-only `resolve_market`.
+- Public trade feed that exposes recent trades without identity.
+- Login/sign-out UI, cookie-based server auth and Next.js proxy session refresh.
+- Local `bun run auth:organizer` fixture.
+
+### Changed
+
+- Server Actions and RPCs no longer accept caller-supplied user IDs; identity comes from the auth session and `auth.uid()`.
+- The market UI is authenticated and reads only the user's own private rows.
+- The changelog is release-based; the pre-policy PR ledger is frozen and a release workflow was added. (#97, PR #98)
+- Test suites use authenticated clients for mutations and a service-role client only for setup and committed-state reads.
+
+### Fixed
+
+- The capacity suite is self-contained and the uniqueness tests create their own fixtures (FND-005).
+
+### Security
+
+- Anonymous private reads and mutations are denied; fans read only their own rows; only organizers resolve markets; direct table writes are denied.
+- The service role is local test/administration only and is never used by the application runtime.
+
+### Migration / upgrade notes
+
+- A local `supabase db reset` is required: `profiles.id` now references `auth.users`, registrations reference profiles, and the demo profile is removed.
+- Add `SUPABASE_SERVICE_ROLE_KEY` to `.env.local` for tests and `bun run auth:organizer`; never expose it to the browser.
+- Open `/login` and use **Continue as fan**, or create the organizer fixture with `bun run auth:organizer`.
+
+### Known gaps
+
+- No organizer management UI; resolution is an authorized RPC/test path.
+- No idempotency keys, load/p95, deployment, observability or recovery evidence.
+- M-INV1/2/3/5/8 and the M-INV7 details still lack fault injection.
+- The problem/outcome claims still lack real-user evidence, and there is no independent human review.
+
+### Evidence
+
+- Main CI [42410413126](https://github.com/match-pulse/match-pulse/actions/runs/42410413126): 21 tests pass, 0 fail.
+- [Authorization verification](docs/methodology/verification/2026-11-95-authorization-rls.md); AI transparency Entry 20; [ADR-003](docs/architecture/adr/003-authorization-rls.md).
 
 ## [1.0.0] - 2026-10-19
 
@@ -129,5 +175,6 @@ This table is the pre-policy execution record. It is kept for traceability and i
 - The first entry after this changelog is established is recorded contemporaneously and links its issue, PR, verification, and AI transparency entry.
 
 
-[Unreleased]: https://github.com/match-pulse/match-pulse/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/match-pulse/match-pulse/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/match-pulse/match-pulse/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/match-pulse/match-pulse/commit/5fadb6c

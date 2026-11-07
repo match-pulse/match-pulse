@@ -333,6 +333,25 @@ Secret hygiene re-verified: `release.env` in history contains only `APP_VERSION`
 
 ---
 
+## Entry 21 — Release v1.1.0
+
+**Date:** 2026-11-07
+**Tool:** opencode CLI (`deepseek-v4.1-flash`)
+**Intent:** Cut the first release under the new release policy: promote the curated changelog section to `1.1.0`, align `package.json`, and prepare the annotated tag and GitHub Release.
+**Boundary:** Release preparation only. AI edited `CHANGELOG.md`, `package.json` and this log. No application code, schema, test or CI change. The human owner approved the release policy and the release; the tag and GitHub Release are created after the release PR is merged and `main` is verified.
+**Prior records reviewed:** release workflow, `CHANGELOG.md`, PR #96 (authentication/RLS), PR #98 (release policy), AI log Entries 19–20, and the #95 authorization verification record.
+**Work performed:** promoted `[Unreleased]` to `[1.1.0] - 2026-11-07` with Added/Changed/Fixed/Security/Migration/Known gaps/Evidence; started a fresh `[Unreleased]`; updated compare links; set `package.json` to `1.1.0`.
+**Verification:** `bun install --frozen-lockfile` passed with no lockfile changes. Main CI [42410413126](https://github.com/match-pulse/match-pulse/actions/runs/42410413126) passed with 21 tests and 0 failures. The release PR CI is the final merge gate.
+**Learning:**
+- The release section is curated from the notable changes, not from the PR list. The authentication/RLS change is one release narrative with a migration note.
+- The package version and tag must match; `v1.0.0` remains the historical baseline, and `v1.1.0` is the first release under the new policy.
+- A tag is created only after the release PR is merged and `main` is green; the release notes are then published from the same changelog section.
+**Limitations:** The annotated tag, GitHub Release, tag protection and milestone closure are created after this entry. No independent human review; the human owner approves the release. The known gaps in the changelog remain open.
+
+**Links:** issue #99 · PR #100 · [`CHANGELOG.md`](../../CHANGELOG.md) · [`release-workflow.md`](../workflows/release-workflow.md)
+
+---
+
 ## Standing rule
 
 AI may investigate, analyse, draft, implement within an approved scope, and run verification. The human retains every decision that affects business rules, architecture, schema, scope, priority, risk acceptance and merging. Contributions that cannot be verified are recorded as unverified rather than asserted.
