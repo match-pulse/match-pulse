@@ -1,30 +1,53 @@
 # Changelog
 
-All notable changes to MatchPulse, recorded as append-only tables. The linked issue, ADR, and PR remain the authoritative statement of their claims; this file summarizes and never redefines them.
+All notable changes to MatchPulse, grouped by release. The detailed execution history lives in GitHub issues, pull requests and the project board; this file records what shipped and why it matters.
 
-## Rules
+Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versioning: [Semantic Versioning](https://semver.org/).
 
-- One row per merged pull request going forward. Add the row in the same pull request as the change.
-- Date is the merge date, ISO 8601. The Unreleased row uses the PR date. Historical rows before 2026-11-07 use the commit date.
-- Type: Added, Changed, Fixed, Removed, Security, Docs, Test, Chore, Architecture.
-- Summary is the PR title without its conventional prefix. Historical summaries are the original commit subjects.
-- Issue and PR columns link to the authoritative record; use "—" when none exists. Do not invent numbers.
-- Evidence links to the commit, verification record, or AI transparency entry.
-- Never rewrite or delete a historical row. Corrections are new rows or dated notes.
-- Claims remain owned by the linked issue, ADR, or PR. This file does not restate or redefine them.
+## Release policy
 
-## Unreleased
+- Not every issue or pull request gets an entry. Record notable user-facing or developer-facing changes: behaviour, API/schema/migration contracts, security and privacy, delivery and operations, breaking changes, deprecations and notable fixes.
+- Do not record routine documentation, test-only changes, chores, internal refactors or dependency bumps unless they change a contract, a risk or how contributors work.
+- Group related changes under one bullet and link the headline issue, PR, ADR or verification record.
+- Prepare the release section when the release is being cut, not on every merge.
+- The pre-policy PR ledger below is frozen for traceability. It is not the model for new entries.
+- Tags and releases follow [`docs/workflows/release-workflow.md`](docs/workflows/release-workflow.md).
+
+## [Unreleased]
+
+No unreleased changes yet. When preparing a release, add entries under `Added`, `Changed`, `Deprecated`, `Removed`, `Fixed`, `Security` and `Migration / upgrade notes`, then promote the section to the new version.
+
+## [1.0.0] - 2026-10-19
+
+Initial tagged baseline.
+
+### Added
+
+- Tournament registration with database-enforced capacity.
+- Live three-outcome prediction market: LMSR entry, exit and one-shot resolution.
+- Local Supabase/Docker setup and GitHub Actions CI.
+- Architecture and methodology records.
+
+### Security
+
+- No authentication, RLS or grants in this baseline. The database was **not** a security boundary; this tag is not a production-readiness claim.
+
+### Evidence
+
+- Tag `v1.0.0` on commit [`5fadb6c`](https://github.com/match-pulse/match-pulse/commit/5fadb6c); the detailed pre-policy ledger is below.
+
+## Historical PR ledger (pre-policy, frozen 2026-11-07)
+
+This table is the pre-policy execution record. It is kept for traceability and is not updated. New changes are recorded in the release sections above. Rows are not deleted or rewritten.
+
+### 2026-11-07 (pre-policy)
 
 | Date | Type | Summary | Issue | PR | Evidence |
 |---|---|---|---|---|---|
 | 2026-11-07 | Docs | establish workflow documentation, historical recordkeeping and changelog | [#91](https://github.com/match-pulse/match-pulse/issues/91) | [#92](https://github.com/match-pulse/match-pulse/pull/92) | CI + AI log Entry 17 |
 | 2026-11-07 | Docs | specify the SDLC, development practices and Checkpoint C evidence | [#93](https://github.com/match-pulse/match-pulse/issues/93) | [#94](https://github.com/match-pulse/match-pulse/pull/94) | AI log Entry 18 |
 
-## Historical record
-
-Rows below are reconstructed from the Git and pull-request history. They link to their commit and are not a contemporaneous record.
-
-## 2026-10-19
+### 2026-10-19
 
 | Date | Type | Summary | Issue | PR | Evidence |
 |---|---|---|---|---|---|
@@ -75,7 +98,7 @@ Rows below are reconstructed from the Git and pull-request history. They link to
 | 2026-10-19 | Chore | add GitHub Actions workflow for build and linting | — | — | [2126277](https://github.com/match-pulse/match-pulse/commit/2126277) |
 | 2026-10-19 | Added | implement split layout, predictions table, and point deduction logic | — | — | [509d780](https://github.com/match-pulse/match-pulse/commit/509d780) |
 
-## 2026-10-18
+### 2026-10-18
 
 | Date | Type | Summary | Issue | PR | Evidence |
 |---|---|---|---|---|---|
@@ -94,13 +117,17 @@ Rows below are reconstructed from the Git and pull-request history. They link to
 | 2026-10-18 | Docs | Enhance documentation for MatchPulse architecture | — | — | [b106973](https://github.com/match-pulse/match-pulse/commit/b106973) |
 | 2026-10-18 | Docs | add MatchPulse architectural kata | — | — | [530b483](https://github.com/match-pulse/match-pulse/commit/530b483) |
 
-## 2026-10-17
+### 2026-10-17
 
 | Date | Type | Summary | Issue | PR | Evidence |
 |---|---|---|---|---|---|
 | 2026-10-17 | Docs | add project README | — | — | [5be8103](https://github.com/match-pulse/match-pulse/commit/5be8103) |
 
-## Notes
+### Notes
 
 - 2026-11-07: The historical table was reconstructed from `git log --no-merges` and merged PR bodies. Issue links are present only where a PR body contains an explicit closing reference; they were not inferred.
 - The first entry after this changelog is established is recorded contemporaneously and links its issue, PR, verification, and AI transparency entry.
+
+
+[Unreleased]: https://github.com/match-pulse/match-pulse/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/match-pulse/match-pulse/commit/5fadb6c

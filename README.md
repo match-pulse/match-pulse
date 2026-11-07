@@ -64,7 +64,7 @@ Read the architecture documents in this order:
 
 ### Engineering Workflows and Records
 
-- [Engineering Workflows](docs/workflows/README.md) — requirements, development, agentic execution, testing, audit, refactoring, operations, and recordkeeping.
+- [Engineering Workflows](docs/workflows/README.md) — requirements, development, agentic execution, testing, audit, refactoring, release, operations, and recordkeeping.
 - [Methodology Records](docs/methodology/README.md) — record index, retention rules, and locations.
 - [Findings Register](docs/methodology/findings-register.md) — permanent finding index and lifecycle.
 - [Changelog](CHANGELOG.md) — append-only change history.
