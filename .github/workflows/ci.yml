@@ -35,6 +35,9 @@ jobs:
       - name: Typecheck
         run: bun run typecheck
 
+      - name: Run architecture guards
+        run: bun run check:architecture
+
   invariants:
     name: Domain invariants
     runs-on: ubuntu-latest

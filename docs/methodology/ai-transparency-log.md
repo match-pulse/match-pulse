@@ -390,6 +390,25 @@ Secret hygiene re-verified: `release.env` in history contains only `APP_VERSION`
 
 ---
 
+## Entry 24 — Checkpoint D pre-read and architecture guards
+
+**Date:** 2026-11-07
+**Tool:** opencode CLI (`deepseek-v4.1-flash`)
+**Intent:** Prepare a bounded Checkpoint D pre-read: ownership/change rights, dependency rules, executable architecture guards, an idempotency change scenario, compatibility policy and technical-debt view.
+**Boundary:** Documentation plus a read-only architecture guard and CI step. No application runtime behavior, schema, migration, RPC, domain rule or release change. L13–L16 were not available, so the pre-read explicitly marks inferred requirements.
+**Prior records reviewed:** architecture docs, ADR-001–003, code map, architecture characteristics, Checkpoint C current state, findings register, release workflow and the course L01 structure.
+**Verification:** `bun run check:architecture` passed; `bun run typecheck` passed; `bun run lint` passed; relative-link scan over 67 Markdown files; `git diff --check`. No database tests were rerun because no runtime/schema changed.
+**Learning:**
+- D needs more than architecture diagrams: it needs ownership, dependency rules, a change scenario and evidence that a change can be made without breaking contracts.
+- A text-level guard is useful as a tripwire but is not proof; RLS coverage, grant-matrix and migration-compatibility checks remain future fitness functions.
+- The idempotency scenario is the right first D change because it closes FND-003 and exercises schema, RPC contract, actions, tests, docs and release compatibility.
+- The L13–L16 materials are still missing; the pre-read is a baseline, not a claim that D is complete.
+**Limitations:** No independent human review; no idempotency implementation; guard is text-level; L13–L16 requirements unconfirmed; no database/load evidence added.
+
+**Links:** issue #105 · PR #106 · [`checkpoint-D/README.md`](checkpoint-D/README.md) · [`check-architecture.ts`](../../scripts/check-architecture.ts)
+
+---
+
 ## Standing rule
 
 AI may investigate, analyse, draft, implement within an approved scope, and run verification. The human retains every decision that affects business rules, architecture, schema, scope, priority, risk acceptance and merging. Contributions that cannot be verified are recorded as unverified rather than asserted.
