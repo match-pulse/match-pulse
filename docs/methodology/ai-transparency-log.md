@@ -282,7 +282,9 @@ Secret hygiene re-verified: `release.env` in history contains only `APP_VERSION`
 - Residual risks are proposed for the human owner, not accepted by AI. The checkpoint record explicitly marks every residual-risk decision as proposed.
 **Limitations:** No independent human review; the risk ranking is qualitative; the evidence is local and test-based; the test suite and CI were not rerun for this documentation change. The next decision — authorization/RLS, idempotency, real-user evidence, delivery/operations, or test hardening — belongs to the human owner.
 
-**Links:** issue #93 · branch `docs/93-sdlc-practices-checkpoint-c` · `docs/methodology/checkpoint-B/04-sdlc-decision.md` · `docs/methodology/development-practices.md` · `docs/methodology/checkpoint-C/` · `docs/methodology/findings-register.md`
+**Links:** issue #93 · PR #94 · branch `docs/93-sdlc-practices-checkpoint-c` · `docs/methodology/checkpoint-B/04-sdlc-decision.md` · `docs/methodology/development-practices.md` · `docs/methodology/checkpoint-C/` · `docs/methodology/findings-register.md`
+
+**Addendum 2026-11-07:** Pull request #94 was opened after this entry was written. CI results were not yet observed at that point.
 
 ---
 
