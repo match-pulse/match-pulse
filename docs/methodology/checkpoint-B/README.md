@@ -5,6 +5,7 @@
 - [System Dynamics](./01-system-dynamics.md) — stock, flow, delay and competing mechanisms
 - [Operating Model](./02-operating-model.md) — lifecycle, flow, feedback and change rights
 - [Flow Evidence](./03-flow-evidence.md) — measured cycle times, waiting, WIP and merge-to-evidence
+- [SDLC Decision (Addendum 2026-11-07)](./04-sdlc-decision.md) — hybrid lifecycle, item flow, decision rights and revision triggers
 - [AI Transparency Log](../ai-transparency-log.md)
 
 ## 2. Evidence status
@@ -42,3 +43,7 @@ The operating model described continuous integration as protection against regre
 ## 5. Limits
 
 Everything above is derived from one local environment and one developer. There is no production telemetry, no deployment, and no second reviewer. Claims about operational behaviour beyond this setup remain unverified. The flow measurements in [Flow Evidence](./03-flow-evidence.md) come from the GitHub history of the same single developer.
+
+## 6. Addendum 2026-11-07 — SDLC decision
+
+The lifecycle choice is recorded in [`04-sdlc-decision.md`](./04-sdlc-decision.md). It supplements, and does not replace, Sections 1–5. It classifies the operating model as a **hybrid lifecycle** (plan-driven domain contract, iterative/incremental delivery, adaptive scope), traces one item through the stages, names transition conditions and decision owners, and records what would make the team revise the method. The testing, specification and OpenSpec practices are recorded separately in [`../development-practices.md`](../development-practices.md).

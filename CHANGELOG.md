@@ -18,6 +18,7 @@ All notable changes to MatchPulse, recorded as append-only tables. The linked is
 | Date | Type | Summary | Issue | PR | Evidence |
 |---|---|---|---|---|---|
 | 2026-11-07 | Docs | establish workflow documentation, historical recordkeeping and changelog | [#91](https://github.com/match-pulse/match-pulse/issues/91) | [#92](https://github.com/match-pulse/match-pulse/pull/92) | CI + AI log Entry 17 |
+| 2026-11-07 | Docs | specify the SDLC, development practices and Checkpoint C evidence | [#93](https://github.com/match-pulse/match-pulse/issues/93) | [#94](https://github.com/match-pulse/match-pulse/pull/94) | AI log Entry 18 |
 
 ## Historical record
 

@@ -23,7 +23,9 @@ ADRs remain in [`docs/architecture/adr/`](../architecture/adr/) and follow the e
 ## Existing records
 
 - [`checkpoint-A/`](checkpoint-A/) — context, claims, invariants, and governance.
-- [`checkpoint-B/`](checkpoint-B/) — operating model, system dynamics, and flow evidence.
+- [`checkpoint-B/`](checkpoint-B/) — operating model, system dynamics, flow evidence, and the [SDLC decision](checkpoint-B/04-sdlc-decision.md).
+- [`checkpoint-C/`](checkpoint-C/) — risk control map, quality story, review decisions, test-case process, residual risk, and documentation review.
+- [`development-practices.md`](development-practices.md) — invariant-first testing, TDD fit, SDD mode, and the OpenSpec decision.
 - [`exec-plans/`](exec-plans/) — approved execution plans.
 - [`ai-transparency-log.md`](ai-transparency-log.md) — dated AI contributions and verification.
 
