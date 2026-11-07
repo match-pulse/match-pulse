@@ -261,6 +261,8 @@ Secret hygiene re-verified: `release.env` in history contains only `APP_VERSION`
 
 **Links:** issue #91 · PR #92 · `docs/workflows/README.md` · `docs/methodology/README.md` · `CHANGELOG.md`
 
+**Addendum 2026-11-07:** CI run [42373836200](https://github.com/match-pulse/match-pulse/actions/runs/42373836200) completed after this entry was written. Observed: "Lint, typecheck and build" passed in 26s; "Domain invariants" passed in 2m3s. This supplements, and does not rewrite, the verification above.
+
 ---
 
 ## Standing rule
