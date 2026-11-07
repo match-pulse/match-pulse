@@ -430,6 +430,24 @@ Secret hygiene re-verified: `release.env` in history contains only `APP_VERSION`
 
 ---
 
+## Entry 26 — Release v1.2.0
+
+**Date:** 2026-11-08
+**Tool:** opencode CLI (`deepseek-v4.1-flash`)
+**Intent:** Cut v1.2.0 for request-key idempotency under the release policy: curate the release notes, align `package.json`, and prepare the annotated tag and GitHub Release.
+**Boundary:** Release preparation only. AI edited `CHANGELOG.md`, `package.json` and this log. No application code, schema, test or CI change. The human approved the idempotency increment and the release policy.
+**Prior records reviewed:** release workflow, `CHANGELOG.md`, PR #108, idempotency verification record, AI log Entry 25, FND-003.
+**Verification:** Main CI [42425940843](https://github.com/match-pulse/match-pulse/actions/runs/42425940843) passed with 28 tests and 0 failures. The release PR CI is the final merge gate.
+**Learning:**
+- Idempotency is a release-level behavior change; it belongs in the release notes with a migration note, not a per-PR changelog row.
+- The 3-arg to 4-arg RPC change is additive through the default parameter; the app always sends a key, while the legacy null-key path is documented as non-idempotent.
+- The release notes must distinguish the fixed FND-003 from the remaining verification/operational gaps.
+**Limitations:** The tag and GitHub Release are created after this entry. No independent human review; the human owner approves the release. The idempotency fault injection was not observed locally.
+
+**Links:** issue #109 · PR #110 · [`CHANGELOG.md`](../../CHANGELOG.md) · [`release-workflow.md`](../workflows/release-workflow.md)
+
+---
+
 ## Standing rule
 
 AI may investigate, analyse, draft, implement within an approved scope, and run verification. The human retains every decision that affects business rules, architecture, schema, scope, priority, risk acceptance and merging. Contributions that cannot be verified are recorded as unverified rather than asserted.
