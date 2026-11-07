@@ -5,7 +5,7 @@ All notable changes to MatchPulse, recorded as append-only tables. The linked is
 ## Rules
 
 - One row per merged pull request going forward. Add the row in the same pull request as the change.
-- Date is the merge date, ISO 8601. Historical rows before 2026-11-07 use the commit date.
+- Date is the merge date, ISO 8601. The Unreleased row uses the PR date. Historical rows before 2026-11-07 use the commit date.
 - Type: Added, Changed, Fixed, Removed, Security, Docs, Test, Chore, Architecture.
 - Summary is the PR title without its conventional prefix. Historical summaries are the original commit subjects.
 - Issue and PR columns link to the authoritative record; use "—" when none exists. Do not invent numbers.
