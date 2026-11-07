@@ -59,6 +59,13 @@ Read the architecture documents in this order:
 - [Execution Plan — Invariant Evidence and the Registration Path](docs/methodology/exec-plans/50-invariant-evidence-and-registration-path.md) *(superseded)*
 - [AI Agent Instructions](AGENTS.md)
 
+### Engineering Workflows and Records
+
+- [Engineering Workflows](docs/workflows/README.md) — requirements, development, agentic execution, testing, audit, refactoring, operations, and recordkeeping.
+- [Methodology Records](docs/methodology/README.md) — record index, retention rules, and locations.
+- [Findings Register](docs/methodology/findings-register.md) — permanent finding index and lifecycle.
+- [Changelog](CHANGELOG.md) — append-only change history.
+
 ---
 
 ## Getting Started

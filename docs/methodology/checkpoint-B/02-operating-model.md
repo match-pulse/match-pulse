@@ -31,6 +31,8 @@ The course materials distinguish the two. In an AI-driven workflow, AI decides w
 
 **Correction to an earlier draft:** the previous version stated that work is tracked on a "GitHub Project Board" with columns `Enter → Build → Review → Release`. No such board was created; the repository had no project scope. Issues are the actual work history, and this document now describes what exists. *Strengthen this:* the pull-request and issue history is genuine evidence of a work flow and of how it changed — it should be read as such, not as decoration.
 
+**Addendum 2026-11-07:** the board now exists at <https://github.com/orgs/match-pulse/projects/1> with the existing columns `Enter (Backlog & Claims)`, `Build (In Progress)`, `Review Queue (PRs)` and `Release & Learn (Done)`. The earlier statement remains historically accurate for the period it describes; the board and the workflow contracts are now recorded in [`docs/workflows/`](../../workflows/README.md).
+
 **A feedback gap that was real, and is closed:** continuous integration originally ran lint and build only and did not execute the domain invariant tests, so a green check could not mean the business rules held. That was corrected in #60 (merged 2026-10-19); the "Domain invariants" job now runs the suites on every pull request and every push to `main`. A green check now covers the invariants those suites execute, and no others.
 
 ## 4. Change absorption policy
