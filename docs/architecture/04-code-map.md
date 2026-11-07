@@ -76,7 +76,8 @@ Per-invariant statuses, targets and fault-injection evidence: [`02-invariants.md
 | Concern | Location |
 | :--- | :--- |
 | CI | `.github/workflows/ci.yml` — jobs "Lint, typecheck and build" and "Domain invariants" |
-| Scripts | `package.json` — `dev`, `build`, `start`, `lint`, `typecheck`, `test`, `auth:organizer` |
+| Scripts | `package.json` — `dev`, `build`, `start`, `lint`, `typecheck`, `test`, `auth:organizer`, `check:architecture` |
+| Architecture guards | `scripts/check-architecture.ts` — service-role, direct-mutation, client/server import and RPC-definer checks; runs in CI |
 | Local database | `supabase/config.toml`; `bunx supabase start` / `bunx supabase db reset` |
 | Container | `Dockerfile`, `docker-compose.yml` |
 
@@ -93,4 +94,5 @@ Per-invariant statuses, targets and fault-injection evidence: [`02-invariants.md
 | Invariants registry and evidence | [`../methodology/checkpoint-A/02-invariants.md`](../methodology/checkpoint-A/02-invariants.md) |
 | Authorization verification | [`../methodology/verification/2026-11-95-authorization-rls.md`](../methodology/verification/2026-11-95-authorization-rls.md) |
 | Methodology checkpoints | [`../methodology/`](../methodology/) |
+| Checkpoint D pre-read | [`../methodology/checkpoint-D/README.md`](../methodology/checkpoint-D/README.md) |
 | Agent instructions and governance | [`../../AGENTS.md`](../../AGENTS.md) |

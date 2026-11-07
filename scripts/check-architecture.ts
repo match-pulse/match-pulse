@@ -1,0 +1,150 @@
+import { readFileSync, readdirSync, statSync } from 'node:fs'
+import { join, relative } from 'node:path'
+
+type Failure = { rule: string; detail: string }
+
+const root = process.cwd()
+const failures: Failure[] = []
+const passes: string[] = []
+
+function walk(dir: string): string[] {
+  const entries = readdirSync(dir)
+  const files: string[] = []
+
+  for (const entry of entries) {
+    const full = join(dir, entry)
+    if (statSync(full).isDirectory()) {
+      files.push(...walk(full))
+    } else if (full.endsWith('.ts') || full.endsWith('.tsx')) {
+      files.push(full)
+    }
+  }
+
+  return files
+}
+
+function fail(rule: string, detail: string) {
+  failures.push({ rule, detail })
+}
+
+function pass(rule: string) {
+  passes.push(rule)
+}
+
+const sourceFiles = walk(join(root, 'src'))
+const sourceText = new Map(sourceFiles.map((file) => [file, readFileSync(file, 'utf8')]))
+
+// 1. The application runtime must never use the service-role credential.
+const serviceRoleFiles = sourceFiles.filter((file) => {
+  const text = sourceText.get(file) ?? ''
+  return /SUPABASE_SERVICE_ROLE_KEY|service_role/i.test(text)
+})
+
+if (serviceRoleFiles.length > 0) {
+  fail(
+    'No service-role key in application source',
+    serviceRoleFiles.map((file) => relative(root, file)).join(', ')
+  )
+} else {
+  pass('No service-role key in application source')
+}
+
+// 2. Mutations must go through authorized RPCs, not direct table calls.
+const directMutationPattern = /\.(insert|update|delete)\s*\(/
+const directMutationFiles = sourceFiles.filter((file) =>
+  directMutationPattern.test(sourceText.get(file) ?? '')
+)
+
+if (directMutationFiles.length > 0) {
+  fail(
+    'No direct table mutations in application source',
+    directMutationFiles.map((file) => relative(root, file)).join(', ')
+  )
+} else {
+  pass('No direct table mutations in application source')
+}
+
+// 3. Client components must not import the server-only Supabase client.
+const componentFiles = walk(join(root, 'src', 'components'))
+const serverImportFiles = componentFiles.filter((file) =>
+  (sourceText.get(file) ?? '').includes("@/lib/supabase/server")
+)
+
+if (serverImportFiles.length > 0) {
+  fail(
+    'Components do not import the server Supabase client',
+    serverImportFiles.map((file) => relative(root, file)).join(', ')
+  )
+} else {
+  pass('Components do not import the server Supabase client')
+}
+
+// 4. The retired singleton client must not return.
+const oldClientFiles = sourceFiles.filter((file) =>
+  (sourceText.get(file) ?? '').includes("from '@/lib/supabase'")
+)
+
+if (oldClientFiles.length > 0) {
+  fail(
+    'No imports of the retired unauthenticated client',
+    oldClientFiles.map((file) => relative(root, file)).join(', ')
+  )
+} else {
+  pass('No imports of the retired unauthenticated client')
+}
+
+// 5. Every mutation RPC must be SECURITY DEFINER, resolve auth.uid(), and be
+//    granted only to authenticated users. This is a text-level guard, not a
+//    substitute for the database-backed authorization suite.
+const rpcMigration = join(root, 'supabase', 'migrations', '20261110_rpc_auth.sql')
+const rpcSql = readFileSync(rpcMigration, 'utf8')
+const mutationRpcs = ['register_for_tournament', 'open_trade', 'close_trade', 'resolve_market']
+
+function functionBlock(name: string): string {
+  const start = rpcSql.indexOf(`CREATE OR REPLACE FUNCTION public.${name}(`)
+  if (start === -1) return ''
+  const next = rpcSql.indexOf('CREATE OR REPLACE FUNCTION public.', start + 1)
+  return rpcSql.slice(start, next === -1 ? rpcSql.length : next)
+}
+
+for (const name of mutationRpcs) {
+  const block = functionBlock(name)
+  if (!block) {
+    fail('Mutation RPC exists', `${name} not found in ${relative(root, rpcMigration)}`)
+    continue
+  }
+  if (!block.includes('SECURITY DEFINER')) {
+    fail('Mutation RPC is SECURITY DEFINER', name)
+  }
+  if (!block.includes('auth.uid()')) {
+    fail('Mutation RPC resolves auth.uid()', name)
+  }
+  if (!rpcSql.includes(`REVOKE ALL ON FUNCTION public.${name}(`)) {
+    fail('Mutation RPC revokes broad execute', name)
+  }
+  if (!rpcSql.includes(`GRANT EXECUTE ON FUNCTION public.${name}(`) ||
+      !rpcSql.includes('TO authenticated;')) {
+    fail('Mutation RPC grants execute to authenticated', name)
+  }
+}
+
+if (!functionBlock('resolve_market').includes("role = 'ORGANIZER'")) {
+  fail('resolve_market requires organizer role', 'ORGANIZER check not found')
+}
+
+if (failures.length === 0) {
+  pass('Mutation RPCs are definer functions with auth checks and explicit grants')
+}
+
+if (failures.length > 0) {
+  console.error('Architecture guards failed:')
+  for (const failure of failures) {
+    console.error(`  ✗ ${failure.rule}: ${failure.detail}`)
+  }
+  process.exit(1)
+}
+
+console.log('Architecture guards passed:')
+for (const rule of passes) {
+  console.log(`  ✓ ${rule}`)
+}

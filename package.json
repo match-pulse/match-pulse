@@ -9,7 +9,8 @@
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
     "test": "bun test --env-file=.env.local",
-    "auth:organizer": "bun --env-file=.env.local scripts/create-organizer.ts"
+    "auth:organizer": "bun --env-file=.env.local scripts/create-organizer.ts",
+    "check:architecture": "bun scripts/check-architecture.ts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.7",

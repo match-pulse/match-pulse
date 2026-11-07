@@ -57,6 +57,7 @@ Read the architecture documents in this order:
 - [Checkpoint B — Operating Model and Feedback](docs/methodology/checkpoint-B/README.md)
 - [SDLC Decision — Hybrid Lifecycle](docs/methodology/checkpoint-B/04-sdlc-decision.md)
 - [Checkpoint C — Quality and Residual Risk](docs/methodology/checkpoint-C/README.md)
+- [Checkpoint D — Architecture and Changeability (Pre-read)](docs/methodology/checkpoint-D/README.md)
 - [Development Practices — Testing, Specification and OpenSpec](docs/methodology/development-practices.md)
 - [AI Transparency Log](docs/methodology/ai-transparency-log.md)
 - [Execution Plan — Live Prediction Market](docs/methodology/exec-plans/live-prediction-market.md)
