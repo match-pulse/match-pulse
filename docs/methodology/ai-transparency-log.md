@@ -286,6 +286,8 @@ Secret hygiene re-verified: `release.env` in history contains only `APP_VERSION`
 
 **Addendum 2026-11-07:** Pull request #94 was opened after this entry was written. CI results were not yet observed at that point.
 
+**Addendum 2026-11-07 (CI):** CI run [42388062915](https://github.com/match-pulse/match-pulse/actions/runs/42388062915) passed both jobs: **Lint, typecheck and build** in 25s and **Domain invariants** in 2m2s. This supplements, and does not rewrite, the verification above.
+
 ---
 
 ## Standing rule
