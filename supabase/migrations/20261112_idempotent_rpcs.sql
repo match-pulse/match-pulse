@@ -128,10 +128,10 @@ BEGIN
             END IF;
 
             IF v_existing_status = 'COMPLETED' THEN
-                SELECT shares, cost_points, price_before, price_after, points_after
+                SELECT t.shares, t.cost_points, t.price_before, t.price_after, t.points_after
                   INTO v_shares, v_cost, v_price_before, v_price_after, v_points_after
-                  FROM public.market_trades
-                 WHERE id = v_existing_trade_id;
+                  FROM public.market_trades t
+                 WHERE t.id = v_existing_trade_id;
 
                 IF NOT FOUND THEN
                     RAISE EXCEPTION 'request trade not found';
@@ -429,10 +429,10 @@ BEGIN
             END IF;
 
             IF v_existing_status = 'COMPLETED' THEN
-                SELECT proceeds_points, price_before, price_after, points_after
+                SELECT t.proceeds_points, t.price_before, t.price_after, t.points_after
                   INTO v_proceeds, v_price_before, v_price_after, v_points_after
-                  FROM public.market_trades
-                 WHERE id = v_existing_trade_id;
+                  FROM public.market_trades t
+                 WHERE t.id = v_existing_trade_id;
 
                 IF NOT FOUND THEN
                     RAISE EXCEPTION 'request trade not found';
