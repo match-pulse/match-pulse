@@ -2,7 +2,7 @@
 
 - **Date:** 2026-11-07
 - **Status:** Proposed evidence package for the Checkpoint C discussion. It is not a new evaluation; residual risks require the human owner's decision.
-- **Current presentation state:** read [`07-current-state.md`](./07-current-state.md) first. It updates the risk ranking and the three-minute script after authentication/RLS and `v1.1.0`; the sections below remain the original package.
+- **Current presentation state:** read [`07-current-state.md`](./07-current-state.md) first. It updates the risk ranking after authentication/RLS and `v1.1.0`; the sections below remain the original package. Use [`08-presentation-pack.md`](./08-presentation-pack.md) for the 3-minute script, Q&A bank and fallbacks.
 - **Course checkpoint:** C (L12) — quality and residual risk
 - **Related:** [Risk control map](./01-risk-control-map.md), [Quality story](./02-quality-story.md), [Review decisions](./03-review-decision.md), [Test-case process](./04-test-case-process.md), [Residual risk](./05-residual-risk.md), [Documentation review](./06-documentation-review.md), [Development practices](../development-practices.md)
 
@@ -69,6 +69,7 @@ The next decision is the human owner's. No residual risk is accepted by this rec
 | [`05-residual-risk.md`](./05-residual-risk.md) | Residual risks and proposed decisions | Decisions are proposed, not accepted |
 | [`06-documentation-review.md`](./06-documentation-review.md) | Record types, readers, findability, stale guidance | No portfolio index yet |
 | [`07-current-state.md`](./07-current-state.md) | Post-v1.1.0 risk ranking, updated script, readiness checklist | M-INV4 injection not re-run on auth version; no independent review |
+| [`08-presentation-pack.md`](./08-presentation-pack.md) | 3-minute script, one-page handout, Q&A bank, demo path and fallbacks | Presentation aid, not new evidence |
 | [`../development-practices.md`](../development-practices.md) | TDD fit, SDD mode and the OpenSpec decision | Descriptive; not proof that every slice followed it |
 | [`../checkpoint-A/02-invariants.md`](../checkpoint-A/02-invariants.md) | Authoritative invariant status and fault-injection transcript | As of 2026-10-19; not rerun for this change |
 | [`../checkpoint-B/04-sdlc-decision.md`](../checkpoint-B/04-sdlc-decision.md) | Lifecycle choice and flow | One developer, two cycles |
