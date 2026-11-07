@@ -31,7 +31,8 @@ async function openTrade(user: TestUser, marketId: string, outcome: string, budg
   const { data, error } = await user.client.rpc('open_trade', {
     p_market_id: marketId,
     p_outcome: outcome,
-    p_budget: budget
+    p_budget: budget,
+    p_request_id: null
   })
   return { error, row: normalize(data) }
 }

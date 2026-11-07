@@ -1,6 +1,7 @@
 # Checkpoint D — Change Scenario: Idempotent Trades
 
 - **Status:** Proposed change scenario for Checkpoint D. **Not implemented.** It closes FND-003 and exercises the architecture's changeability.
+- **Execution plan:** [107-idempotent-trades.md](../exec-plans/107-idempotent-trades.md) — proposed; awaiting plan approval.
 - **Scope:** `open_trade` / `close_trade` retry safety; no pricing, outcome or settlement change.
 - **Related:** [FND-003](../findings-register.md), [Risk R-03](../checkpoint-C/01-risk-control-map.md), [ADR-002](../../architecture/adr/002-live-prediction-market.md), [ADR-003](../../architecture/adr/003-authorization-rls.md)
 

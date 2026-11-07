@@ -32,6 +32,12 @@ function describeTradeError(message: string): string {
   if (message.includes('authentication required')) {
     return 'Sign in required.'
   }
+  if (message.includes('request id reused with a different payload')) {
+    return 'This request was already used for a different trade. Refresh and try again.'
+  }
+  if (message.includes('request still in progress')) {
+    return 'This trade is still processing. Retry in a moment.'
+  }
   if (message.includes('entry cooldown active')) {
     return 'Cooling down. Try a smaller wait before entering again.'
   }
@@ -65,9 +71,13 @@ export async function enterPosition(formData: FormData) {
   const marketId = formData.get('marketId')
   const outcome = formData.get('outcome')
   const budgetRaw = formData.get('budget')
+  const requestId = formData.get('requestId')
 
   if (typeof marketId !== 'string' || !UUID_PATTERN.test(marketId)) {
     return { success: false, message: 'Invalid market.' }
+  }
+  if (typeof requestId !== 'string' || !UUID_PATTERN.test(requestId)) {
+    return { success: false, message: 'Refresh the page and try again.' }
   }
   if (!isOutcome(outcome)) {
     return { success: false, message: 'Choose an outcome.' }
@@ -87,7 +97,8 @@ export async function enterPosition(formData: FormData) {
   const { data, error } = await supabase.rpc('open_trade', {
     p_market_id: marketId,
     p_outcome: outcome,
-    p_budget: budget
+    p_budget: budget,
+    p_request_id: requestId
   })
 
   if (error) {
@@ -113,9 +124,13 @@ export async function exitPosition(formData: FormData) {
   const marketId = formData.get('marketId')
   const outcome = formData.get('outcome')
   const sharesRaw = formData.get('shares')
+  const requestId = formData.get('requestId')
 
   if (typeof marketId !== 'string' || !UUID_PATTERN.test(marketId)) {
     return { success: false, message: 'Invalid market.' }
+  }
+  if (typeof requestId !== 'string' || !UUID_PATTERN.test(requestId)) {
+    return { success: false, message: 'Refresh the page and try again.' }
   }
   if (!isOutcome(outcome)) {
     return { success: false, message: 'Choose an outcome to exit.' }
@@ -133,7 +148,8 @@ export async function exitPosition(formData: FormData) {
   const { data, error } = await supabase.rpc('close_trade', {
     p_market_id: marketId,
     p_outcome: outcome,
-    p_shares: sharesRaw
+    p_shares: sharesRaw,
+    p_request_id: requestId
   })
 
   if (error) {

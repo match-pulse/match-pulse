@@ -30,7 +30,8 @@ async function openTrade(user: TestUser, marketId: string, outcome: string, budg
   return user.client.rpc('open_trade', {
     p_market_id: marketId,
     p_outcome: outcome,
-    p_budget: budget
+    p_budget: budget,
+    p_request_id: null
   })
 }
 
@@ -329,6 +330,79 @@ describe('authorization boundary', () => {
         expect(refused.error?.message).toContain('organizer authorization required')
       } finally {
         await deleteUsers([fan])
+        await deleteMarket(marketId)
+      }
+    },
+    TEST_TIMEOUT_MS
+  )
+
+  test(
+    'trade request rows are owner-only and direct writes are denied',
+    async () => {
+      const fanA = await createUser('FAN')
+      const fanB = await createUser('FAN')
+      const marketId = await createMarket()
+      const requestId = randomUUID()
+
+      try {
+        await setPoints(fanA.id, 200)
+        const opened = await fanA.client.rpc('open_trade', {
+          p_market_id: marketId,
+          p_outcome: 'HOME',
+          p_budget: 10,
+          p_request_id: requestId
+        })
+        expect(opened.error).toBeNull()
+
+        const own = await fanA.client
+          .from('trade_requests')
+          .select('request_id, status')
+          .eq('request_id', requestId)
+        expect(own.error).toBeNull()
+        expect(own.data?.length).toBe(1)
+
+        const other = await fanB.client
+          .from('trade_requests')
+          .select('request_id')
+          .eq('request_id', requestId)
+        expect(other.error).toBeNull()
+        expect(other.data).toEqual([])
+
+        const anon = anonClient()
+        expect((await anon.from('trade_requests').select('request_id').limit(1)).error).not.toBeNull()
+
+        expect(
+          (
+            await fanA.client.from('trade_requests').insert({
+              user_id: fanA.id,
+              request_id: randomUUID(),
+              kind: 'OPEN',
+              market_id: marketId,
+              outcome: 'HOME',
+              budget: 10
+            })
+          ).error
+        ).not.toBeNull()
+
+        expect(
+          (
+            await fanA.client
+              .from('trade_requests')
+              .update({ status: 'COMPLETED' })
+              .eq('request_id', requestId)
+          ).error
+        ).not.toBeNull()
+
+        expect(
+          (
+            await fanA.client
+              .from('trade_requests')
+              .delete()
+              .eq('request_id', requestId)
+          ).error
+        ).not.toBeNull()
+      } finally {
+        await deleteUsers([fanA, fanB])
         await deleteMarket(marketId)
       }
     },

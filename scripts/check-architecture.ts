@@ -50,7 +50,9 @@ if (serviceRoleFiles.length > 0) {
 }
 
 // 2. Mutations must go through authorized RPCs, not direct table calls.
-const directMutationPattern = /\.(insert|update|delete)\s*\(/
+//    Match Supabase-style `from('table').insert(...)` etc., not Map.delete or
+//    FormData.set.
+const directMutationPattern = /\.from\([^)]*\)\s*\.\s*(insert|update|delete)\s*\(/
 const directMutationFiles = sourceFiles.filter((file) =>
   directMutationPattern.test(sourceText.get(file) ?? '')
 )
@@ -96,35 +98,53 @@ if (oldClientFiles.length > 0) {
 // 5. Every mutation RPC must be SECURITY DEFINER, resolve auth.uid(), and be
 //    granted only to authenticated users. This is a text-level guard, not a
 //    substitute for the database-backed authorization suite.
-const rpcMigration = join(root, 'supabase', 'migrations', '20261110_rpc_auth.sql')
-const rpcSql = readFileSync(rpcMigration, 'utf8')
-const mutationRpcs = ['register_for_tournament', 'open_trade', 'close_trade', 'resolve_market']
+const migrationsDir = join(root, 'supabase', 'migrations')
+const migrationFiles = readdirSync(migrationsDir)
+  .filter((file) => file.endsWith('.sql'))
+  .sort()
+const rpcSql = migrationFiles
+  .map((file) => readFileSync(join(migrationsDir, file), 'utf8'))
+  .join('\n')
+
+const mutationRpcs = [
+  { name: 'register_for_tournament', signature: '(UUID)' },
+  { name: 'open_trade', signature: '(UUID, TEXT, INT, UUID)' },
+  { name: 'close_trade', signature: '(UUID, TEXT, NUMERIC, UUID)' },
+  { name: 'resolve_market', signature: '(UUID, TEXT)' }
+]
 
 function functionBlock(name: string): string {
-  const start = rpcSql.indexOf(`CREATE OR REPLACE FUNCTION public.${name}(`)
+  const marker = `CREATE OR REPLACE FUNCTION public.${name}(`
+  let start = -1
+  let index = rpcSql.indexOf(marker)
+
+  while (index !== -1) {
+    start = index
+    index = rpcSql.indexOf(marker, index + marker.length)
+  }
+
   if (start === -1) return ''
-  const next = rpcSql.indexOf('CREATE OR REPLACE FUNCTION public.', start + 1)
+  const next = rpcSql.indexOf('CREATE OR REPLACE FUNCTION public.', start + marker.length)
   return rpcSql.slice(start, next === -1 ? rpcSql.length : next)
 }
 
-for (const name of mutationRpcs) {
-  const block = functionBlock(name)
+for (const rpc of mutationRpcs) {
+  const block = functionBlock(rpc.name)
   if (!block) {
-    fail('Mutation RPC exists', `${name} not found in ${relative(root, rpcMigration)}`)
+    fail('Mutation RPC exists', `${rpc.name} not found in migrations`)
     continue
   }
   if (!block.includes('SECURITY DEFINER')) {
-    fail('Mutation RPC is SECURITY DEFINER', name)
+    fail('Mutation RPC is SECURITY DEFINER', rpc.name)
   }
   if (!block.includes('auth.uid()')) {
-    fail('Mutation RPC resolves auth.uid()', name)
+    fail('Mutation RPC resolves auth.uid()', rpc.name)
   }
-  if (!rpcSql.includes(`REVOKE ALL ON FUNCTION public.${name}(`)) {
-    fail('Mutation RPC revokes broad execute', name)
+  if (!rpcSql.includes(`REVOKE ALL ON FUNCTION public.${rpc.name}${rpc.signature}`)) {
+    fail('Mutation RPC revokes broad execute', rpc.name)
   }
-  if (!rpcSql.includes(`GRANT EXECUTE ON FUNCTION public.${name}(`) ||
-      !rpcSql.includes('TO authenticated;')) {
-    fail('Mutation RPC grants execute to authenticated', name)
+  if (!rpcSql.includes(`GRANT EXECUTE ON FUNCTION public.${rpc.name}${rpc.signature} TO authenticated;`)) {
+    fail('Mutation RPC grants execute to authenticated', rpc.name)
   }
 }
 
