@@ -93,3 +93,16 @@ concerns are the missing organizer management UI, production session/rate-limit
 hardening and service-role handling. R-04 (test independence) is fixed; R-02,
 R-03, R-05 and the broader operational risks remain open. No risk is accepted by
 this addendum.
+
+## 8. Addendum 2026-11-08 — R-03 idempotency residual closed
+
+The idempotency increment (#107 / PR #108) adds the request-key control to
+entry and exit. CI run
+[42425131584](https://github.com/match-pulse/match-pulse/actions/runs/42425131584)
+passes 28 tests, including six M-INV9 idempotency tests. FND-003 is fixed.
+
+The R-03 double-spend control now has two layers: the profile lock/conditional
+debit and the request-key replay. Remaining limits: the legacy null-key path is
+non-idempotent, no request-key retention/cleanup policy exists, and fault
+injection for the unique constraint was not observed locally. R-02, R-05 and the
+operational risks remain open; no risk is accepted by this addendum.

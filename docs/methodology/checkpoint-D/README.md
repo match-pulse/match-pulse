@@ -2,6 +2,7 @@
 
 - **Date:** 2026-11-07
 - **Status:** **Pre-read only.** The L13–L16 lecture materials are not yet in the course folder. This folder prepares the architecture baseline; it is not the final Checkpoint D deliverable.
+- **Update 2026-11-08:** the idempotency change scenario is implemented and verified (#107 / PR #108, 28 tests in CI). The architecture baseline now has a real compatible-change example; L13–L16 requirements are still pending.
 - **Purpose:** Make ownership, boundaries, dependency rules, changeability and compatibility explicit enough to test against the actual L13–L16 requirements when they arrive.
 - **Related:** [Kata](../../architecture/kata.md), [System overview](../../architecture/01-system-overview.md), [Domain model](../../architecture/02-domain-model.md), [Architecture characteristics](../../architecture/03-architecture-characteristics.md), [Code map](../../architecture/04-code-map.md), [C4 views](../../architecture/05-c4-diagrams.md), [ADR-001](../../architecture/adr/001-use-nextjs-and-supabase.md), [ADR-002](../../architecture/adr/002-live-prediction-market.md), [ADR-003](../../architecture/adr/003-authorization-rls.md)
 

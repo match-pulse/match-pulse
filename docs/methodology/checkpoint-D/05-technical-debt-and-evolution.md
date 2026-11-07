@@ -8,7 +8,7 @@
 | ID | Debt | Type | Impact | Current status | Next action |
 | :--- | :--- | :--- | :--- | :--- | :--- |
 | FND-002 | M-INV1/2/3/5/8 and M-INV7 details lack observed-red fault injection | Verification debt | Passing tests are weaker evidence than they look | Open | Add injections; update registry only after observed failure |
-| FND-003 | No idempotency keys; retry after cooldown is a new entry | Domain/reliability debt | Duplicate charge/position on retry | Open | Idempotency change scenario (§D-03) |
+| FND-003 | No idempotency keys; retry after cooldown is a new entry | Domain/reliability debt | Duplicate charge/position on retry | **Fixed** — #107 / PR #108 | Verified in CI run 42425131584; keep the legacy null-key limit documented |
 | FND-004 | No load/p95 measurement | Performance debt | Elasticity target is unmeasured | Open | Define workload and measure |
 | FND-006 | No deployment, observability or recovery evidence | Operational debt | Not production-ready | Open | Checkpoint E increment |
 | FND-007 | No real organizer observation | Context debt | Problem claim is a hypothesis | Open | Interview/observe one organizer |
@@ -38,6 +38,8 @@ This is a diagnostic lens, not a score. Some debt is deliberate scope control; s
 5. **Load/p95 (FND-004)** — turns the elasticity target into evidence.
 6. **Independent review (FND-008)** — strengthens collaboration and review.
 7. **Organizer UI / points ledger** — only if the course or product needs them; do not add features speculatively.
+
+**Update 2026-11-08:** item 1 (idempotency) is fixed by #107 / PR #108. The current top debt is FND-002 (unverified market injections), then FND-006 (delivery/operations), FND-004, FND-007 and FND-008.
 
 ## 4. Evolution path
 

@@ -409,6 +409,27 @@ Secret hygiene re-verified: `release.env` in history contains only `APP_VERSION`
 
 ---
 
+## Entry 25 — Idempotent entry and exit
+
+**Date:** 2026-11-08
+**Tool:** opencode CLI (`deepseek-v4.1-flash`)
+**Intent:** Implement request-key idempotency for `open_trade` and `close_trade`: same key + payload replays the recorded trade; same key + different payload is refused; no duplicate debit, credit, position or trade.
+**Boundary:** Approved high-risk schema/RPC change. AI implemented the `trade_requests` table, RPC claim/replay logic, client request IDs, tests and the architecture-guard update. The human approved the plan. No pricing, outcome, settlement, registration or UI redesign was changed.
+**Prior records reviewed:** FND-003, Checkpoint D change scenario, ADR-002/003, invariant registry, authorization verification, market RPCs/actions/tests, release workflow.
+**Verification:** Local `bun run check:architecture`, `bun run typecheck`, `bun run lint` and `bun run build` passed. Database-backed idempotency/authorization tests are pending CI; no local Docker/Postgres is available in this environment.
+**Learning:**
+- The request key must be claimed before the trade work. A server-generated key cannot distinguish a retry; the client must keep one key across retries and rotate it only for a new payload.
+- The architecture guard initially flagged `Map.delete` as a direct table mutation. The rule was narrowed to Supabase-style `.from(...).insert/update/delete(...)`, which is the actual boundary.
+- Existing tests now pass `p_request_id: null` explicitly to exercise the legacy path; the app always sends a UUID.
+- The `trade_requests` status check (`IN_PROGRESS` vs `COMPLETED`) makes the request/trade commit relationship visible to the database, not just to the function.
+**Limitations:** Fault injection (remove the unique constraint/request check) has not been observed locally; CI only proves the restored code. The legacy null-key path remains non-idempotent. No request-key cleanup policy. No independent human review.
+
+**Addendum 2026-11-08 (CI):** CI run [42425131584](https://github.com/match-pulse/match-pulse/actions/runs/42425131584) passed both jobs: **28 tests, 0 failures, 256 expect() calls, 7 files**. The six M-INV9 idempotency tests and the updated authorization suite passed. This supplements, and does not rewrite, the verification above.
+
+**Links:** issue #107 · PR #108 · [execution plan](exec-plans/107-idempotent-trades.md) · `supabase/migrations/20261111_trade_requests.sql` · `supabase/migrations/20261112_idempotent_rpcs.sql` · `tests/invariants/idempotency.test.ts`
+
+---
+
 ## Standing rule
 
 AI may investigate, analyse, draft, implement within an approved scope, and run verification. The human retains every decision that affects business rules, architecture, schema, scope, priority, risk acceptance and merging. Contributions that cannot be verified are recorded as unverified rather than asserted.

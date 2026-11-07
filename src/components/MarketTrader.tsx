@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { enterPosition, exitPosition } from '@/app/actions/market'
 import type { Outcome } from '@/app/actions/market'
@@ -38,14 +38,25 @@ export default function MarketTrader({
   const [isError, setIsError] = useState(false)
   const [busy, setBusy] = useState(false)
   const router = useRouter()
+  const entryRequestId = useRef<string | null>(null)
+  const exitRequestIds = useRef<Map<Outcome, string>>(new Map())
 
   async function handleEnter(formData: FormData) {
     setBusy(true)
     setMessage('Sending order...')
     setIsError(false)
+
+    if (!entryRequestId.current) {
+      entryRequestId.current = crypto.randomUUID()
+    }
+    formData.set('requestId', entryRequestId.current)
+
     const result = await enterPosition(formData)
     setMessage(result.message)
     setIsError(!result.success)
+    if (result.success) {
+      entryRequestId.current = null
+    }
     setBusy(false)
     router.refresh()
   }
@@ -55,14 +66,24 @@ export default function MarketTrader({
     setMessage('Closing position...')
     setIsError(false)
 
+    let requestId = exitRequestIds.current.get(position.outcome)
+    if (!requestId) {
+      requestId = crypto.randomUUID()
+      exitRequestIds.current.set(position.outcome, requestId)
+    }
+
     const formData = new FormData()
     formData.set('marketId', marketId)
     formData.set('outcome', position.outcome)
     formData.set('shares', position.shares)
+    formData.set('requestId', requestId)
 
     const result = await exitPosition(formData)
     setMessage(result.message)
     setIsError(!result.success)
+    if (result.success) {
+      exitRequestIds.current.delete(position.outcome)
+    }
     setBusy(false)
     router.refresh()
   }
@@ -87,7 +108,10 @@ export default function MarketTrader({
               <button
                 key={option}
                 type="button"
-                onClick={() => setOutcome(option)}
+                onClick={() => {
+                  setOutcome(option)
+                  entryRequestId.current = null
+                }}
                 className={`rounded border p-3 text-center transition-colors ${
                   outcome === option
                     ? 'border-blue-500 bg-blue-600/20'
@@ -112,6 +136,9 @@ export default function MarketTrader({
             min="1"
             step="1"
             defaultValue={10}
+            onChange={() => {
+              entryRequestId.current = null
+            }}
             className="p-2 rounded text-black font-semibold"
           />
 

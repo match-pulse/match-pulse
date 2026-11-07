@@ -1,6 +1,7 @@
 # Checkpoint D — Change Scenario: Idempotent Trades
 
 - **Status:** Proposed change scenario for Checkpoint D. **Not implemented.** It closes FND-003 and exercises the architecture's changeability.
+- **Execution plan:** [107-idempotent-trades.md](../exec-plans/107-idempotent-trades.md) — proposed; awaiting plan approval.
 - **Scope:** `open_trade` / `close_trade` retry safety; no pricing, outcome or settlement change.
 - **Related:** [FND-003](../findings-register.md), [Risk R-03](../checkpoint-C/01-risk-control-map.md), [ADR-002](../../architecture/adr/002-live-prediction-market.md), [ADR-003](../../architecture/adr/003-authorization-rls.md)
 
@@ -100,3 +101,22 @@ The request key and trade must commit or roll back together.
 - Approve Option B as the change scenario.
 - Confirm the compatibility path: optional request ID first, required later.
 - Confirm whether to implement it as the next increment (`v1.2.0`) or keep it as a D design-only scenario until L13–L16 arrive.
+
+## 10. Addendum 2026-11-08 — implemented and verified
+
+The change scenario was approved and implemented in #107 / PR #108.
+
+- `trade_requests` is live with unique `(user_id, request_id)` and
+  `IN_PROGRESS`/`COMPLETED` status.
+- `open_trade` and `close_trade` claim the request before the trade; replay and
+  payload mismatch are tested.
+- The client keeps one request key across retries and rotates it after success
+  or a payload change.
+- CI run [42425131584](https://github.com/match-pulse/match-pulse/actions/runs/42425131584)
+  passes **28 tests, 0 failures**, including six idempotency tests.
+- The legacy null-key path remains non-idempotent; the app always sends a key.
+- Fault injection (remove the unique constraint/request check) was not observed
+  in this environment; the verification record states that limit.
+- No request-key retention/cleanup policy is implemented.
+
+This addendum records delivery; it does not change the original design record.

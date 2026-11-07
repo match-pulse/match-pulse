@@ -85,3 +85,13 @@ The authorization increment (#95 / PR #96) is implemented and verified in CI run
 - **RR-02, RR-03, RR-05, RR-06, RR-07 and RR-08** remain open. No residual risk is accepted by this addendum; the human decision is still required.
 
 The original table above remains the historical record of the risk before the control. This addendum records the closure evidence and the new residual state.
+
+## 8. Addendum 2026-11-08 — RR-02 mitigated
+
+The idempotency increment (#107 / PR #108) is implemented and verified in CI run [42425131584](https://github.com/match-pulse/match-pulse/actions/runs/42425131584): 28 tests pass, 0 failures, including six request-key tests.
+
+- **RR-02:** mitigated. A retried entry or exit with the same request key replays the recorded trade; a different payload is refused; the request and trade commit or roll back together. The legacy null-key path remains non-idempotent and is not used by the application.
+- **Remaining limits:** no request-key retention/cleanup policy; no auth-version M-INV4 re-injection; no independent human review; no load/operational evidence.
+- **RR-01** remains mitigated by the authorization increment. **RR-03, RR-05, RR-06, RR-07 and RR-08** remain open.
+
+No residual risk is accepted by this addendum; the human decision is still required.

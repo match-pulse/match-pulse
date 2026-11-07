@@ -3,6 +3,7 @@
 - **Date:** 2026-11-07
 - **Status:** Presentation aid for the Checkpoint C discussion. It is not new test evidence and does not accept residual risk.
 - **Read first:** [`07-current-state.md`](./07-current-state.md) for the post-v1.1.0 risk ranking. The original [`README.md`](./README.md) remains the historical package.
+- **Update 2026-11-08:** FND-003 (idempotency) is now fixed by #107 / PR #108. For the current presentation, the top remaining risk is **FND-002 (unverified market injections)**, then **FND-006 (delivery/operations)**, then FND-004/007/008. Use the addendum in [`07-current-state.md`](./07-current-state.md) §9 when presenting; the script below still shows idempotency as the top remaining risk and should be adjusted in speech.
 - **Purpose:** One place for the 3-minute script, the one-page handout, the Q&A bank, the demo path and the honest fallbacks.
 
 ## 1. One-page handout
@@ -179,3 +180,11 @@ Record the review decision as **approve**, **revise**, **narrow** or **seek cont
 ## 10. After C
 
 Collect the professor's feedback, record any correction or decision, then start Checkpoint D. Do not change the risk ranking or evidence claims without a dated record.
+
+## 11. Addendum 2026-11-08 — idempotency fixed
+
+The 3-minute script above should now say:
+
+> “The top remaining risk is no longer idempotency. Request-key idempotency is implemented and verified: retries replay the recorded trade, and a different payload is refused. The top remaining risk is the unverified market injections, then delivery and operations.”
+
+Add to the evidence list: `tests/invariants/idempotency.test.ts`; CI run [42425131584](https://github.com/match-pulse/match-pulse/actions/runs/42425131584); `trade_requests` request keys. The M-INV9 quality story is now a second executable story alongside M-INV4.

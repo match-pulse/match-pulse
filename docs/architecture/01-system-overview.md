@@ -68,12 +68,14 @@ The file-level mapping of these elements is in the
 
 1. The spectator selects an outcome and commits an amount of points.
 2. The Server Action validates the request shape and reads the authenticated
-   session. The database RPC resolves the caller independently with
-   `auth.uid()`; identity is never read from the form.
-3. `open_trade` checks that the caller has a real auth identity, then locks the
-   market row, the profile row and the cooldown row, and checks the market
-   window: the market must be open and the authoritative database time must be
-   at or after `kickoff_time`.
+   session. The client supplies a request key for the action; the database RPC
+   resolves the caller independently with `auth.uid()`; identity is never read
+   from the form.
+3. `open_trade` checks that the caller has a real auth identity, claims the
+   request key (or replays/refuses a duplicate), then locks the market row, the
+   profile row and the cooldown row, and checks the market window: the market
+   must be open and the authoritative database time must be at or after
+   `kickoff_time`.
 4. The cooldown gate is checked. A refusal writes nothing.
 5. The share quantity is solved from the committed budget under the LMSR cost
    curve. The cost is debited (`ceil`) atomically with the position update, the
