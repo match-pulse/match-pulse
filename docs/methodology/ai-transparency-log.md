@@ -371,6 +371,25 @@ Secret hygiene re-verified: `release.env` in history contains only `APP_VERSION`
 
 ---
 
+## Entry 23 — Checkpoint C presentation pack
+
+**Date:** 2026-11-07
+**Tool:** opencode CLI (`deepseek-v4.1-flash`)
+**Intent:** Prepare a usable Checkpoint C presentation pack: one-page handout, 3-minute and 30-second scripts, Q&A bank, demo path and honest fallbacks.
+**Boundary:** Documentation only. AI drafted the presentation aid from the existing evidence records. No application code, schema, test or CI change. No claim was upgraded; the pack repeats the recorded limits.
+**Prior records reviewed:** Checkpoint C current-state record, risk map, quality story, review decisions, residual risk, authorization verification, v1.1.0 release and AI log Entries 20–22.
+**Verification:** Relative-link scan over 61 Markdown files; `git diff --check`. No application or test commands were run because this is a presentation aid, not new evidence.
+**Learning:**
+- The professor's C questions can be answered from the existing records; the hard part is keeping the 3-minute version honest about the pre-auth injection and the missing independent review.
+- The Q&A bank is more useful than a longer written report because the checkpoint is a discussion, not a document review.
+- The strongest short narrative is: authorization was the top risk and is now controlled; idempotency is the top remaining risk; M-INV4 is the executable invariant story.
+- A peer review and an auth-version injection are still the two highest-value C improvements; the pack provides fallbacks if they are not possible before the session.
+**Limitations:** Presentation aid only; no independent human review; no auth-version M-INV4 re-injection; no real-user evidence. The pack must not be read as proof of production readiness.
+
+**Links:** issue #103 · PR #104 · [`08-presentation-pack.md`](checkpoint-C/08-presentation-pack.md)
+
+---
+
 ## Standing rule
 
 AI may investigate, analyse, draft, implement within an approved scope, and run verification. The human retains every decision that affects business rules, architecture, schema, scope, priority, risk acceptance and merging. Contributions that cannot be verified are recorded as unverified rather than asserted.
