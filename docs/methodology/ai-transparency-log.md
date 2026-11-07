@@ -245,6 +245,28 @@ Secret hygiene re-verified: `release.env` in history contains only `APP_VERSION`
 
 ---
 
+## Entry 17 — Workflow documentation, historical recordkeeping and changelog (issue #91, PR #92)
+
+**Date:** 2026-11-07
+**Tool:** opencode CLI (`deepseek-v4.1-flash`)
+**Intent:** Establish the engineering workflow documentation, permanent recordkeeping, findings register, and structured changelog without changing software behavior or historical claims.
+**Boundary:** Documentation and repository metadata only. The human approved the consolidated `AGENTS.md`, the workflow set, the `Task` issue type, the record folders, and the changelog. No application code, schema, tests, CI, ADR, claim form, existing issue, or existing PR was changed.
+**Prior records reviewed:** `AGENTS.md`, `README.md`, `docs/methodology/ai-transparency-log.md` Entries 14–16, checkpoint A and B, ADRs 001–002, and the staged `match-pulse-agentic-workflows/` package.
+**Verification:** 135 relative links checked over `AGENTS.md`, `README.md`, `CHANGELOG.md`, and `docs/`; all resolve. `git diff --check` passed. `task.yml` parsed as valid YAML. The four claim issue forms and ADRs 001–002 were unchanged by the diff. Exactly one `AGENTS.md` remains. The changelog contains 61 historical rows plus the current row. `bun run lint` and `bun run typecheck` were not run locally because Bun is not installed in this environment; CI must provide that evidence.
+**Limitations:** `bun run test` was not run because this is a documentation-only change and the invariant suite requires the local Supabase stack. CI results were not yet observed when this entry was written.
+**Learning:**
+- The consolidated `AGENTS.md` was preferred over adding a section to the existing 707-line file because it routes procedures to `docs/workflows/` and avoids duplicate instructions. Exact invariant values remain in `docs/architecture/02-domain-model.md`.
+- The changelog backfill used merged PR bodies for issue links and did not infer missing issue numbers. PR #62 remains unlinked because its PR body has no closing reference, even though its commit body does; the PR body is the authoritative record.
+- The staging package was removed after the copy so only one `AGENTS.md` remains.
+
+**Links:** issue #91 · PR #92 · `docs/workflows/README.md` · `docs/methodology/README.md` · `CHANGELOG.md`
+
+**Addendum 2026-11-07:** CI run [42373836200](https://github.com/match-pulse/match-pulse/actions/runs/42373836200) completed after this entry was written. Observed: "Lint, typecheck and build" passed in 26s; "Domain invariants" passed in 2m3s. This supplements, and does not rewrite, the verification above.
+
+**Addendum 2026-11-07 (CI re-run):** A later CI run failed in "Start local Supabase" because host port 54322 was already in use; the test steps were skipped. The failed job was re-run and passed: "Domain invariants" in 1m43s, "Lint, typecheck and build" in 18s. The failure was an infrastructure port conflict, not a test failure, and is recorded here rather than omitted.
+
+---
+
 ## Standing rule
 
 AI may investigate, analyse, draft, implement within an approved scope, and run verification. The human retains every decision that affects business rules, architecture, schema, scope, priority, risk acceptance and merging. Contributions that cannot be verified are recorded as unverified rather than asserted.

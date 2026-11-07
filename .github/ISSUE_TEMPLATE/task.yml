@@ -1,0 +1,36 @@
+name: Task
+description: Process, tooling, documentation, or maintenance work.
+title: "[Task] "
+type: "Task"
+body:
+  - type: markdown
+    attributes:
+      value: "**Type:** Task"
+  - type: textarea
+    id: goal
+    attributes:
+      label: Goal
+      description: What needs to change, and why?
+    validations:
+      required: true
+  - type: textarea
+    id: scope
+    attributes:
+      label: Scope
+      description: What is included, and what is deliberately excluded?
+    validations:
+      required: true
+  - type: textarea
+    id: done-when
+    attributes:
+      label: Done when
+      description: Observable conditions that end the task.
+    validations:
+      required: true
+  - type: textarea
+    id: prior-records
+    attributes:
+      label: Prior records reviewed
+      description: Link the findings register and relevant records; state what was found.
+    validations:
+      required: true
