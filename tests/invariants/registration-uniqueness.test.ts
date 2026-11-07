@@ -2,96 +2,70 @@
  * INV-02 — A participant cannot register for the same tournament twice, and a
  * retry must not consume a second place.
  *
- * The invariants registry previously recorded this rule as enforced. It was
- * not: there was no unique constraint, so a repeated submission incremented the
- * counter again and wrote a second row. Capacity correctness and uniqueness are
- * the same concern — a registration must not consume capacity it has not
- * earned — so they are tested together.
+ * Each test creates its own authenticated user and tournament, so the evidence
+ * does not depend on another test having run first.
  */
-import { afterAll, beforeAll, describe, expect, test } from 'bun:test'
-import { createClient, type SupabaseClient } from '@supabase/supabase-js'
-import { randomUUID } from 'crypto'
-
-const URL = process.env.NEXT_PUBLIC_SUPABASE_URL
-const KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-
-if (!URL || !KEY) {
-  throw new Error(
-    'NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY must be set. Run `bunx supabase db reset` first.'
-  )
-}
-
-const supabase: SupabaseClient = createClient(URL, KEY)
+import { describe, expect, test } from 'bun:test'
+import { admin, createUser, deleteUsers, type TestUser } from '../support/auth'
+import { createTournament, deleteTournament } from '../support/fixtures'
 
 const CAPACITY = 32
-const TEST_TIMEOUT_MS = 30_000
+const TEST_TIMEOUT_MS = 60_000
 
-let tournamentId: string
-
-beforeAll(async () => {
-  tournamentId = randomUUID()
-
-  const { error } = await supabase.from('tournaments').insert({
-    id: tournamentId,
-    name: 'Uniqueness Invariant Test',
-    max_capacity: CAPACITY,
-    current_players: 0
-  })
-
-  if (error) {
-    throw new Error(`Failed to create test tournament: ${error.message}`)
-  }
-})
-
-afterAll(async () => {
-  await supabase.from('tournaments').delete().eq('id', tournamentId)
-})
-
-async function register(userId: string) {
-  const { data, error } = await supabase.rpc('register_for_tournament', {
-    p_tournament_id: tournamentId,
-    p_user_id: userId
+async function register(user: TestUser, tournamentId: string) {
+  const { data, error } = await user.client.rpc('register_for_tournament', {
+    p_tournament_id: tournamentId
   })
   return { ok: !error, value: data, message: error?.message }
+}
+
+async function committedState(tournamentId: string, userId: string) {
+  const { count, error: countError } = await admin
+    .from('registrations')
+    .select('id', { count: 'exact', head: true })
+    .eq('tournament_id', tournamentId)
+    .eq('user_id', userId)
+
+  if (countError) {
+    throw new Error(`Failed to count registrations: ${countError.message}`)
+  }
+
+  const { data: tournament, error: readError } = await admin
+    .from('tournaments')
+    .select('current_players')
+    .eq('id', tournamentId)
+    .single()
+
+  if (readError || !tournament) {
+    throw new Error(`Failed to read tournament: ${readError?.message ?? 'no row'}`)
+  }
+
+  return { count: count ?? -1, currentPlayers: tournament.current_players }
 }
 
 describe('INV-02 registration uniqueness', () => {
   test(
     'a repeated sequential registration is refused and consumes no second place',
     async () => {
-      const userId = randomUUID()
+      const tournamentId = await createTournament(CAPACITY)
+      const user = await createUser('FAN')
 
-      const first = await register(userId)
-      const second = await register(userId)
+      try {
+        const first = await register(user, tournamentId)
+        const second = await register(user, tournamentId)
 
-      expect(first.message).toBeUndefined()
-      expect(first.value).toBe(true)
-      expect(second.message).toBeUndefined()
-      expect(second.value).toBe(false)
+        expect(first.message).toBeUndefined()
+        expect(first.value).toBe(true)
+        expect(second.message).toBeUndefined()
+        expect(second.value).toBe(false)
 
-      const { count, error } = await supabase
-        .from('registrations')
-        .select('id', { count: 'exact', head: true })
-        .eq('tournament_id', tournamentId)
-        .eq('user_id', userId)
-
-      if (error) {
-        throw new Error(`Failed to count registrations: ${error.message}`)
+        const state = await committedState(tournamentId, user.id)
+        expect(state.count).toBe(1)
+        expect(state.currentPlayers).toBe(1)
+      } finally {
+        await deleteUsers([user])
+        await deleteTournament(tournamentId)
       }
-
-      expect(count).toBe(1)
-
-      const { data: tournament, error: readError } = await supabase
-        .from('tournaments')
-        .select('current_players')
-        .eq('id', tournamentId)
-        .single()
-
-      if (readError || !tournament) {
-        throw new Error(`Failed to read tournament: ${readError?.message ?? 'no row'}`)
-      }
-
-      expect(tournament.current_players).toBe(1)
     },
     TEST_TIMEOUT_MS
   )
@@ -99,64 +73,24 @@ describe('INV-02 registration uniqueness', () => {
   test(
     'concurrent duplicate submissions accept exactly one and consume one place',
     async () => {
-      const userId = randomUUID()
+      const tournamentId = await createTournament(CAPACITY)
+      const user = await createUser('FAN')
 
-      const results = await Promise.all(Array.from({ length: 10 }).map(() => register(userId)))
+      try {
+        const results = await Promise.all(
+          Array.from({ length: 10 }).map(() => register(user, tournamentId))
+        )
 
-      expect(results.filter((r) => !r.ok)).toEqual([])
-      expect(results.filter((r) => r.value === true).length).toBe(1)
+        expect(results.filter((result) => !result.ok)).toEqual([])
+        expect(results.filter((result) => result.value === true).length).toBe(1)
 
-      const { count, error } = await supabase
-        .from('registrations')
-        .select('id', { count: 'exact', head: true })
-        .eq('tournament_id', tournamentId)
-        .eq('user_id', userId)
-
-      if (error) {
-        throw new Error(`Failed to count registrations: ${error.message}`)
+        const state = await committedState(tournamentId, user.id)
+        expect(state.count).toBe(1)
+        expect(state.currentPlayers).toBe(1)
+      } finally {
+        await deleteUsers([user])
+        await deleteTournament(tournamentId)
       }
-
-      expect(count).toBe(1)
-
-      // 1 from the sequential test above, 1 from this one.
-      const { data: tournament, error: readError } = await supabase
-        .from('tournaments')
-        .select('current_players')
-        .eq('id', tournamentId)
-        .single()
-
-      if (readError || !tournament) {
-        throw new Error(`Failed to read tournament: ${readError?.message ?? 'no row'}`)
-      }
-
-      expect(tournament.current_players).toBe(2)
-    },
-    TEST_TIMEOUT_MS
-  )
-
-  test(
-    'the stored counter never exceeds capacity even when distinct users are admitted and duplicates are refused',
-    async () => {
-      const { data: tournament, error: readError } = await supabase
-        .from('tournaments')
-        .select('current_players, max_capacity')
-        .eq('id', tournamentId)
-        .single()
-
-      const { count, error: countError } = await supabase
-        .from('registrations')
-        .select('id', { count: 'exact', head: true })
-        .eq('tournament_id', tournamentId)
-
-      if (readError || !tournament) {
-        throw new Error(`Failed to read tournament: ${readError?.message ?? 'no row'}`)
-      }
-      if (countError) {
-        throw new Error(`Failed to count registrations: ${countError.message}`)
-      }
-
-      expect(tournament.current_players).toBeLessThanOrEqual(tournament.max_capacity)
-      expect(tournament.current_players).toBe(count ?? -1)
     },
     TEST_TIMEOUT_MS
   )

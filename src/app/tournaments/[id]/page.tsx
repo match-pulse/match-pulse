@@ -2,14 +2,15 @@ import { Suspense } from 'react'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import RegistrationForm from '@/components/RegistrationForm'
-import { supabase } from '@/lib/supabase'
-import { getCurrentUserId } from '@/lib/session'
+import { requireUser } from '@/lib/session'
+import { createSupabaseServerClient } from '@/lib/supabase/server'
 
 async function TournamentContent({ params }: { params: Promise<{ id: string }> }) {
   // Awaiting the route params inside the Suspense boundary keeps the dynamic
   // access from blocking prerendering, which `cacheComponents` requires.
   const { id: tournamentId } = await params
-  const userId = await getCurrentUserId()
+  const user = await requireUser()
+  const supabase = await createSupabaseServerClient()
 
   const { data: tournament, error: tournamentError } = await supabase
     .from('tournaments')
@@ -29,7 +30,7 @@ async function TournamentContent({ params }: { params: Promise<{ id: string }> }
     .from('registrations')
     .select('id')
     .eq('tournament_id', tournamentId)
-    .eq('user_id', userId)
+    .eq('user_id', user.id)
     .maybeSingle()
 
   if (registrationError) {

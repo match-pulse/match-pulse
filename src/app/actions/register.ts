@@ -1,17 +1,17 @@
 'use server'
 
-import { supabase } from '@/lib/supabase'
-import { getCurrentUserId } from '@/lib/session'
+import { getCurrentUser } from '@/lib/session'
+import { createSupabaseServerClient } from '@/lib/supabase/server'
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
 /**
  * Register the current user for a tournament.
  *
- * The identity is resolved on the server and is never read from the form.
- * Capacity and uniqueness are enforced by `register_for_tournament` in the
- * database, not here: this action validates the request and translates the
- * result, it does not decide whether a place is available.
+ * Identity is resolved from the auth session and again inside the database with
+ * `auth.uid()`. Capacity and uniqueness are enforced by
+ * `register_for_tournament`; this action only validates the request and
+ * translates the result.
  */
 export async function registerForTournament(formData: FormData) {
   const tournamentId = formData.get('tournamentId')
@@ -20,14 +20,20 @@ export async function registerForTournament(formData: FormData) {
     return { success: false, message: 'Invalid registration request.' }
   }
 
-  const userId = await getCurrentUserId()
+  const user = await getCurrentUser()
+  if (!user) {
+    return { success: false, message: 'Sign in required.' }
+  }
 
+  const supabase = await createSupabaseServerClient()
   const { data: registered, error } = await supabase.rpc('register_for_tournament', {
-    p_tournament_id: tournamentId,
-    p_user_id: userId
+    p_tournament_id: tournamentId
   })
 
   if (error) {
+    if (error.message.includes('authentication required')) {
+      return { success: false, message: 'Sign in required.' }
+    }
     return { success: false, message: 'Registration failed. Please try again.' }
   }
 
