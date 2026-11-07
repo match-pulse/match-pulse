@@ -3,9 +3,10 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import MarketTrader from '@/components/MarketTrader'
 import TopBar from '@/components/TopBar'
-import { supabase } from '@/lib/supabase'
-import { getCurrentUserId } from '@/lib/session'
+import { requireUser } from '@/lib/session'
+import { createSupabaseServerClient } from '@/lib/supabase/server'
 import type { Outcome } from '@/app/actions/market'
+import type { SupabaseClient } from '@supabase/supabase-js'
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
@@ -51,7 +52,14 @@ type TradeRow = {
   created_at: string
 }
 
-async function marketPrice(outcome: Outcome, b: number, qh: number, qd: number, qa: number) {
+async function marketPrice(
+  supabase: SupabaseClient,
+  outcome: Outcome,
+  b: number,
+  qh: number,
+  qd: number,
+  qa: number
+) {
   const q = outcome === 'HOME' ? qh : outcome === 'DRAW' ? qd : qa
   const { data } = await supabase.rpc('market_price', {
     p_q: q,
@@ -63,7 +71,13 @@ async function marketPrice(outcome: Outcome, b: number, qh: number, qd: number, 
   return Number(data)
 }
 
-async function marketCost(b: number, qh: number, qd: number, qa: number) {
+async function marketCost(
+  supabase: SupabaseClient,
+  b: number,
+  qh: number,
+  qd: number,
+  qa: number
+) {
   const { data } = await supabase.rpc('market_cost', {
     p_b: b,
     p_q_home: qh,
@@ -80,7 +94,8 @@ async function MarketContent({ params }: { params: Promise<{ id: string }> }) {
     notFound()
   }
 
-  const userId = await getCurrentUserId()
+  const user = await requireUser()
+  const supabase = await createSupabaseServerClient()
 
   const { data: marketData, error: marketError } = await supabase
     .from('markets')
@@ -103,18 +118,13 @@ async function MarketContent({ params }: { params: Promise<{ id: string }> }) {
   }
 
   const [profileResult, positionsResult, tradesResult] = await Promise.all([
-    supabase.from('profiles').select('username, points').eq('id', userId).maybeSingle(),
+    supabase.from('profiles').select('username, points').eq('id', user.id).maybeSingle(),
     supabase
       .from('market_positions')
       .select('outcome, shares, cost_basis')
       .eq('market_id', marketId)
-      .eq('user_id', userId),
-    supabase
-      .from('market_trades')
-      .select('id, outcome, kind, shares, cost_points, proceeds_points, created_at')
-      .eq('market_id', marketId)
-      .order('created_at', { ascending: false })
-      .limit(10)
+      .eq('user_id', user.id),
+    supabase.rpc('market_public_trades', { p_market_id: marketId })
   ])
 
   if (profileResult.error || positionsResult.error || tradesResult.error) {
@@ -136,16 +146,16 @@ async function MarketContent({ params }: { params: Promise<{ id: string }> }) {
   const started = hasStarted(match.kickoff_time)
   const open = resolvedWinner === null && started
 
-  const homePrice = await marketPrice('HOME', b, qh, qd, qa)
-  const drawPrice = await marketPrice('DRAW', b, qh, qd, qa)
-  const awayPrice = await marketPrice('AWAY', b, qh, qd, qa)
+  const homePrice = await marketPrice(supabase, 'HOME', b, qh, qd, qa)
+  const drawPrice = await marketPrice(supabase, 'DRAW', b, qh, qd, qa)
+  const awayPrice = await marketPrice(supabase, 'AWAY', b, qh, qd, qa)
   const prices: Record<Outcome, number> = {
     HOME: homePrice,
     DRAW: drawPrice,
     AWAY: awayPrice
   }
 
-  const baseCost = open ? await marketCost(b, qh, qd, qa) : 0
+  const baseCost = open ? await marketCost(supabase, b, qh, qd, qa) : 0
 
   const positions = await Promise.all(
     heldOutcomes.map(async (position) => {
@@ -156,6 +166,7 @@ async function MarketContent({ params }: { params: Promise<{ id: string }> }) {
         exitValue = position.outcome === resolvedWinner ? Math.floor(shares) : 0
       } else {
         const costAfter = await marketCost(
+          supabase,
           b,
           qh - (position.outcome === 'HOME' ? shares : 0),
           qd - (position.outcome === 'DRAW' ? shares : 0),

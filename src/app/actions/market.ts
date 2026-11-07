@@ -1,7 +1,7 @@
 'use server'
 
-import { supabase } from '@/lib/supabase'
-import { getCurrentUserId } from '@/lib/session'
+import { getCurrentUser } from '@/lib/session'
+import { createSupabaseServerClient } from '@/lib/supabase/server'
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 const SHARES_PATTERN = /^\d{1,30}(\.\d{1,8})?$/
@@ -29,6 +29,9 @@ function formatShares(shares: string | number): string {
 }
 
 function describeTradeError(message: string): string {
+  if (message.includes('authentication required')) {
+    return 'Sign in required.'
+  }
   if (message.includes('entry cooldown active')) {
     return 'Cooling down. Try a smaller wait before entering again.'
   }
@@ -75,11 +78,14 @@ export async function enterPosition(formData: FormData) {
     return { success: false, message: 'Enter a whole number of points (1 or more).' }
   }
 
-  const userId = await getCurrentUserId()
+  const user = await getCurrentUser()
+  if (!user) {
+    return { success: false, message: 'Sign in required.' }
+  }
 
+  const supabase = await createSupabaseServerClient()
   const { data, error } = await supabase.rpc('open_trade', {
     p_market_id: marketId,
-    p_user_id: userId,
     p_outcome: outcome,
     p_budget: budget
   })
@@ -118,11 +124,14 @@ export async function exitPosition(formData: FormData) {
     return { success: false, message: 'Invalid share quantity.' }
   }
 
-  const userId = await getCurrentUserId()
+  const user = await getCurrentUser()
+  if (!user) {
+    return { success: false, message: 'Sign in required.' }
+  }
 
+  const supabase = await createSupabaseServerClient()
   const { data, error } = await supabase.rpc('close_trade', {
     p_market_id: marketId,
-    p_user_id: userId,
     p_outcome: outcome,
     p_shares: sharesRaw
   })

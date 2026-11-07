@@ -6,31 +6,32 @@ MatchPulse is a football tournament web application that engages fans through ma
 
 ## Current status
 
-This is an early-stage project. **Tournament registration and a live prediction market are implemented.** The market engine is tested and was observed failing under fault injection; the UI is an unprotected prototype. Rewards redemption and club analytics are not implemented.
+This is an early-stage project. **Tournament registration, a live prediction market, authentication and database-enforced authorization are implemented.** The market engine is tested and was observed failing under fault injection; the UI is authenticated. Rewards redemption and club analytics are not implemented.
 
 What exists today:
 
 | Area | State |
 | :--- | :--- |
 | Tournament registration with capacity enforcement | **Implemented and verified** |
-| Live prediction market (LMSR entry, exit, resolution) | **Implemented** — engine verified; prototype UI |
+| Live prediction market (LMSR entry, exit, resolution) | **Implemented** — engine verified; authenticated UI |
 | Points and rewards | Points balance and payouts only; ticket-discount redemption not implemented |
-| Authentication and row-level security | **Not implemented** |
+| Authentication, roles, RLS and grants | **Implemented and verified** — fan/organizer sessions, own-row reads, organizer-only resolution |
 | Club analytics | Not implemented — the trade log is recorded, not aggregated or exported |
 
-The system is **not** a security boundary. Anyone who can reach the database can act as any participant. See [Known gaps](#known-gaps).
+The database is the authorization boundary: Supabase Auth supplies identity, RLS restricts private rows to the owner, direct table writes are revoked, and the mutation RPCs check `auth.uid()` and the organizer role. The remaining gaps are listed below.
 
 ## Features
 
 - **Tournament Management:** Organize tournaments, teams, matches, and results. *(partial)*
-- **Live Prediction Market:** Buy and sell HOME/DRAW/AWAY shares while the match is live. Prices follow an LMSR curve; entry is cooled down per user and market; the winning side pays one point per share at resolution. *(implemented, unprotected prototype)*
+- **Live Prediction Market:** Buy and sell HOME/DRAW/AWAY shares while the match is live. Prices follow an LMSR curve; entry is cooled down per user and market; the winning side pays one point per share at resolution. *(implemented, authenticated UI)*
 - **Rewards:** Points are redeemable for future ticket discounts. *(redemption not implemented)*
 - **Crowd-Sentiment Analytics:** Aggregate market activity into insights for soccer clubs. *(not implemented; trades are recorded)*
 
 ## Tech Stack
 
 - **Framework:** Next.js 16 (App Router, Server Actions)
-- **Database:** Supabase (PostgreSQL) — migrations, constraints and transactional functions
+- **Database:** Supabase (PostgreSQL) — migrations, constraints, RLS and transactional functions
+- **Authentication:** Supabase Auth — anonymous fans and email/password organizers
 - **Runtime & Package Manager:** Bun
 - **Local Infrastructure:** Docker and Supabase CLI
 - **Continuous Integration:** GitHub Actions
@@ -48,7 +49,7 @@ Read the architecture documents in this order:
 4. [C4 Diagrams](docs/architecture/05-c4-diagrams.md) — context, containers and market components
 5. [Architecture Characteristics](docs/architecture/03-architecture-characteristics.md) — priorities and measurements
 6. [Code Map](docs/architecture/04-code-map.md) — documents and rules mapped to files and tests
-7. [Architecture Decision Records](docs/architecture/adr/) — the decisions behind the structure
+7. [Architecture Decision Records](docs/architecture/adr/) — the decisions behind the structure, including [ADR-003: authorization and RLS](docs/architecture/adr/003-authorization-rls.md)
 
 ### Development Methodology
 
@@ -59,6 +60,8 @@ Read the architecture documents in this order:
 - [Development Practices — Testing, Specification and OpenSpec](docs/methodology/development-practices.md)
 - [AI Transparency Log](docs/methodology/ai-transparency-log.md)
 - [Execution Plan — Live Prediction Market](docs/methodology/exec-plans/live-prediction-market.md)
+- [Execution Plan — Authorization, RLS and Grants](docs/methodology/exec-plans/95-authorization-rls.md)
+- [Verification — Authorization, RLS and Grants](docs/methodology/verification/2026-11-95-authorization-rls.md)
 - [Execution Plan — Invariant Evidence and the Registration Path](docs/methodology/exec-plans/50-invariant-evidence-and-registration-path.md) *(superseded)*
 - [AI Agent Instructions](AGENTS.md)
 
@@ -110,15 +113,16 @@ Create `.env.local` in the project root:
 ```dotenv
 NEXT_PUBLIC_SUPABASE_URL=http://127.0.0.1:54321
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your-local-anon-key
+SUPABASE_SERVICE_ROLE_KEY=your-local-service-role-key
 ```
 
-Get both values from the Supabase CLI:
+Get all three values from the Supabase CLI:
 
 ```bash
 bunx supabase status -o env
 ```
 
-This is the only place these variables are configured, and the names must match `src/lib/supabase.ts`. `.env.local` is gitignored and excluded from the Docker build context.
+`NEXT_PUBLIC_*` values are read by the application through `src/lib/supabase/server.ts`. `SUPABASE_SERVICE_ROLE_KEY` is used only by local test setup and `bun run auth:organizer`; it must never be exposed to the browser, committed, or used by the application runtime. `.env.local` is gitignored and excluded from the Docker build context.
 
 ### 5. Run the application
 
@@ -126,7 +130,23 @@ This is the only place these variables are configured, and the names must match 
 bun run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000).
+Open [http://localhost:3000](http://localhost:3000). You will be sent to
+`/login`.
+
+### Demo accounts
+
+- **Fan:** select **Continue as fan**. Supabase anonymous sign-in creates a real
+  auth user and a profile with 200 points.
+- **Organizer:** create the local organizer account, then sign in with the
+  email/password shown by the script:
+
+  ```bash
+  bun run auth:organizer
+  # default: organizer@matchpulse.local / matchpulse-organizer
+  ```
+
+The organizer role is assigned locally; there is no self-service organizer
+sign-up. The default password is a local fixture, not a production secret.
 
 ---
 
@@ -143,13 +163,22 @@ The invariant suites need a running database — complete steps 3 and 4 first. M
 
 | Suite | Verifies |
 | :--- | :--- |
-| `tests/invariants/tournament-capacity.test.ts` | 100 concurrent requests against capacity 32; accepted/refused split **and** committed rows, stored counter, `counter <= capacity` |
-| `tests/invariants/registration-uniqueness.test.ts` | A repeated registration is refused and consumes no second place |
+| `tests/invariants/authorization.test.ts` | Anonymous public/private access, fan own-row isolation, organizer-only resolution, denied direct writes, identity-free public trades |
+| `tests/invariants/tournament-capacity.test.ts` | 100 authenticated concurrent requests against capacity 32; accepted/refused split **and** committed rows, stored counter, `counter <= capacity` |
+| `tests/invariants/registration-uniqueness.test.ts` | A repeated registration is refused and consumes no second place; each test owns its fixtures |
 | `tests/invariants/market-pricing.test.ts` | Budget-bounded entry with `ceil` debit, `floor` credit on exit, over-sell and overspend refusals, share bookkeeping |
 | `tests/invariants/market-lifecycle.test.ts` | Pre-kickoff and post-resolution refusals, one-shot resolution payout, cooldown ladder/cap/decay/scope |
 | `tests/invariants/market-concurrency.test.ts` | Cross-market double-spend race and same-market entry burst |
 
-These suites were confirmed **capable of failing**: reintroducing each defect in turn produced a non-zero exit. See the invariants registry for the recorded output.
+The invariant suites use authenticated user clients for the real mutation path
+and a local service-role client for setup and committed-state reads. The service
+role is not an application runtime credential.
+
+These suites were confirmed **capable of failing**: reintroducing each defect in
+turn produced a non-zero exit. The authorization boundary is verified in CI run
+[42397891717](https://github.com/match-pulse/match-pulse/actions/runs/42397891717)
+(21 tests, 0 failures). See the invariants registry and the
+[authorization verification record](docs/methodology/verification/2026-11-95-authorization-rls.md).
 
 ### Continuous Integration
 
@@ -158,7 +187,11 @@ These suites were confirmed **capable of failing**: reintroducing each defect in
 - **Lint, typecheck and build** — ESLint, production build, `tsc --noEmit`
 - **Domain invariants** — starts a local Supabase, replays migrations, runs `bun run test`
 
-The CI job reads its credentials from the running stack at job time via `supabase status -o env`. **No database credential is stored in this repository.**
+The CI job reads its credentials from the running stack at job time via
+`supabase status -o env`. The service-role key is written to the test
+environment only; it is used for test setup and committed-state reads, never by
+the application runtime. **No database credential is stored in this
+repository.**
 
 ## Docker
 
@@ -187,7 +220,9 @@ satisfy `${...}` interpolation.
 
 Recorded so they are not mistaken for delivered work. Full detail in the [invariants registry](docs/methodology/checkpoint-A/02-invariants.md).
 
-- **No authentication, no Row Level Security, no grants.** `anon` currently has full read and write on every table and can call `open_trade`, `close_trade` and `resolve_market` directly. Server actions resolve a fixed demo identity; that is not authentication.
+- **No organizer management UI.** Market resolution is an authorized RPC and is exercised by tests; there is no browser management screen.
+- **No deployment, observability or recovery evidence.** The project runs locally and in CI only.
+- **Authentication and authorization are implemented**, but production session hardening, rate-limit tuning and service-role handling remain operational work.
 - **Five market invariants are enforced but not fault-injected.** M-INV1, M-INV2, M-INV3, M-INV5 and M-INV8 have passing tests; only M-INV4, M-INV6 and the M-INV7 gate were observed failing under injection.
 - **No idempotency keys.** If a request is retried after the cooldown expires, it is accepted as a new entry. The cooldown is the anti-churn mitigation, not a retry key.
 - **No load or latency measurement.** The suites cover correctness under a burst, not throughput or p95 latency.
@@ -200,5 +235,6 @@ MatchPulse is developed by one person covering the software development lifecycl
 - **Product Owner:** Defines domain requirements and product goals.
 - **Software Architect:** Documents architectural decisions and characteristics.
 - **Full-Stack Developer:** Implements the application and database logic.
-- **QA Engineer:** Develops automated tests for domain invariants.
-- **DevOps:** Manages local infrastructure and CI.
+- **QA Engineer:** Develops automated tests for domain invariants and authorization.
+- **Security & Privacy Reviewer:** Reviews authentication, RLS, grants and trust boundaries.
+- **DevOps / Release & Operations Verifier:** Manages local infrastructure, CI and release readiness.

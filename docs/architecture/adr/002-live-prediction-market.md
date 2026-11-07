@@ -48,6 +48,8 @@ The domain still requires correctness under concurrency: balances and holdings n
 - **Analytics path.** The trade log is the dataset of record for club insights. Export and privacy rules remain unimplemented (INV-05).
 - **Docs and code move together.** Invariants M-INV1–M-INV8 are specified here and become `Verified` only when the corresponding tests fail under fault injection.
 
+**Addendum 2026-11-07:** the `SECURITY INVOKER` implementation note is superseded by [ADR-003](./003-authorization-rls.md). The state-changing market RPCs are now `SECURITY DEFINER` with `auth.uid()` checks and a fixed `search_path`, because direct table writes are revoked. The transaction logic, lock order, pricing and payout decisions in this ADR remain in force.
+
 ## Related
 
 - [`../../methodology/exec-plans/live-prediction-market.md`](../../methodology/exec-plans/live-prediction-market.md) — approved execution plan

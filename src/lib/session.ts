@@ -1,19 +1,33 @@
+import { redirect } from 'next/navigation'
+import { createSupabaseServerClient } from './supabase/server'
+
 /**
  * Single server-side source of the current user identity.
  *
  * Server actions and pages import this and never accept a user id from the
- * client. Passing an identity through a form field would let any caller act as
- * any participant.
- *
- * PROVISIONAL: this returns the seeded demo profile because real
- * authentication is out of scope for this increment. When Supabase Auth lands,
- * replace the body of `getCurrentUserId` with a `supabase.auth.getUser()`
- * lookup. Every current action resolves identity through this seam; extending
- * it to any new action is mandatory.
+ * client. The database RPCs also resolve the caller with `auth.uid()`; this
+ * seam is for rendering and for a clear "sign in required" response.
  */
+export async function getCurrentUser() {
+  const supabase = await createSupabaseServerClient()
+  const {
+    data: { user },
+    error
+  } = await supabase.auth.getUser()
 
-const DEMO_USER_ID = '00000000-0000-0000-0000-000000000000'
+  if (error) {
+    return null
+  }
 
-export async function getCurrentUserId(): Promise<string> {
-  return DEMO_USER_ID
+  return user
+}
+
+export async function requireUser() {
+  const user = await getCurrentUser()
+
+  if (!user) {
+    redirect('/login')
+  }
+
+  return user
 }

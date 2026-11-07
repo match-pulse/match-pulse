@@ -57,3 +57,16 @@ Full detail in [`02-invariants.md`](./02-invariants.md) §3.
 - **Delivered (2026-10-19):** the live market replaced the fixed-score feature — engine (#65), resolution and concurrency evidence (#66), prototype UI and feature retirement (#67).
 - **Superseded (2026-10-19):** INV-03 and INV-04 were withdrawn when the owner replaced fixed-score predictions with a live market that opens at kickoff. See [`../../architecture/adr/002-live-prediction-market.md`](../../architecture/adr/002-live-prediction-market.md).
 - **Superseded:** an earlier version of this document stated the behaviour claim "holds true" and moved straight to building the UI. That conclusion came from evidence that could not fail. The claim was reopened, the evidence made trustworthy, and only then re-closed.
+
+## 5. Addendum 2026-11-07 — INV-05 closed
+
+INV-05 is now implemented and verified for the platform boundary: Supabase Auth,
+`profiles.role`, RLS, least-privilege grants, `auth.uid()`-based RPCs and an
+organizer check in `resolve_market`. The authorization suite passes in CI (run
+[42397891717](https://github.com/match-pulse/match-pulse/actions/runs/42397891717));
+anonymous private reads and mutations are denied, fans see only their own rows,
+only an organizer resolves, and direct table writes are denied. See
+[`02-invariants.md`](./02-invariants.md) and the
+[verification record](../verification/2026-11-95-authorization-rls.md). The
+club-analytics privacy rule remains not implemented; the remaining market
+injections are still open.

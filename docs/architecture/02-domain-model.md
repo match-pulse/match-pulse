@@ -11,31 +11,35 @@
 
 | Entity | Meaning | Storage | State |
 | :--- | :--- | :--- | :--- |
-| **Profile** | A participant. Stores a username and an available point balance. | `profiles` | Implemented (no authentication; seeded demo profile) |
+| **Profile** | A participant. Stores a username, an available point balance and a role (`FAN` or `ORGANIZER`). It is backed by an `auth.users` identity. | `profiles` | Implemented and verified |
 | **Tournament** | A capacity-limited competition. `current_players` must match the stored registrations. | `tournaments` | Implemented |
 | **Registration** | Links a profile to a tournament and consumes one place. | `registrations` | Implemented and verified |
 | **Team** | A football team participating in a tournament. | — | Not implemented as a table; matches store team names as text |
 | **Match** | A fixture with home and away team names, a kickoff timestamp and a status. | `matches` | Implemented |
-| **Market** | A three-outcome market (HOME / DRAW / AWAY) attached one-to-one to a match. Holds the LMSR liquidity parameter `b` and the outstanding quantities `q`. | `markets` | Implemented (engine verified; UI prototype) |
-| **Position** | A profile's holding in one outcome of one market, with its cost basis. | `market_positions` | Implemented (engine verified; UI prototype) |
-| **Trade** | An accepted entry or exit: kind, outcome, shares, points moved, and implied odds before and after. This is the analytics-of-record dataset. | `market_trades` | Implemented; not yet aggregated or exported |
+| **Market** | A three-outcome market (HOME / DRAW / AWAY) attached one-to-one to a match. Holds the LMSR liquidity parameter `b` and the outstanding quantities `q`. | `markets` | Implemented (engine verified; authenticated UI) |
+| **Position** | A profile's holding in one outcome of one market, with its cost basis. | `market_positions` | Implemented (engine verified; owner-only read) |
+| **Trade** | An accepted entry or exit: kind, outcome, shares, points moved, and implied odds before and after. This is the analytics-of-record dataset. | `market_trades` | Implemented; owner-only read, public feed without identity |
 | **Payout** | The one-time resolution credit for a holder of winning shares. | `market_payouts` | Implemented and verified |
 | **Entry cooldown** | The per-profile, per-market re-entry gate: current ladder level and next allowed entry. | `market_entry_cooldowns` | Implemented |
 | **Points ledger** | An append-only record of every point movement. | — | Not implemented; `profiles.points`, trades and payouts record balances |
 
-Two schema facts matter for reading the model correctly:
+Three schema facts matter for reading the model correctly:
 
+- `profiles.id` references `auth.users.id`. A profile cannot exist without an
+  auth identity; a trigger creates the profile on user creation.
+- `registrations.user_id` references `profiles.id`. A registration cannot point
+  at a non-existent identity.
 - `matches` is **not** linked to `tournaments`. Tournaments, registrations and
-  matches are independent aggregates in the current schema.
-- `registrations.user_id` is **not** a foreign key to `profiles`. Market tables
-  do reference `profiles`; registration relies on the caller supplying a valid
-  profile id.
+  matches are independent aggregates in the current schema. This remains a
+  deliberate limitation, not a hidden relationship.
 
 ## 2. Relationships
 
 ```mermaid
 erDiagram
+  AUTH_USERS ||--|| PROFILES : owns
   TOURNAMENTS ||--o{ REGISTRATIONS : admits
+  PROFILES ||--o{ REGISTRATIONS : holds
   MATCHES ||--|| MARKETS : prices
   PROFILES ||--o{ MARKET_POSITIONS : holds
   MARKETS ||--o{ MARKET_POSITIONS : contains
@@ -66,27 +70,29 @@ erDiagram
 
 ## 4. User journeys
 
-1. **Organizer:** creates tournaments, manages teams, schedules matches and
-   records final results. Resolving a market is an organizer operation;
-   authorization is not yet enforced (INV-05).
-2. **Fan registration (implemented):** registers for a tournament while
-   capacity remains, and is told when it is full.
-3. **Fan trading (implemented; engine verified, UI prototype):** once the match
-   has started, commits points to one outcome at the current odds. The spectator
-   may exit part or all of the position at any later moment before resolution;
-   exits are never blocked or charged. Exiting settles at the current odds — a
-   gain when the implied probability has risen, a proportional loss when it has
-   fallen. Re-entry is cooled down (5 s, 15 s, 30 s, 45 s, … capped, decaying
-   after quiet periods); refused attempts do not escalate.
-4. **Resolution (implemented and verified):** when staff finalise a result, the
-   market resolves once and terminally. Each winning share pays exactly one
-   point; losing shares pay nothing. No trade is accepted afterwards.
-5. **Rewards:** accumulated points can be redeemed for future ticket discounts.
+1. **Fan sign-in (implemented):** an anonymous auth session creates a profile
+   with 200 points and role `FAN`. The session is the identity; the form never
+   supplies a user id.
+2. **Organizer sign-in (implemented):** an email/password account created by the
+   local `auth:organizer` script has role `ORGANIZER`. The organizer management
+   UI is not implemented.
+3. **Fan registration (implemented and verified):** registers for a tournament
+   while capacity remains, and is told when it is full.
+4. **Fan trading (implemented; engine verified, authenticated UI):** once the
+   match has started, commits points to one outcome at the current odds. The
+   spectator may exit part or all of the position at any later moment before
+   resolution; exits are never blocked or charged. Exiting settles at the
+   current odds — a gain when the implied probability has risen, a proportional
+   loss when it has fallen. Re-entry is cooled down (5 s, 15 s, 30 s, 45 s, …
+   capped, decaying after quiet periods); refused attempts do not escalate.
+5. **Resolution (implemented and verified):** an authorized organizer finalises
+   the result. The market resolves once and terminally. Each winning share pays
+   exactly one point; losing shares pay nothing. No trade is accepted afterwards.
+6. **Rewards:** accumulated points can be redeemed for future ticket discounts.
    *Not implemented.*
-6. **Club analytics:** clubs purchase aggregated crowd-sentiment insights
+7. **Club analytics:** clubs purchase aggregated crowd-sentiment insights
    derived from market activity over time. *Not implemented; the trade log is
-   designed to support it. Export and privacy rules are not implemented
-   (INV-05).*
+   designed to support it. Export and privacy rules are not implemented.*
 
 The request-level sequence for trading, resolution and registration is in the
 [system overview](./01-system-overview.md#4-data-flows).
@@ -109,4 +115,8 @@ evidence.
 | Resolution pays exactly one point per winning share, once, terminally | `resolve_market` | **Verified** (M-INV6, fault-injected) |
 | Entry cooldown ladder and decay; exits never restricted | `open_trade` cooldown gate | **Verified for the gate** (M-INV7); ladder/decay tests pass, not injected |
 | No commission of any kind on entry, exit or settlement | No fee path in any RPC; exact payout formulas | **Enforced, unverified** (M-INV8) |
-| Authenticated identity, RLS, grants and privacy rules | Supabase Auth, RLS policies, grants | **Not implemented** (INV-05) |
+| A caller must be a real auth user; a fan acts only on their own rows | Supabase Auth, RLS policies, `auth.uid()` in every mutation RPC | **Verified** (INV-05, A-INV1–A-INV2, CI) |
+| Only an organizer may resolve a market | Organizer role check in `resolve_market` | **Verified** (A-INV3, CI) |
+| Direct table writes are denied; mutations go through authorized RPCs | Revoked grants, no write policies, `SECURITY DEFINER` RPCs | **Verified** (A-INV4, CI) |
+| The public trade feed exposes no identity | `market_public_trades` returns safe columns only | **Verified** (A-INV5, CI) |
+| Club analytics privacy rules | Not implemented | **Not implemented** |

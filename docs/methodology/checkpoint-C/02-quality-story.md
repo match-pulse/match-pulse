@@ -118,3 +118,14 @@ Risk R-03
 ```
 
 The four checkpoint questions are answered in the [Checkpoint C README](./README.md). The full risk view is in the [risk control map](./01-risk-control-map.md).
+
+## 9. Addendum 2026-11-07 — FND-001 mitigated
+
+The quality story above was written before authentication existed. FND-001 is now
+mitigated for the platform boundary by #95 / PR #96: Supabase Auth, RLS,
+least-privilege grants, `auth.uid()`-based RPCs and the organizer-only
+`resolve_market` check. CI run
+[42397891717](https://github.com/match-pulse/match-pulse/actions/runs/42397891717)
+passes the authorization suite and the existing invariants (21 tests, 0
+failures). The M-INV4 double-spend control remains valid; FND-003 (idempotency)
+and the operational residual risks remain open.

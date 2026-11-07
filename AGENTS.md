@@ -32,7 +32,7 @@ When documentation and implementation disagree, report the discrepancy and ident
 
 ### Current capability and security caution
 
-The repository has described itself as an early-stage product: tournament registration and the market engine have implemented portions, while the trading UI remains a prototype; ticket-discount redemption and club analytics are not yet implemented. Authentication, authorization, RLS, and grants have been identified as gaps in the documented baseline. Re-check the current README, migrations, tests, and invariant registry before repeating any status claim. A fixed demo identity is not authentication, and a reachable database operation is not proof of authorization.
+The repository is an early-stage product: tournament registration, the market engine, authentication and database-enforced authorization are implemented. The fan UI is authenticated; the organizer management UI, ticket-discount redemption, club analytics, deployment and observability are not implemented. Supabase Auth, `profiles.role`, RLS, least-privilege grants and `auth.uid()`-based RPCs form the authorization boundary; the service role is a local test/administration credential and must never be used by the application runtime. Re-check the current README, migrations, tests, verification record and invariant registry before repeating any status claim. Hiding a control in the UI is not authorization, and a reachable database operation is not proof that the caller is allowed to perform it.
 
 ## 3. Domain and Data-Integrity Guardrails
 

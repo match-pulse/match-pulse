@@ -102,3 +102,7 @@ The human owner is asked to:
 3. Approve the next increment. The recommended next increment is the authorization/RLS slice, because it is the only critical residual risk and it is the largest credibility gap in the quality story.
 
 The checkpoint is a discussion, not a grade. The purpose is to make the quality story coherent before the final deliverable.
+
+## 7. Addendum 2026-11-07 — RR-01 mitigated
+
+The authorization increment (#95 / PR #96) is implemented and verified in CI run [42397891717](https://github.com/match-pulse/match-pulse/actions/runs/42397891717). The authorization suite covers anonymous access, fan own-row isolation, organizer-only resolution, denied direct writes and the identity-free public trade feed. RR-01 is mitigated for the platform boundary; the organizer management UI, production session hardening and service-role handling remain operational concerns. RR-04 (test independence) is fixed. The other residual risks remain open, and no residual risk is accepted by this addendum. See [`05-residual-risk.md`](./05-residual-risk.md) §7.

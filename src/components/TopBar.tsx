@@ -1,4 +1,6 @@
-export default function TopBar({ username, points }: { username: string, points: number }) {
+import { signOut } from '@/app/actions/auth'
+
+export default function TopBar({ username, points }: { username: string; points: number }) {
   return (
     <header className="w-full bg-slate-950 border-b border-slate-800 p-4 flex justify-between items-center text-white">
       <div className="flex items-center gap-3">
@@ -7,9 +9,19 @@ export default function TopBar({ username, points }: { username: string, points:
         </div>
         <span className="font-semibold">{username}</span>
       </div>
-      <div className="flex items-center gap-2 bg-slate-800 px-4 py-2 rounded-lg border border-slate-700">
-        <span className="text-yellow-400 text-lg">🪙</span>
-        <span className="font-bold text-yellow-400">{points} PTS</span>
+      <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2 bg-slate-800 px-4 py-2 rounded-lg border border-slate-700">
+          <span className="text-yellow-400 text-lg">🪙</span>
+          <span className="font-bold text-yellow-400">{points} PTS</span>
+        </div>
+        <form action={signOut}>
+          <button
+            type="submit"
+            className="text-sm text-slate-400 hover:text-white underline transition-colors"
+          >
+            Sign out
+          </button>
+        </form>
       </div>
     </header>
   )
