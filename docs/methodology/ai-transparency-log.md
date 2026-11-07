@@ -267,6 +267,25 @@ Secret hygiene re-verified: `release.env` in history contains only `APP_VERSION`
 
 ---
 
+## Entry 18 — SDLC, development practices and Checkpoint C evidence
+
+**Date:** 2026-11-07
+**Tool:** opencode CLI (`deepseek-v4.1-flash`)
+**Intent:** Make the software development lifecycle explicit, state the project's testing and specification practices (including TDD, SDD and the OpenSpec decision), assemble the Checkpoint C quality/residual-risk evidence package, and populate the findings register with the known gaps.
+**Boundary:** Documentation only. The human requested the implementation; the repository workflow required issue #93. AI drafted the records. No application code, schema, migration, test, CI configuration, existing historical record, or prior issue/PR was changed. No commit, push, pull request or merge was performed in this entry.
+**Prior records reviewed:** Checkpoint A and B, the invariant registry, the full AI transparency log, the README known gaps, the architecture documents, the workflow contracts, and the course L01–L12 summaries, slides and key transcripts.
+**Verification:** Relative-link scan over the changed Markdown files; `git diff --check`; inspection of the diff to confirm that no historical record was rewritten. The invariant tests were not rerun: this is a documentation-only change, and Bun/Docker are not available in this environment. CI must provide the code evidence for the branch.
+**Learning:**
+- The SDLC, SDD and TDD are three different layers. The project uses a hybrid lifecycle, spec-first/spec-anchored SDD, and invariant-first/risk-first testing rather than strict TDD. Stating the difference prevents the project from claiming a practice it does not use.
+- OpenSpec is a tool/framework, not a required course artefact. The existing issue + execution plan + ADR + invariant + test chain already implements a lightweight SDD. A bounded trial is allowed, but installing a second documentation system without a decision would add ceremony rather than evidence.
+- The findings register was empty while the README listed known gaps. Recording the gaps as FND-001–FND-008 makes the residual risks traceable and gives Checkpoint C a risk map instead of a prose list.
+- Residual risks are proposed for the human owner, not accepted by AI. The checkpoint record explicitly marks every residual-risk decision as proposed.
+**Limitations:** No independent human review; the risk ranking is qualitative; the evidence is local and test-based; the test suite and CI were not rerun for this documentation change. The next decision — authorization/RLS, idempotency, real-user evidence, delivery/operations, or test hardening — belongs to the human owner.
+
+**Links:** issue #93 · branch `docs/93-sdlc-practices-checkpoint-c` · `docs/methodology/checkpoint-B/04-sdlc-decision.md` · `docs/methodology/development-practices.md` · `docs/methodology/checkpoint-C/` · `docs/methodology/findings-register.md`
+
+---
+
 ## Standing rule
 
 AI may investigate, analyse, draft, implement within an approved scope, and run verification. The human retains every decision that affects business rules, architecture, schema, scope, priority, risk acceptance and merging. Contributions that cannot be verified are recorded as unverified rather than asserted.
