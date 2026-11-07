@@ -50,6 +50,8 @@ The domain still requires correctness under concurrency: balances and holdings n
 
 **Addendum 2026-11-07:** the `SECURITY INVOKER` implementation note is superseded by [ADR-003](./003-authorization-rls.md). The state-changing market RPCs are now `SECURITY DEFINER` with `auth.uid()` checks and a fixed `search_path`, because direct table writes are revoked. The transaction logic, lock order, pricing and payout decisions in this ADR remain in force.
 
+**Addendum 2026-11-08:** entry and exit are now idempotent. `open_trade`/`close_trade` accept an optional request ID and claim a `trade_requests` row before the trade; a completed request replays the recorded trade, and a different payload with the same key is refused. The request and trade commit or roll back together. The pricing, position, cooldown and settlement rules in this ADR are unchanged. See [M-INV9](../../methodology/checkpoint-A/02-invariants.md) and the [execution plan](../../methodology/exec-plans/107-idempotent-trades.md).
+
 ## Related
 
 - [`../../methodology/exec-plans/live-prediction-market.md`](../../methodology/exec-plans/live-prediction-market.md) — approved execution plan

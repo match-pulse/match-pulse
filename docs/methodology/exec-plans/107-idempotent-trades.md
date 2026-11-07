@@ -1,6 +1,6 @@
 # Execution Plan — Idempotent Entry and Exit
 
-- **Status:** Proposed — implementation is blocked until the human owner approves this plan.
+- **Status:** Executed and verified in CI (2026-11-08). See [verification record](../verification/2026-11-107-idempotent-trades.md).
 - **Issue:** #107
 - **Branch:** `feat/107-idempotent-trades`
 - **Decision owner:** Human developer
@@ -252,3 +252,20 @@ The human owner is asked to approve:
 6. The test and fault-injection plan.
 
 No implementation begins until this plan is approved.
+
+
+## 16. Delivery note (2026-11-08)
+
+Approved by the human owner and implemented on `feat/107-idempotent-trades`
+(PR #108).
+
+Observed in CI run [42425131584](https://github.com/match-pulse/match-pulse/actions/runs/42425131584):
+
+- Lint, typecheck and build passed.
+- Domain invariants passed.
+- 28 tests passed across 7 files, including six idempotency tests.
+
+The verification record is
+[`../verification/2026-11-107-idempotent-trades.md`](../verification/2026-11-107-idempotent-trades.md).
+Fault injection was not observed locally; the program-level verification states
+that limit.

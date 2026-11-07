@@ -39,6 +39,7 @@ These replace the withdrawn prediction invariants. Enforcement and the first evi
 | **M-INV6** | Resolution is terminal and pays exactly one point per winning share, once per holder; losing shares pay nothing. | `resolve_market` with a terminal status check and one payout path. | **Verified.** `market-lifecycle.test.ts` pays winners once and refuses a second resolution. Injection removed the terminal check and the payout key: the second call was accepted instead of refused. Restored; suite green. |
 | **M-INV7** | Entry cooldown is per user × market: 5 s first rung, then a linear `+15 s` ladder capped at 600 s, decaying one level per five quiet minutes. Refusals do not escalate; exits are exempt. | Cooldown gate in `open_trade`; `close_trade` never reads it. | **Verified for the gate.** Burst test; injection removed the cooldown refusal and 10 of 10 same-market entries were accepted instead of one. Ladder, cap, decay, scope, no-escalation and the exit exemption have passing tests (`market-lifecycle.test.ts`) but were not separately injected. |
 | **M-INV8** | No commission of any kind: entry debits `ceil(cost)`, exit credits `floor(proceeds)`, and no fee path exists. | RPC formulas; no maker account. | **Enforced, unverified.** Ceil/floor and no-fee assertions in `market-pricing.test.ts`. Not fault-injected. |
+| **M-INV9** | A retried entry or exit with the same request key and payload returns the recorded trade and does not debit, credit, create a position or write a second trade. Reusing the key with a different payload is refused. | `trade_requests` unique `(user_id, request_id)`; claim-before-work in `open_trade`/`close_trade`; request and trade commit or roll back together. | **Verified.** `idempotency.test.ts`; CI run [42425131584](https://github.com/match-pulse/match-pulse/actions/runs/42425131584). Fault injection not yet observed locally. |
 
 ### Correction to an earlier draft
 
@@ -53,7 +54,8 @@ An earlier version of this table recorded INV-02 as enforced by "unique database
 | `tests/invariants/market-pricing.test.ts` | M-INV2, M-INV3, M-INV5, M-INV8 (partial M-INV7) | Budget-bounded entry, `ceil` debit, `floor` credit, profit and proportional-loss exits, over-sell and unaffordable-entry refusals, share bookkeeping, and the first cooldown rung; asserts committed balances, positions and trade rows |
 | `tests/invariants/market-lifecycle.test.ts` | M-INV1, M-INV6, M-INV7 | Pre-kickoff refusals, one-shot resolution payout, duplicate-resolution refusal, cooldown ladder/cap/decay/scope, no escalation on refusal and exits accepted during an active cooldown |
 | `tests/invariants/market-concurrency.test.ts` | M-INV4, M-INV7 | Cross-market double-spend race and same-market burst; both were observed red under fault injection |
-| `tests/invariants/authorization.test.ts` | INV-05, A-INV1–A-INV5 | Anonymous access, fan own-row isolation, organizer-only resolution, denied direct writes and the identity-free public trade feed |
+| `tests/invariants/authorization.test.ts` | INV-05, A-INV1–A-INV5 | Anonymous access, fan own-row isolation, organizer-only resolution, denied direct writes, the identity-free public trade feed and owner-only trade requests |
+| `tests/invariants/idempotency.test.ts` | M-INV9 | Sequential/concurrent replay, payload mismatch, retry after cooldown, exit replay and close-key mismatch |
 
 **Retired.** The former `prediction-duplicate-prevention.test.ts` (previously `prediction-lock.test.ts`) exercised `UNIQUE (user_id, match_id)` and never tested kickoff locking, because that rule (INV-03) was withdrawn. It was removed with the fixed-score feature in #67 and is not evidence for any market invariant. The table and `submit_prediction` were dropped by `20261023_retire_predictions.sql`.
 
@@ -155,12 +157,33 @@ The six authorization tests cover:
 The suite uses authenticated clients for the real path and the service role for
 setup/reads. The service role is not an application runtime credential.
 
+### Idempotency suite (2026-11-08)
+
+The request-key boundary is enforced at the database and observed in CI:
+
+```text
+Domain invariants: 28 pass, 0 fail, 256 expect() calls, 7 files
+CI run: https://github.com/match-pulse/match-pulse/actions/runs/42425131584
+```
+
+The six idempotency tests cover:
+
+- sequential replay of a completed entry;
+- concurrent duplicate entries producing one trade;
+- same key with a different entry payload refused;
+- retry after the cooldown would have allowed a new entry;
+- replay of a completed exit without selling twice;
+- same exit key with different shares refused.
+
+The request row is owner-only through RLS; direct writes are denied. The legacy
+null-key path remains non-idempotent and is exercised by the existing suites.
+
 ### What a green run does and does not establish
 
 It establishes that these scenarios hold, on this machine, against a single database instance, at this scale. It does **not** establish behaviour under sustained load, across multiple application instances, or where connections are dropped upstream before reaching a business decision. The authorization evidence is local Supabase/PostgreSQL; production session hardening and rate limits are not claimed.
 
 ## 4. Current focus
 
-INV-01 and INV-02 remain verified. INV-03 and INV-04 are withdrawn with the retired fixed-score feature (owner decision, 2026-10-19); M-INV1–M-INV8 replace them. M-INV4 (profile lock / double-spend), M-INV6 (one-shot resolution) and the gate of M-INV7 (cooldown) are **Verified** by observed failure under fault injection. M-INV1, M-INV2, M-INV3, M-INV5 and M-INV8, plus the ladder/decay details of M-INV7, are **Enforced, unverified**: passing tests, no injection yet.
+INV-01 and INV-02 remain verified. INV-03 and INV-04 are withdrawn with the retired fixed-score feature (owner decision, 2026-10-19); M-INV1–M-INV9 replace them. M-INV4 (profile lock / double-spend), M-INV6 (one-shot resolution), the gate of M-INV7 (cooldown) and M-INV9 (request-key idempotency) are **Verified** by tests in CI; M-INV4/6/7 also have historical fault-injection evidence. M-INV1, M-INV2, M-INV3, M-INV5 and M-INV8, plus the ladder/decay details of M-INV7, are **Enforced, unverified**: passing tests, no injection yet (FND-002).
 
-INV-05 and A-INV1–A-INV5 are **Verified** for the platform boundary by the authorization suite in CI. The separate club-analytics privacy rule remains not implemented. The market page is authenticated and reads only the user's own private rows plus the identity-free public trade feed. The remaining open findings are idempotency (FND-003), load/p95 (FND-004), delivery/operations (FND-006), real-user evidence (FND-007) and independent review (FND-008).
+INV-05 and A-INV1–A-INV5 are **Verified** for the platform boundary by the authorization suite in CI. The separate club-analytics privacy rule remains not implemented. The market page is authenticated and reads only the user's own private rows plus the identity-free public trade feed. The remaining open findings are unverified market injections (FND-002), load/p95 (FND-004), delivery/operations (FND-006), real-user evidence (FND-007) and independent review (FND-008). FND-003 is fixed by the idempotency increment.

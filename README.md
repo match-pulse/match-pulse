@@ -6,14 +6,14 @@ MatchPulse is a football tournament web application that engages fans through ma
 
 ## Current status
 
-This is an early-stage project. **Tournament registration, a live prediction market, authentication and database-enforced authorization are implemented.** The market engine is tested and was observed failing under fault injection; the UI is authenticated. Rewards redemption and club analytics are not implemented.
+This is an early-stage project. **Tournament registration, a live prediction market, authentication, database-enforced authorization and retry-safe trading are implemented.** The market engine is tested and was observed failing under fault injection; the UI is authenticated. Rewards redemption and club analytics are not implemented.
 
 What exists today:
 
 | Area | State |
 | :--- | :--- |
 | Tournament registration with capacity enforcement | **Implemented and verified** |
-| Live prediction market (LMSR entry, exit, resolution) | **Implemented** — engine verified; authenticated UI |
+| Live prediction market (LMSR entry, exit, resolution) | **Implemented** — engine verified; authenticated UI; request-key idempotency |
 | Points and rewards | Points balance and payouts only; ticket-discount redemption not implemented |
 | Authentication, roles, RLS and grants | **Implemented and verified** — fan/organizer sessions, own-row reads, organizer-only resolution |
 | Club analytics | Not implemented — the trade log is recorded, not aggregated or exported |
@@ -23,7 +23,7 @@ The database is the authorization boundary: Supabase Auth supplies identity, RLS
 ## Features
 
 - **Tournament Management:** Organize tournaments, teams, matches, and results. *(partial)*
-- **Live Prediction Market:** Buy and sell HOME/DRAW/AWAY shares while the match is live. Prices follow an LMSR curve; entry is cooled down per user and market; the winning side pays one point per share at resolution. *(implemented, authenticated UI)*
+- **Live Prediction Market:** Buy and sell HOME/DRAW/AWAY shares while the match is live. Prices follow an LMSR curve; entry is cooled down per user and market; a retry with the same request key returns the original trade; the winning side pays one point per share at resolution. *(implemented, authenticated UI)*
 - **Rewards:** Points are redeemable for future ticket discounts. *(redemption not implemented)*
 - **Crowd-Sentiment Analytics:** Aggregate market activity into insights for soccer clubs. *(not implemented; trades are recorded)*
 
@@ -164,7 +164,8 @@ The invariant suites need a running database — complete steps 3 and 4 first. M
 
 | Suite | Verifies |
 | :--- | :--- |
-| `tests/invariants/authorization.test.ts` | Anonymous public/private access, fan own-row isolation, organizer-only resolution, denied direct writes, identity-free public trades |
+| `tests/invariants/authorization.test.ts` | Anonymous public/private access, fan own-row isolation, organizer-only resolution, denied direct writes, identity-free public trades, owner-only trade requests |
+| `tests/invariants/idempotency.test.ts` | Request-key replay, concurrent duplicates, payload mismatch, retry after cooldown, exit replay |
 | `tests/invariants/tournament-capacity.test.ts` | 100 authenticated concurrent requests against capacity 32; accepted/refused split **and** committed rows, stored counter, `counter <= capacity` |
 | `tests/invariants/registration-uniqueness.test.ts` | A repeated registration is refused and consumes no second place; each test owns its fixtures |
 | `tests/invariants/market-pricing.test.ts` | Budget-bounded entry with `ceil` debit, `floor` credit on exit, over-sell and overspend refusals, share bookkeeping |
@@ -178,7 +179,7 @@ role is not an application runtime credential.
 These suites were confirmed **capable of failing**: reintroducing each defect in
 turn produced a non-zero exit. The authorization boundary is verified in CI run
 [42397891717](https://github.com/match-pulse/match-pulse/actions/runs/42397891717)
-(21 tests, 0 failures). See the invariants registry and the
+(28 tests, 0 failures, CI run [42425131584](https://github.com/match-pulse/match-pulse/actions/runs/42425131584)). See the invariants registry and the
 [authorization verification record](docs/methodology/verification/2026-11-95-authorization-rls.md).
 
 ### Continuous Integration
@@ -225,7 +226,7 @@ Recorded so they are not mistaken for delivered work. Full detail in the [invari
 - **No deployment, observability or recovery evidence.** The project runs locally and in CI only.
 - **Authentication and authorization are implemented**, but production session hardening, rate-limit tuning and service-role handling remain operational work.
 - **Five market invariants are enforced but not fault-injected.** M-INV1, M-INV2, M-INV3, M-INV5 and M-INV8 have passing tests; only M-INV4, M-INV6 and the M-INV7 gate were observed failing under injection.
-- **No idempotency keys.** If a request is retried after the cooldown expires, it is accepted as a new entry. The cooldown is the anti-churn mitigation, not a retry key.
+- **No request-key retention/cleanup policy.** Idempotency request rows grow with accepted/rejected requests; a retention policy is deferred.
 - **No load or latency measurement.** The suites cover correctness under a burst, not throughput or p95 latency.
 - **No ticket-discount redemption and no club analytics aggregation.** The trade log exists; nothing consumes it yet.
 

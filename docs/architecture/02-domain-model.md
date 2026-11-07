@@ -19,6 +19,7 @@
 | **Market** | A three-outcome market (HOME / DRAW / AWAY) attached one-to-one to a match. Holds the LMSR liquidity parameter `b` and the outstanding quantities `q`. | `markets` | Implemented (engine verified; authenticated UI) |
 | **Position** | A profile's holding in one outcome of one market, with its cost basis. | `market_positions` | Implemented (engine verified; owner-only read) |
 | **Trade** | An accepted entry or exit: kind, outcome, shares, points moved, and implied odds before and after. This is the analytics-of-record dataset. | `market_trades` | Implemented; owner-only read, public feed without identity |
+| **Trade request** | A request key for one entry or exit: kind, market, outcome, payload, status and the resulting trade. The unique key makes retries idempotent. | `trade_requests` | Implemented and verified |
 | **Payout** | The one-time resolution credit for a holder of winning shares. | `market_payouts` | Implemented and verified |
 | **Entry cooldown** | The per-profile, per-market re-entry gate: current ladder level and next allowed entry. | `market_entry_cooldowns` | Implemented |
 | **Points ledger** | An append-only record of every point movement. | — | Not implemented; `profiles.points`, trades and payouts record balances |
@@ -47,6 +48,9 @@ erDiagram
   MARKETS ||--o{ MARKET_TRADES : records
   PROFILES ||--o{ MARKET_PAYOUTS : receives
   MARKETS ||--o{ MARKET_PAYOUTS : pays
+  PROFILES ||--o{ TRADE_REQUESTS : submits
+  MARKETS ||--o{ TRADE_REQUESTS : scopes
+  TRADE_REQUESTS ||--|| MARKET_TRADES : records
   PROFILES ||--o{ MARKET_ENTRY_COOLDOWNS : waits
   MARKETS ||--o{ MARKET_ENTRY_COOLDOWNS : cools
 ```
@@ -67,6 +71,7 @@ erDiagram
 | Market | `OPEN` → `RESOLVED` | `resolve_market`; terminal, with `winning_outcome` and `resolved_at` set |
 | Position | shares `> 0` → `0` | Exits; a zero-share row may remain |
 | Cooldown | level `0…40`; wait `5, 15, 30, 45, …` capped at `600 s` | Accepted entries escalate; five quiet minutes decay one level; refusals do not change it |
+| Trade request | `IN_PROGRESS` → `COMPLETED` or rollback | The RPC claims the request key before the trade; the request and trade commit or roll back together. A completed request replays the recorded trade. |
 
 ## 4. User journeys
 

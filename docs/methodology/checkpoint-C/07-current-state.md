@@ -112,3 +112,21 @@ Use **R-01** as the top-risk story and **M-INV4** as the invariant story.
 Present Checkpoint C with this current-state record, then collect feedback. Start Checkpoint D only after C; the L13–L16 materials are not yet in the course folder, so D would otherwise be based on inference rather than the actual checkpoint requirements.
 
 The D pre-read can start from what already exists: change scenarios, dependency rules, fitness functions, ownership/change rights, technical debt and a small compatible change with evidence.
+
+## 9. Addendum 2026-11-08 — FND-003 fixed
+
+The idempotency increment (#107 / PR #108) is implemented and verified in CI
+run [42425131584](https://github.com/match-pulse/match-pulse/actions/runs/42425131584):
+**28 tests pass, 0 failures**, including six request-key idempotency tests.
+
+The current ranking above changes:
+
+1. **FND-002 — unverified market injections** remains the top verification risk.
+2. **FND-006 — delivery/operations** remains the largest rubric gap.
+3. **FND-004, FND-007, FND-008** remain open.
+4. **FND-003 is fixed**; the request-key table and RPC replay are in place.
+5. No request-key retention/cleanup policy and no auth-version M-INV4 re-injection
+   are still limits. The fault injection for idempotency was not observed locally.
+
+This addendum updates the presentation state; it does not rewrite the original
+risk record.

@@ -424,6 +424,8 @@ Secret hygiene re-verified: `release.env` in history contains only `APP_VERSION`
 - The `trade_requests` status check (`IN_PROGRESS` vs `COMPLETED`) makes the request/trade commit relationship visible to the database, not just to the function.
 **Limitations:** Fault injection (remove the unique constraint/request check) has not been observed locally; CI only proves the restored code. The legacy null-key path remains non-idempotent. No request-key cleanup policy. No independent human review.
 
+**Addendum 2026-11-08 (CI):** CI run [42425131584](https://github.com/match-pulse/match-pulse/actions/runs/42425131584) passed both jobs: **28 tests, 0 failures, 256 expect() calls, 7 files**. The six M-INV9 idempotency tests and the updated authorization suite passed. This supplements, and does not rewrite, the verification above.
+
 **Links:** issue #107 · PR #108 · [execution plan](exec-plans/107-idempotent-trades.md) · `supabase/migrations/20261111_trade_requests.sql` · `supabase/migrations/20261112_idempotent_rpcs.sql` · `tests/invariants/idempotency.test.ts`
 
 ---
