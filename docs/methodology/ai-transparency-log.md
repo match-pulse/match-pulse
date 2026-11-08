@@ -622,6 +622,34 @@ Secret hygiene re-verified: `release.env` in history contains only `APP_VERSION`
 
 ---
 
+---
+
+## Entry 35 — Three-role MVP backend foundation
+
+**Date:** 2026-11-08
+**Tool:** opencode CLI (`deepseek-v4.1-flash`)
+**Intent:** Implement the backend foundation for the approved MVP: `CLUB` role, organizer ownership, match/tournament linkage, scores, tickets, rewards, redemptions, audit events, RLS/grants and the new RPCs.
+**Boundary:** Approved MVP backend change (#128). AI added migrations, RPCs, RLS, fixtures, scripts and integration tests. No frontend pages, real payments, coupons or production deployment. The human approved the MVP scope and decisions.
+**Prior records reviewed:** Epic #127, approved MVP plan and decisions, ADR-002/003, invariant registry, RLS/grant pattern, existing market/registration RPCs, test support.
+**Work performed:**
+- Added `20261120_mvp_schema.sql`, `20261121_mvp_rls.sql` and `20261122_mvp_rpcs.sql`.
+- Added organizer tournament/match CRUD, ticket claim, reward redemption, club aggregate/time-series, export audit and ownership-aware resolution.
+- Added `CLUB` role support, `scripts/create-club.ts` and `bun run auth:club`.
+- Added `tests/integration/mvp-backend.test.ts`.
+- Updated the architecture guard for the new mutation RPCs.
+**Verification:** CI run [42480124658](https://github.com/match-pulse/match-pulse/actions/runs/42480124658) passed all four jobs: build, 36 tests across 8 files, delivery/recovery and fault injection. The first run found a ticket ordering defect: a duplicate claim returned "tickets sold out" before checking the existing ticket. The duplicate check was moved before the allocation check and the suite passed.
+**Learning:**
+- The ticket claim must distinguish "already claimed" from "sold out" before checking allocation.
+- Ownership must be enforced in `resolve_market`, not only in the organizer RPCs.
+- Club analytics must suppress small cohorts and return no identities; the SQL returns null metrics when the cohort is below 5.
+**Limitations:** No UI yet. Club privacy still needs a formal privacy review. No real-user or independent review. The organizer/club/fan front ends are separate issues.
+
+**Links:** issue #128 · PR #136 · [verification record](verification/2026-11-128-mvp-backend.md) · [code map](../architecture/04-code-map.md)
+
+---
+
+---
+
 ## Standing rule
 
 AI may investigate, analyse, draft, implement within an approved scope, and run verification. The human retains every decision that affects business rules, architecture, schema, scope, priority, risk acceptance and merging. Contributions that cannot be verified are recorded as unverified rather than asserted.
