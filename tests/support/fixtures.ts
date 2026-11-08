@@ -3,13 +3,21 @@ import { admin } from './auth'
 
 export const B = 100
 
-export async function createTournament(capacity = 32): Promise<string> {
+export async function createTournament(
+  capacity = 32,
+  organizerId: string | null = null,
+  ticketAllocation = 100,
+  ticketPoints = 100
+): Promise<string> {
   const id = randomUUID()
   const { error } = await admin.from('tournaments').insert({
     id,
     name: `Test Tournament ${id.slice(0, 8)}`,
     max_capacity: capacity,
-    current_players: 0
+    current_players: 0,
+    organizer_id: organizerId,
+    ticket_allocation: ticketAllocation,
+    ticket_points: ticketPoints
   })
 
   if (error) {
@@ -19,10 +27,15 @@ export async function createTournament(capacity = 32): Promise<string> {
   return id
 }
 
-export async function createMarket(kickoffOffsetMs = -3_600_000, b = B): Promise<string> {
+export async function createMarket(
+  kickoffOffsetMs = -3_600_000,
+  b = B,
+  tournamentId: string | null = null
+): Promise<string> {
   const matchId = randomUUID()
   const { error: matchError } = await admin.from('matches').insert({
     id: matchId,
+    tournament_id: tournamentId,
     home_team: 'Test Home',
     away_team: 'Test Away',
     status: 'LIVE',
@@ -150,6 +163,7 @@ export async function setCooldown(
 }
 
 export async function deleteTournament(tournamentId: string): Promise<void> {
+  await admin.from('matches').delete().eq('tournament_id', tournamentId)
   await admin.from('tournaments').delete().eq('id', tournamentId)
 }
 

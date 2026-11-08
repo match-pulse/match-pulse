@@ -110,7 +110,14 @@ const mutationRpcs = [
   { name: 'register_for_tournament', signature: '(UUID)' },
   { name: 'open_trade', signature: '(UUID, TEXT, INT, UUID)' },
   { name: 'close_trade', signature: '(UUID, TEXT, NUMERIC, UUID)' },
-  { name: 'resolve_market', signature: '(UUID, TEXT)' }
+  { name: 'resolve_market', signature: '(UUID, TEXT)' },
+  { name: 'create_tournament', signature: '(TEXT, INT, INT, INT)' },
+  { name: 'update_tournament', signature: '(UUID, TEXT, INT, INT, INT)' },
+  { name: 'create_match', signature: '(UUID, TEXT, TEXT, TIMESTAMPTZ)' },
+  { name: 'update_match', signature: '(UUID, INT, INT, TEXT)' },
+  { name: 'claim_ticket', signature: '(UUID)' },
+  { name: 'redeem_reward', signature: '(UUID)' },
+  { name: 'record_club_export', signature: '(TEXT, JSONB)' }
 ]
 
 function functionBlock(name: string): string {
@@ -137,8 +144,8 @@ for (const rpc of mutationRpcs) {
   if (!block.includes('SECURITY DEFINER')) {
     fail('Mutation RPC is SECURITY DEFINER', rpc.name)
   }
-  if (!block.includes('auth.uid()')) {
-    fail('Mutation RPC resolves auth.uid()', rpc.name)
+  if (!block.includes('auth.uid()') && !block.includes("public.require_role('")) {
+    fail('Mutation RPC resolves auth.uid() or require_role', rpc.name)
   }
   if (!rpcSql.includes(`REVOKE ALL ON FUNCTION public.${rpc.name}${rpc.signature}`)) {
     fail('Mutation RPC revokes broad execute', rpc.name)

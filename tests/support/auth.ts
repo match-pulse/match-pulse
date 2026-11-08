@@ -24,7 +24,7 @@ export type TestUser = {
 
 const PASSWORD = 'matchpulse-test-password'
 
-export async function createUser(role: 'FAN' | 'ORGANIZER' = 'FAN'): Promise<TestUser> {
+export async function createUser(role: 'FAN' | 'ORGANIZER' | 'CLUB' = 'FAN'): Promise<TestUser> {
   const id = randomUUID()
   const email = `test-${id}@matchpulse.local`
   const username = `Test_${id.slice(0, 8)}`
@@ -97,7 +97,7 @@ export async function createAnonymousUser(): Promise<TestUser> {
 
 export async function createUsers(
   count: number,
-  role: 'FAN' | 'ORGANIZER' = 'FAN'
+  role: 'FAN' | 'ORGANIZER' | 'CLUB' = 'FAN'
 ): Promise<TestUser[]> {
   const users: TestUser[] = []
   const batchSize = 10
