@@ -709,6 +709,21 @@ Secret hygiene re-verified: `release.env` in history contains only `APP_VERSION`
 
 ---
 
+## Entry 39 — Release v2.0.1
+
+**Date:** 2026-11-08
+**Tool:** opencode CLI (`deepseek-v4.1-flash`)
+**Intent:** Cut v2.0.1 for request-key retention and the serious accessibility gate.
+**Boundary:** Release preparation only. AI edited `CHANGELOG.md`, `package.json` and this log. No code, schema or test change in the release PR.
+**Prior records reviewed:** PR #142 retention, PR #144 accessibility, v2.0.0 release, main CI 42501987291.
+**Verification:** Main CI [42501987291](https://github.com/match-pulse/match-pulse/actions/runs/42501987291) passed all five jobs; E2E/accessibility [42501196896](https://github.com/match-pulse/match-pulse/actions/runs/42501196896) passed the serious/critical axe gate. The release PR CI is the final gate.
+**Learning:** A patch release can carry a maintenance feature and a test-hardening fix when both close documented release limits. The limits must stay visible.
+**Limitations:** Tag and GitHub Release are created after this entry. No real-user validation, independent review, production deployment, production recovery or scheduled retention.
+
+**Links:** issue #145 · [`CHANGELOG.md`](../../CHANGELOG.md) · [release workflow](../workflows/release-workflow.md)
+
+---
+
 ## Standing rule
 
 AI may investigate, analyse, draft, implement within an approved scope, and run verification. The human retains every decision that affects business rules, architecture, schema, scope, priority, risk acceptance and merging. Contributions that cannot be verified are recorded as unverified rather than asserted.
