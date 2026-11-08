@@ -97,7 +97,7 @@ AI-generated code and tests can share the same wrong assumption. Review must fin
 
 ### 3.1 Mode: spec-first per slice, spec-anchored for the domain
 
-MatchPulse does not have a separate `openspec/` directory. It nevertheless practises SDD in a lightweight form:
+Before 2026-11-08, MatchPulse did not have a separate `openspec/` directory; it practised SDD in a lightweight form. OpenSpec was adopted for the first evidence change on 2026-11-08 (see §4.6), and the lightweight practice remains the baseline for ordinary slices:
 
 - **Spec-first per slice:** each issue states the claim type, goal, scope, non-goals and observable Done-when criteria. Substantial work also has an execution plan with intent, current state, decisions, work breakdown, verification, risks and stop conditions.
 - **Spec-anchored for the domain:** the kata, domain model, invariants registry and ADRs are maintained as the code evolves. They describe intended behaviour retained across changes, not just one task.
@@ -177,6 +177,39 @@ The trial must be recorded as a decision, not just a tool installation. It shoul
 - Team growth or a second contributor who needs the same per-change context.
 - A course or assessment requirement that explicitly asks for the OpenSpec artefact structure.
 
+### 4.6 Addendum 2026-11-08 — OpenSpec adopted for the first evidence change
+
+The earlier decision not to adopt OpenSpec is superseded for a bounded trial.
+The first OpenSpec change is
+[`add-market-fault-injections`](../../openspec/changes/add-market-fault-injections/proposal.md),
+which targets the remaining fault-injection gap (FND-002).
+
+- **Why OpenSpec now.** The change is a verification increment, not a product
+  feature. It needs a proposal, a design with a mutation catalog, a task list and
+  a validation step that another reader can follow. The existing issue and
+  execution plan would have carried the same content, but the OpenSpec change
+  folder makes the verification contract explicit in one place.
+- **What it adds.** A typed proposal, a design with decisions and alternatives,
+  a tracked task list, and `openspec validate` as a structural check. The
+  generated OpenCode commands and skills make the workflow discoverable to the
+  agent.
+- **What it does not replace.** The kata, domain model, invariant registry,
+  ADRs, execution plans, tests, verification records, findings register and AI
+  transparency log remain authoritative. OpenSpec is a change-planning layer,
+  not a second source of truth for the domain.
+- **Why `skip_specs: true`.** The change adds verification evidence; it does not
+  change system behavior. Inventing a behavioral requirement for a test-only
+  change would make the spec less honest.
+- **Validation.** `openspec validate add-market-fault-injections --type change
+  --strict` passes. The change is proposed, not implemented.
+- **Decision.** Keep the change folder and the generated OpenCode commands and
+  skills. Review the trial outcome after the change is applied or abandoned. If
+  it does not improve a decision or the evidence, retire it and keep the
+  lightweight practice.
+
+The original decision in §4.3 remains the historical record. This addendum
+changes the current practice for this bounded trial only.
+
 ## 5. Review and AI practices
 
 - Review is examination by someone other than the author. In a one-person project, the current practice is structured self-review plus automated checks and agent role passes. This is a real limitation, not an independent human review.
@@ -196,7 +229,7 @@ The trial must be recorded as a decision, not just a tool installation. It shoul
 | Static and dynamic analysis | ESLint, TypeScript, review; runtime tests and fault injection | CI; invariant registry |
 | Coverage is a map, not a verdict | Invariant coverage and fault injection, not line coverage | Invariant registry |
 | SDD / spec-first / spec-anchored | Issue + execution plan + kata/domain/invariants + ADRs | This record |
-| OpenSpec | Optional tool; not adopted; bounded trial allowed | This record |
+| OpenSpec | Adopted for a bounded evidence change on 2026-11-08; see §4.6 | This record; `openspec/` |
 | Review and AI bias | Independent rule, counterexample, decision record, provenance | AI log; Checkpoint C review decision |
 
 ## 7. Limits
@@ -205,4 +238,5 @@ The trial must be recorded as a decision, not just a tool installation. It shoul
 - The test suite has unverified market invariants (FND-002); the previous independence gap (FND-005) is fixed. The authorization suite now uses authenticated clients and observes the database boundary (CI run 42397891717).
 - There is no independent human review (FND-008).
 - There is no load, performance or production evidence (FND-004, FND-006).
-- A future OpenSpec trial could change this decision; until then, the lightweight practice is the current truth.
+- The OpenSpec trial is active for `add-market-fault-injections`; its outcome is
+  pending. The lightweight practice remains the baseline for other slices.

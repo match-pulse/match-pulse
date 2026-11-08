@@ -574,6 +574,30 @@ Secret hygiene re-verified: `release.env` in history contains only `APP_VERSION`
 
 ---
 
+## Entry 33 — OpenSpec adoption and first change
+
+**Date:** 2026-11-08
+**Tool:** opencode CLI (`deepseek-v4.1-flash`)
+**Intent:** Install OpenSpec, initialize it in the repository, create a real change proposal for the next evidence increment (FND-002), validate it, and record the adoption in the methodology docs.
+**Boundary:** Tooling and documentation only. AI installed the standalone CLI, ran `openspec init --tools opencode`, created one change folder, and edited the methodology docs, README, AGENTS.md and this log. No application code, schema, test or CI change.
+**Prior records reviewed:** `development-practices.md` §4 (the earlier OpenSpec decision), Checkpoint B SDLC decision, FND-002, AI log Entry 32, the invariant registry and the existing fault-injection history.
+**Work performed:**
+- Installed OpenSpec 1.16.1 as a standalone CLI.
+- Initialized the project with the OpenCode tool integration; generated six commands and six skills under `.opencode/`.
+- Created `openspec/changes/add-market-fault-injections/` with `proposal.md`, `design.md`, `tasks.md` and `skip_specs: true`.
+- The change specifies a mutation catalog and runner for M-INV1, M-INV2, M-INV3, M-INV5, M-INV8 and the M-INV7 detail set.
+- Added `openspec/README.md`, updated `development-practices.md` §4.6, the methodology index, the methodology report, the root README and AGENTS.md.
+**Verification:** `openspec --version` reports 1.16.1. `openspec doctor` reports the root is OK. `openspec validate add-market-fault-injections --type change --strict` reports the change is valid with `skip_specs` accepted. Local architecture/typecheck/lint and link checks are run before the PR; the change itself is proposed, not implemented.
+**Learning:**
+- OpenSpec supports `skip_specs: true` for test-only or tooling changes; inventing a behavioral requirement would make the spec less honest.
+- The tool's proposal/design/tasks structure fits the FND-002 evidence change better than a second issue-only plan because the mutation catalog and the verification tasks need to stay together.
+- OpenSpec is a change-planning layer, not a replacement for the kata, invariant registry or verification records.
+**Limitations:** The change is proposed, not implemented; no mutation has been run yet. The trial outcome is pending. There is no capability spec tree because no behavior changes. No independent human review (FND-008).
+
+**Links:** issue #123 · [OpenSpec project](../../openspec/README.md) · [first change](../../openspec/changes/add-market-fault-injections/proposal.md) · [development-practices §4.6](development-practices.md) · [methodology report](reports/2026-11-08.md)
+
+---
+
 ## Standing rule
 
 AI may investigate, analyse, draft, implement within an approved scope, and run verification. The human retains every decision that affects business rules, architecture, schema, scope, priority, risk acceptance and merging. Contributions that cannot be verified are recorded as unverified rather than asserted.

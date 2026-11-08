@@ -1,0 +1,5 @@
+schema: spec-driven
+created: 2026-11-08
+goal: Close FND-002 by adding observed-red fault injections for the remaining
+  market invariants.
+skip_specs: true
