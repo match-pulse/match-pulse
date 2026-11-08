@@ -17,6 +17,54 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versioning: [S
 
 No unreleased changes yet.
 
+## [1.3.0] - 2026-11-08
+
+Delivery, observability and recovery baseline.
+
+### Added
+
+- `GET /api/health`: public, read-only app/database status with `200`/`503`, `cache-control: no-store`, and no counts, identities, secrets or environment values.
+- Structured JSON logging (`src/lib/logger.ts`) for health failures and key market/registration failures; no tokens, keys, emails or form bodies.
+- `bun run smoke`: waits for health and checks the health response, the login UI and the home HTML shell against a running app.
+- CI `Delivery smoke` job: starts Supabase, applies migrations, builds, starts the app, waits for health and runs the smoke test.
+- Operations runbook covering environments, health, logs, release, rollback, backup/restore and incident steps.
+- Proposed SLOs and p95 measurement method; Checkpoint E pre-read for delivery, observability, recovery and service levels.
+- Capacity burst now records p50/p95/max for the 100 concurrent registrations.
+
+### Changed
+
+- CI now runs three jobs: build/typecheck/lint/architecture, domain invariants, and delivery smoke.
+- The Supabase CLI is pinned to `3.0.0` in CI instead of resolving `latest`.
+- The health route is dynamic and uses a cookie-less anon client, so it does not depend on a user session or bake a build-time database check into the image.
+- The smoke test asserts the home HTML shell, not an HTTP redirect, because the market route is partially prerendered and resolves the auth gate inside the streamed component.
+
+### Fixed
+
+- The health route no longer logs a false `health.db_check_failed` during the production build.
+- Delivery CI no longer fails when the Supabase CLI `latest` lookup is rate-limited.
+
+### Migration / upgrade notes
+
+- No database migration is required for this release.
+- The app still requires `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY`; the health route uses the same anon key.
+- `bun run smoke` expects a running app at `SMOKE_BASE_URL` (default `http://127.0.0.1:3000`).
+
+### Known gaps
+
+- No hosted deployment, TLS, DNS or production availability claim.
+- No external log collector, metrics, tracing, dashboard or alerting.
+- Backup/restore is documented but was not exercised in this environment; no production recovery drill exists.
+- p95 is observed and recorded (463.11 ms and 571.68 ms in two CI runs), but it is environment-specific and not a hard CI gate.
+- Sustained load and throughput remain unmeasured.
+- M-INV1/2/3/5/8 and the M-INV7 details still lack fault injection (FND-002).
+- The problem/outcome claims still lack real-user evidence (FND-007), and there is no independent human review (FND-008).
+- No request-key retention/cleanup policy.
+
+### Evidence
+
+- Main CI [42435627680](https://github.com/match-pulse/match-pulse/actions/runs/42435627680): build, 28 invariant tests, and delivery smoke all pass.
+- [Delivery verification](docs/methodology/verification/2026-11-111-delivery-operations-baseline.md); AI transparency Entry 27; [operations runbook](docs/operations/runbook.md); [SLO proposal](docs/operations/slo.md).
+
 ## [1.2.0] - 2026-11-08
 
 Request-key idempotency for entry and exit.
@@ -216,7 +264,8 @@ This table is the pre-policy execution record. It is kept for traceability and i
 - The first entry after this changelog is established is recorded contemporaneously and links its issue, PR, verification, and AI transparency entry.
 
 
-[Unreleased]: https://github.com/match-pulse/match-pulse/compare/v1.2.0...HEAD
+[Unreleased]: https://github.com/match-pulse/match-pulse/compare/v1.3.0...HEAD
+[1.3.0]: https://github.com/match-pulse/match-pulse/compare/v1.2.0...v1.3.0
 [1.2.0]: https://github.com/match-pulse/match-pulse/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/match-pulse/match-pulse/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/match-pulse/match-pulse/commit/5fadb6c
