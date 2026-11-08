@@ -14,6 +14,7 @@ The process rules are in [`docs/workflows/recordkeeping-traceability-workflow.md
 | Incident reports | [`incidents/`](incidents/) | `<YYYY-MM-DD>-<slug>.md` | [`incident-report-template.md`](../workflows/templates/incident-report-template.md) |
 | Remediation records | [`remediation/`](remediation/) | `<YYYY-MM-DD>-<issue>-<slug>.md` | [`remediation-plan-template.md`](../workflows/templates/remediation-plan-template.md) |
 | Verification records | [`verification/`](verification/) | `<YYYY-MM-DD>-<issue>-<slug>.md` | [`verification-record-template.md`](../workflows/templates/verification-record-template.md) |
+| Project reports | [`reports/`](reports/) | `<YYYY-MM-DD>.md` | — |
 | AI transparency log | [`ai-transparency-log.md`](ai-transparency-log.md) | Append-only `## Entry N` | [`ai-transparency-entry-template.md`](../workflows/templates/ai-transparency-entry-template.md) |
 | Findings register | [`findings-register.md`](findings-register.md) | `FND-NNN` | — |
 | Changelog | [`../../CHANGELOG.md`](../../CHANGELOG.md) | Release-based (Keep a Changelog); no per-PR rows | — |
@@ -27,6 +28,7 @@ ADRs remain in [`docs/architecture/adr/`](../architecture/adr/) and follow the e
 - [`checkpoint-C/`](checkpoint-C/) — risk control map, quality story, review decisions, test-case process, residual risk, and documentation review.
 - [`checkpoint-D/`](checkpoint-D/) — pre-read for architecture ownership, dependency rules, fitness functions, change scenario, compatibility and technical debt.
 - [`checkpoint-E/`](checkpoint-E/) — pre-read for delivery, observability, recovery, SLOs and p95 measurement.
+- [`reports/`](reports/) — dated project reports; [`2026-11-08.md`](reports/2026-11-08.md) is the current methodology synthesis.
 - [`development-practices.md`](development-practices.md) — invariant-first testing, TDD fit, SDD mode, and the OpenSpec decision.
 - [`exec-plans/`](exec-plans/) — approved execution plans.
 - [`ai-transparency-log.md`](ai-transparency-log.md) — dated AI contributions and verification.
