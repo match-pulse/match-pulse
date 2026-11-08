@@ -740,6 +740,21 @@ Secret hygiene re-verified: `release.env` in history contains only `APP_VERSION`
 
 ---
 
+## Entry 41 — Submission package generation commit
+
+**Date:** 2026-11-08
+**Tool:** opencode CLI (`deepseek-v4.1-flash`)
+**Intent:** Correct the generation-commit reference in the submission index: the committed PDFs came from `f4d2dfe`, not `04406a1`.
+**Boundary:** One documentation line in `docs/submissions/README.md` plus this entry. No PDF, application, schema or test change.
+**Prior records reviewed:** issue #149, PR #150, submission index, CI runs 42510991205 and 42511782242.
+**Verification:** `git rev-parse` confirmed the full hashes; `pdftotext` comparison showed the PDFs from runs 42510991205 and 42511782242 have identical text, so the committed artifacts match the corrected source commit.
+**Learning:** Provenance references must name the commit that actually produced the committed artifact, not an earlier generation.
+**Limitations:** Docs-only; the PR CI is the final gate.
+
+**Links:** issue #151 · PR #152 · [`docs/submissions/README.md`](../submissions/README.md)
+
+---
+
 ## Standing rule
 
 AI may investigate, analyse, draft, implement within an approved scope, and run verification. The human retains every decision that affects business rules, architecture, schema, scope, priority, risk acceptance and merging. Contributions that cannot be verified are recorded as unverified rather than asserted.
