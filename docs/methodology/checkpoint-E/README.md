@@ -7,8 +7,10 @@
 - **Update 2026-11-08:** the local/CI delivery baseline is implemented and
   verified (CI run [42435007354](https://github.com/match-pulse/match-pulse/actions/runs/42435007354)):
   health, login and home smoke checks pass; 28 invariant tests pass; observed
-  p95 is 463–572 ms across two runs. Backup/restore is documented but
-  unexercised. L17–L20 requirements are still pending.
+  p95 is 463–572 ms across two runs. Backup/restore is exercised in CI:
+  67,009-byte public-schema backup, tables 10→10, RLS policies 10→10,
+  tournaments 2→2 and the marker restored. L17–L20 requirements are still
+  pending.
 - **Purpose:** Make delivery, health, logging, release, rollback, backup and
   recovery explicit and testable against the actual L17–L20 requirements when
   they arrive.
@@ -40,8 +42,8 @@ hypothesis, not a finished answer.
 | `GET /api/health` | App + database status, no sensitive data | Local/CI only; no continuous probe |
 | `src/lib/logger.ts` | JSON stdout logs for health and key action failures | No collector, dashboard or alerting |
 | `bun run smoke` | Health, login UI and home shell against a running app | No auth/trade mutation; deterministic by design |
-| CI `Delivery smoke` job | Starts Supabase, builds, starts the app, waits for health, runs smoke | Runner environment, not production |
-| `docs/operations/runbook.md` | Environments, health, logs, release, rollback, backup/restore, incident steps | Local recovery exercise, no production drill |
+| CI `Delivery and recovery` job | Starts Supabase, builds, starts the app, waits for health, runs smoke, then dumps/restores the public schema into a scratch database | Runner environment, not production |
+| `docs/operations/runbook.md` | Environments, health, logs, release, rollback, backup/restore, incident steps | CI recovery drill, no production drill |
 | `docs/operations/slo.md` | Proposed indicators and measurement method | Targets are proposed; availability is sampled only when run |
 | Capacity burst p95 | Observed p50/p95/max for 100 concurrent registrations | Environment-specific; not asserted initially |
 | v1.2.0 release | Immutable tag, GitHub Release, milestone, changelog | No deployment; rollback is a local tag selection |
@@ -69,27 +71,27 @@ hypothesis, not a finished answer.
 | p95 latency is measured from the capacity burst. | **Known** — test output; value recorded in the verification record. |
 | E will ask for a deployment and operational evidence. | **Inferred** from the course pattern; exact form awaits L17–L20. |
 | A cloud deployment is required for a top grade. | **Unknown** — the plan deliberately chose local/CI evidence; the professor's rubric may prefer or require a hosted environment. |
-| The local backup/restore exercise is sufficient recovery evidence. | **Unverified** — it is a local drill, not a production recovery. |
+| The local backup/restore exercise is sufficient recovery evidence. | **Partially verified** — the CI drill restores the public schema and verifies counts; it is not a production recovery. |
 
 ## 5. Pre-read verdict
 
 The delivery baseline is a real, exercised slice: health, logs, smoke, CI
-delivery, runbook, proposed SLOs, p95 observation and a local backup/restore
-procedure. It is honest about not being a production deployment.
+delivery, runbook, proposed SLOs, p95 observation and an exercised CI
+backup/restore drill. It is honest about not being a production deployment.
 
 E is not complete because:
 
 - the L17–L20 requirements are not available;
 - there is no hosted environment, external monitoring or alerting;
-- the backup/restore exercise is local and must be recorded with its actual
-  observed result;
+- the backup/restore drill is local/CI and its result is recorded; production
+  backup, retention and recovery remain open;
 - availability is sampled only when CI or a person runs the smoke test;
 - no production incident or recovery drill exists.
 
 ## 6. Proposed E work after L17–L20 arrive
 
 1. Validate this pre-read against the actual E questions.
-2. Record the observed p95 and backup/restore result in a verification record.
+2. Keep the observed p95 and backup/restore evidence current.
 3. Add any missing operational evidence the course requires.
 4. If a hosted environment is required, request explicit approval, credentials
    and a cost/security decision before provisioning anything.

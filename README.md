@@ -69,6 +69,8 @@ Read the architecture documents in this order:
 - [Execution Plan — Delivery, Observability and Recovery](docs/methodology/exec-plans/111-delivery-operations-baseline.md)
 - [Verification — Authorization, RLS and Grants](docs/methodology/verification/2026-11-95-authorization-rls.md)
 - [Verification — Idempotent Entry and Exit](docs/methodology/verification/2026-11-107-idempotent-trades.md)
+- [Verification — Delivery, Observability and Recovery](docs/methodology/verification/2026-11-111-delivery-operations-baseline.md)
+- [Verification — Backup and Restore Recovery Drill](docs/methodology/verification/2026-11-117-recovery-drill.md)
 - [Execution Plan — Invariant Evidence and the Registration Path](docs/methodology/exec-plans/50-invariant-evidence-and-registration-path.md) *(superseded)*
 - [AI Agent Instructions](AGENTS.md)
 
@@ -197,7 +199,7 @@ verified in CI run
 
 - **Lint, typecheck and build** — ESLint, production build, `tsc --noEmit`, architecture guards
 - **Domain invariants** — starts a local Supabase, replays migrations, runs `bun run test`
-- **Delivery smoke** — starts Supabase, builds, starts the app, waits for `/api/health`, runs `bun run smoke`
+- **Delivery and recovery** — starts Supabase, builds, starts the app, waits for `/api/health`, runs `bun run smoke`, then dumps and restores the public schema into a scratch database and verifies tables, RLS policies and a marker row
 
 The CI job reads its credentials from the running stack at job time via
 `supabase status -o env`. The service-role key is written to the test
@@ -233,9 +235,9 @@ satisfy `${...}` interpolation.
 Recorded so they are not mistaken for delivered work. Full detail in the [invariants registry](docs/methodology/checkpoint-A/02-invariants.md).
 
 - **No organizer management UI.** Market resolution is an authorized RPC and is exercised by tests; there is no browser management screen.
-- **No hosted deployment.** Delivery is local/CI only: health, structured logs, smoke test and a `Delivery smoke` CI job exist, but there is no cloud environment, TLS, DNS or production availability claim.
+- **No hosted deployment.** Delivery is local/CI only: health, structured logs, smoke test and a `Delivery and recovery` CI job exist, but there is no cloud environment, TLS, DNS or production availability claim.
 - **No external observability or alerting.** Logs are JSON to stdout; there is no collector, dashboard, trace or alert.
-- **No production recovery drill.** The runbook documents backup/restore and rollback, and the local exercise is recorded, but there is no production backup, retention or disaster-recovery evidence.
+- **No production recovery drill.** CI restores a public-schema backup into a scratch database and verifies table/policy/row counts; there is still no production backup, retention, RTO/RPO or disaster-recovery evidence.
 - **Authentication and authorization are implemented**, but production session hardening, rate-limit tuning and service-role handling remain operational work.
 - **Five market invariants are enforced but not fault-injected.** M-INV1, M-INV2, M-INV3, M-INV5 and M-INV8 have passing tests; only M-INV4, M-INV6 and the M-INV7 gate were observed failing under injection.
 - **No request-key retention/cleanup policy.** Idempotency request rows grow with accepted/rejected requests; a retention policy is deferred.

@@ -47,7 +47,7 @@ Five characteristics are selected. Selection criterion: a characteristic is only
 
 **Target.** Merge to a running, verified environment in under 15 minutes for the local/CI baseline. Schema changes are applied only through files under `supabase/migrations/` — never by hand. No manual database step in any release.
 
-**Status.** Measured for the **local/CI baseline**, not for production. `Delivery smoke` runs on every pull request and `main`; `docs/operations/runbook.md` records the release, rollback and recovery steps. The earlier claim that "Next.js + Vercel provides instant CI/CD" described a capability of the chosen platform, not an observed property of this system, and is withdrawn. There is no hosted deployment, so production deploy time and availability remain unmeasured.
+**Status.** Measured for the **local/CI baseline**, not for production. `Delivery and recovery` runs on every pull request and `main`, starts the app, runs the smoke test, and exercises a public-schema backup/restore into a scratch database (tables 10→10, RLS policies 10→10, marker row restored). `docs/operations/runbook.md` records release, rollback and recovery steps. The earlier claim that "Next.js + Vercel provides instant CI/CD" described a capability of the chosen platform, not an observed property of this system, and is withdrawn. There is no hosted deployment, so production deploy time and availability remain unmeasured.
 
 ### 3.3 Testability
 

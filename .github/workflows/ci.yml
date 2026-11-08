@@ -55,22 +55,22 @@ jobs:
       - name: Install dependencies
         run: bun install --frozen-lockfile
 
-      - name: Setup Supabase CLI
-        uses: supabase/setup-cli@v1
-        with:
-          version: "3.0.0"
+      - name: Clean up leftover Supabase containers
+        run: |
+          bunx supabase stop --no-backup || true
+          docker ps -aq --filter "name=supabase_" | xargs -r docker rm -f
 
       - name: Start local Supabase
-        run: supabase start
+        run: bunx supabase start
 
       - name: Apply migrations and seed data
-        run: supabase db reset
+        run: bunx supabase db reset
 
       # Credentials are read from the running stack rather than stored as
       # repository secrets, so nothing sensitive is ever committed.
       - name: Write local credentials
         run: |
-          eval "$(supabase status -o env)"
+          eval "$(bunx supabase status -o env)"
           {
             echo "NEXT_PUBLIC_SUPABASE_URL=$API_URL"
             echo "NEXT_PUBLIC_SUPABASE_ANON_KEY=$ANON_KEY"
@@ -81,9 +81,9 @@ jobs:
         run: bun run test
 
   delivery:
-    name: Delivery smoke
+    name: Delivery and recovery
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 25
 
     steps:
       - name: Checkout repository
@@ -97,20 +97,20 @@ jobs:
       - name: Install dependencies
         run: bun install --frozen-lockfile
 
-      - name: Setup Supabase CLI
-        uses: supabase/setup-cli@v1
-        with:
-          version: "3.0.0"
+      - name: Clean up leftover Supabase containers
+        run: |
+          bunx supabase stop --no-backup || true
+          docker ps -aq --filter "name=supabase_" | xargs -r docker rm -f
 
       - name: Start local Supabase
-        run: supabase start
+        run: bunx supabase start
 
       - name: Apply migrations and seed data
-        run: supabase db reset
+        run: bunx supabase db reset
 
       - name: Write local credentials
         run: |
-          eval "$(supabase status -o env)"
+          eval "$(bunx supabase status -o env)"
           {
             echo "NEXT_PUBLIC_SUPABASE_URL=$API_URL"
             echo "NEXT_PUBLIC_SUPABASE_ANON_KEY=$ANON_KEY"
@@ -138,6 +138,99 @@ jobs:
 
       - name: Run smoke test
         run: bun run smoke
+
+      - name: Exercise backup and restore
+        run: |
+          set -euo pipefail
+          DB_CONTAINER=$(docker ps --filter "name=supabase_db" --format "{{.Names}}" | head -n 1)
+          if [ -z "$DB_CONTAINER" ]; then
+            echo "Supabase database container not found"
+            exit 1
+          fi
+          echo "Database container: $DB_CONTAINER"
+          MARKER_ID="44444444-4444-4444-4444-444444444444"
+          RESTORE_DB="matchpulse_restore"
+
+          # Stop the app so the drill does not depend on a live connection.
+          if [ -f /tmp/matchpulse-app.pid ]; then
+            kill "$(cat /tmp/matchpulse-app.pid)" || true
+          fi
+          sleep 2
+          docker exec "$DB_CONTAINER" psql -U postgres -d postgres -v ON_ERROR_STOP=1 -c \
+            "INSERT INTO public.tournaments (id, name, max_capacity, current_players) VALUES ('$MARKER_ID', 'Recovery drill marker', 10, 0) ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name;"
+
+          query() {
+            docker exec "$DB_CONTAINER" psql -U postgres -d "${2:-postgres}" -tAc "$1"
+          }
+
+          TABLES_BEFORE=$(query "SELECT count(*) FROM pg_tables WHERE schemaname = 'public';")
+          POLICIES_BEFORE=$(query "SELECT count(*) FROM pg_policies WHERE schemaname = 'public';")
+          TOURNAMENTS_BEFORE=$(query "SELECT count(*) FROM public.tournaments;")
+
+          # Back up the application-owned public schema. Platform-managed
+          # schemas (auth, storage, realtime, vault) are recreated by Supabase
+          # itself and are not part of this application backup.
+          docker exec "$DB_CONTAINER" pg_dump -U postgres -d postgres \
+            --schema=public -Fc -f /tmp/matchpulse-public.dump
+          docker cp "$DB_CONTAINER:/tmp/matchpulse-public.dump" /tmp/matchpulse-public.dump
+          test -s /tmp/matchpulse-public.dump
+          echo "Backup size: $(wc -c < /tmp/matchpulse-public.dump) bytes"
+
+          docker exec "$DB_CONTAINER" dropdb -U postgres --if-exists "$RESTORE_DB"
+          docker exec "$DB_CONTAINER" createdb -U postgres -T template0 "$RESTORE_DB"
+
+          # Minimal auth dependency for the public schema: profiles references
+          # auth.users(id) and RLS policies call auth.uid().
+          docker exec -i "$DB_CONTAINER" psql -U postgres -d "$RESTORE_DB" -v ON_ERROR_STOP=1 <<'SQL'
+          CREATE SCHEMA auth;
+          CREATE TABLE auth.users (id UUID PRIMARY KEY);
+          CREATE OR REPLACE FUNCTION auth.uid() RETURNS UUID
+            LANGUAGE SQL STABLE AS $$ SELECT NULL::UUID $$;
+          SQL
+
+          set +e
+          docker exec "$DB_CONTAINER" pg_restore -U postgres -d "$RESTORE_DB" \
+            --clean --if-exists --no-owner --no-privileges /tmp/matchpulse-public.dump
+          RESTORE_STATUS=$?
+          set -e
+          # pg_restore reports expected "does not exist" errors while cleaning a
+          # fresh scratch database. The restored-state assertions below are the
+          # gate; the status is printed for the record.
+          echo "pg_restore exit status: $RESTORE_STATUS"
+
+          TABLES_AFTER=$(query "SELECT count(*) FROM pg_tables WHERE schemaname = 'public';" "$RESTORE_DB")
+          POLICIES_AFTER=$(query "SELECT count(*) FROM pg_policies WHERE schemaname = 'public';" "$RESTORE_DB")
+          TOURNAMENTS_AFTER=$(query "SELECT count(*) FROM public.tournaments;" "$RESTORE_DB")
+          MARKER=$(query "SELECT name FROM public.tournaments WHERE id = '$MARKER_ID';" "$RESTORE_DB")
+
+          echo "tables: $TABLES_BEFORE -> $TABLES_AFTER"
+          echo "RLS policies: $POLICIES_BEFORE -> $POLICIES_AFTER"
+          echo "tournaments: $TOURNAMENTS_BEFORE -> $TOURNAMENTS_AFTER"
+          echo "restored marker: $MARKER"
+
+          test "$TABLES_BEFORE" = "$TABLES_AFTER"
+          test "$POLICIES_BEFORE" = "$POLICIES_AFTER"
+          test "$TOURNAMENTS_BEFORE" = "$TOURNAMENTS_AFTER"
+          test "$MARKER" = "Recovery drill marker"
+
+          docker exec "$DB_CONTAINER" dropdb -U postgres "$RESTORE_DB"
+
+          # The working database was not changed; restart the app and re-run
+          # smoke to prove the drill did not disturb it.
+          bun run start > /tmp/matchpulse-app.log 2>&1 &
+          echo $! > /tmp/matchpulse-app.pid
+          for i in $(seq 1 60); do
+            if curl -fsS http://127.0.0.1:3000/api/health >/dev/null; then
+              break
+            fi
+            if [ "$i" = "60" ]; then
+              echo "Health check did not pass after the drill"
+              cat /tmp/matchpulse-app.log
+              exit 1
+            fi
+            sleep 2
+          done
+          bun run smoke
 
       - name: Stop application
         if: always()

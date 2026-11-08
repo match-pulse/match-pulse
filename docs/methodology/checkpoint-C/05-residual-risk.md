@@ -106,11 +106,13 @@ The delivery baseline (#111 / PR #112) is verified in CI run
   the proposed 1,000 ms target. Sustained load, throughput and a hard CI gate
   remain open.
 - **RR-06:** partly mitigated. `/api/health`, JSON stdout logs, `bun run smoke`,
-  a `Delivery smoke` CI job, an operations runbook, proposed SLOs and a
-  rollback/backup procedure exist. There is still no hosted deployment,
-  external monitoring/alerting or production recovery drill.
-- **Backup/restore:** documented but unexercised because Docker/Postgres is not
-  available in the implementation environment.
+  a `Delivery and recovery` CI job, an operations runbook, proposed SLOs and an
+  exercised rollback/backup/restore procedure exist. There is still no hosted
+  deployment, external monitoring/alerting or production recovery drill.
+- **Backup/restore:** exercised in CI run
+  [42467767299](https://github.com/match-pulse/match-pulse/actions/runs/42467767299):
+  a 67,009-byte public-schema backup restored into a scratch database with
+  tables 10→10, RLS policies 10→10, tournaments 2→2 and the marker row present.
 - **RR-03, RR-07 and RR-08** remain open.
 
 No residual risk is accepted by this addendum; the human decision is still

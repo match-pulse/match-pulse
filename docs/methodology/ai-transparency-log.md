@@ -509,6 +509,29 @@ Secret hygiene re-verified: `release.env` in history contains only `APP_VERSION`
 
 ---
 
+## Entry 30 — Backup and restore recovery drill
+
+**Date:** 2026-11-08
+**Tool:** opencode CLI (`deepseek-v4.1-flash`)
+**Intent:** Turn the documented backup/restore procedure into observed CI evidence: back up the application-owned public schema, restore it into a scratch database, and verify tables, RLS policies, row counts and a marker row.
+**Boundary:** Approved E-baseline completion (#117). AI changed the delivery CI job, the operations runbook, the Checkpoint E recovery record, the findings register and this log. No application behavior, schema, migration, pricing or authorization change. No production data or hosted environment.
+**Prior records reviewed:** v1.3.0 release, delivery verification, operations runbook, Checkpoint E recovery pre-read, FND-006.
+**Work performed:**
+- The `Delivery and recovery` job now inserts a marker tournament, dumps the public schema with `pg_dump`, creates a scratch database, restores with `pg_restore`, and asserts table/policy/row counts and the marker.
+- The CI jobs now use the locked Supabase CLI dev dependency instead of the `supabase/setup-cli` download, and clean up leftover containers before startup.
+- The runbook and Checkpoint E recovery record document the observed counts and the public-schema scope.
+**Verification:** CI run [42467767299](https://github.com/match-pulse/match-pulse/actions/runs/42467767299) passed all jobs: build, 28 invariant tests, and the recovery drill. The drill observed a 67,009-byte backup, tables 10→10, RLS policies 10→10, tournaments 2→2, the marker row restored, and smoke passing after the drill.
+**Learning:**
+- The Supabase `postgres` role cannot disable system triggers, so a data-only restore with `--disable-triggers` fails; a schema+data dump into a scratch database is the usable path.
+- A full Supabase dump includes platform-managed schemas (`auth`, `storage`, `realtime`, `vault`) that are not application backup scope; restoring the public schema with a minimal `auth` shim is cleaner and matches ownership.
+- `pg_restore --clean` exits 1 on expected `DROP POLICY IF EXISTS` warnings in a fresh database; explicit restored-state assertions are the honest gate, and the exit status is recorded.
+- A locked CLI dev dependency removes an external download failure mode from CI.
+**Limitations:** The backup covers only the application-owned public schema. It does not restore Supabase-managed auth/storage data, and the app is not cut over to the restored database. No production backup, retention, PITR, RTO/RPO, external monitoring or independent human review.
+
+**Links:** issue #117 · PR #118 · [recovery verification](verification/2026-11-117-recovery-drill.md) · [runbook](../operations/runbook.md) · [Checkpoint E recovery](checkpoint-E/03-recovery.md)
+
+---
+
 ## Standing rule
 
 AI may investigate, analyse, draft, implement within an approved scope, and run verification. The human retains every decision that affects business rules, architecture, schema, scope, priority, risk acceptance and merging. Contributions that cannot be verified are recorded as unverified rather than asserted.
