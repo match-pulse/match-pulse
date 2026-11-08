@@ -688,6 +688,27 @@ Secret hygiene re-verified: `release.env` in history contains only `APP_VERSION`
 
 ---
 
+## Entry 38 — Request-key retention and cleanup
+
+**Date:** 2026-11-08
+**Tool:** opencode CLI (`deepseek-v4.1-flash`)
+**Intent:** Add a service-role-only retention function and maintenance command for completed `trade_requests`, closing the documented retention gap.
+**Boundary:** Backend maintenance and docs. AI added one migration, one maintenance script, one integration test and runbook/README updates. No change to request-key replay semantics or application runtime credentials.
+**Prior records reviewed:** v2.0.0 release notes, idempotency verification, runbook, FND-003, trade_requests schema.
+**Work performed:**
+- Added a partial index on `trade_requests.completed_at`.
+- Added `cleanup_completed_trade_requests(INTERVAL)` restricted to `service_role`.
+- Added `bun run maintenance:cleanup` with `TRADE_REQUEST_RETENTION_DAYS` default 30.
+- Added an integration test for old/recent deletion and authenticated denial.
+- Updated runbook and README known gaps.
+**Verification:** Local typecheck/lint pass; database-backed test and CI pending. The cleanup is not a scheduled production job and the application runtime does not hold the service role.
+**Learning:** Retention belongs in a maintenance command, not in the trade RPC; mixing it into the request path would add latency and widen the runtime privilege surface.
+**Limitations:** No scheduled production retention, no archival, no independent review. FND-007/FND-008 remain human gates.
+
+**Links:** issue #141 · [runbook](../operations/runbook.md) · [retention test](../../tests/integration/trade-request-retention.test.ts) · [idempotency verification](verification/2026-11-107-idempotent-trades.md)
+
+---
+
 ## Standing rule
 
 AI may investigate, analyse, draft, implement within an approved scope, and run verification. The human retains every decision that affects business rules, architecture, schema, scope, priority, risk acceptance and merging. Contributions that cannot be verified are recorded as unverified rather than asserted.

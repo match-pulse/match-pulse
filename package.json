@@ -17,7 +17,8 @@
     "test:e2e": "playwright test",
     "test:e2e:install": "playwright install chromium",
     "check:secrets": "bun scripts/check-secrets.ts",
-    "perf": "bun --env-file=.env.local scripts/performance.ts"
+    "perf": "bun --env-file=.env.local scripts/performance.ts",
+    "maintenance:cleanup": "bun --env-file=.env.local scripts/cleanup-trade-requests.ts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.7",

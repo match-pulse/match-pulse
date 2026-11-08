@@ -250,7 +250,7 @@ Recorded so they are not mistaken for delivered work. Full detail in the [invari
 - **No production recovery drill.** CI restores a public-schema backup into a scratch database and verifies table/policy/row counts; there is still no production backup, retention, RTO/RPO or disaster-recovery evidence.
 - **Authentication and authorization are implemented**, but production session hardening, rate-limit tuning and service-role handling remain operational work.
 - **M-INV2 is verified by forced-failure rollback, not observed-red.** M-INV1, M-INV3, M-INV5, M-INV8 and all M-INV7 details were observed failing under fault injection; M-INV2's trade-insert failure test proves rollback but cannot break PostgreSQL function atomicity without a second connection.
-- **No request-key retention/cleanup policy.** Idempotency request rows grow with accepted/rejected requests; a retention policy is deferred.
+- **Request-key retention is a local maintenance command.** `bun run maintenance:cleanup` deletes completed requests older than 30 days; there is no scheduled production retention job.
 - **p95 latency is observed, not asserted.** The capacity burst records p50/p95/max, but the target is not a CI gate yet, and the value is environment-specific.
 - **E2E and accessibility are initial, not exhaustive.** The Playwright suite covers the three happy-path role journeys; edge cases remain in integration tests. The accessibility gate blocks critical violations only, not every serious violation.
 - **Performance is a scheduled baseline, not a release gate.** The 20/50/100 burst script records p50/p95/p99, but production load and multi-instance behaviour are not measured.

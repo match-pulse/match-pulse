@@ -137,6 +137,17 @@ backup, retention, PITR, off-site storage or measured RTO/RPO.
 **Safety.** The scratch database is disposable. Do not run a destructive
 restore against local data you need without explicit approval.
 
+### Request-key retention
+
+Completed idempotency rows are maintenance data. The cleanup is service-role-only and defaults to 30 days:
+
+```bash
+bun run maintenance:cleanup
+# optional: TRADE_REQUEST_RETENTION_DAYS=60 bun run maintenance:cleanup
+```
+
+The function deletes only `COMPLETED` requests older than the window; recent rows and in-progress rows remain. Authenticated users cannot execute it. Run it from an authorized local/CI maintenance context, never from the application runtime.
+
 ## 7. Incident steps
 
 1. **Detect** — failed CI, a smoke-test failure, a `503` health response or a
