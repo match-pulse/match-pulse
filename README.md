@@ -171,6 +171,7 @@ bun run typecheck     # tsc --noEmit
 bun run build         # production build
 bun run check:architecture  # architecture guards
 bun run smoke         # health/login/home against a running app
+bun run fault:inject  # mutation matrix; requires Supabase and Docker
 ```
 
 The invariant suites need a running database — complete steps 3 and 4 first. Missing credentials fail immediately with a clear error rather than passing silently.
@@ -184,6 +185,7 @@ The invariant suites need a running database — complete steps 3 and 4 first. M
 | `tests/invariants/market-pricing.test.ts` | Budget-bounded entry with `ceil` debit, `floor` credit on exit, over-sell and overspend refusals, share bookkeeping |
 | `tests/invariants/market-lifecycle.test.ts` | Pre-kickoff and post-resolution refusals, one-shot resolution payout, cooldown ladder/cap/decay/scope |
 | `tests/invariants/market-concurrency.test.ts` | Cross-market double-spend race and same-market entry burst |
+| `tests/fault-injection/atomic-rollback.fault.ts` | M-INV2 forced-failure rollback; run explicitly by `bun run fault:inject`, not by the normal suite |
 
 The invariant suites use authenticated user clients for the real mutation path
 and a local service-role client for setup and committed-state reads. The service
@@ -198,11 +200,12 @@ verified in CI run
 
 ### Continuous Integration
 
-[`.github/workflows/ci.yml`](.github/workflows/ci.yml) runs three jobs on every pull request:
+[`.github/workflows/ci.yml`](.github/workflows/ci.yml) runs four jobs on every pull request:
 
 - **Lint, typecheck and build** — ESLint, production build, `tsc --noEmit`, architecture guards
 - **Domain invariants** — starts a local Supabase, replays migrations, runs `bun run test`
 - **Delivery and recovery** — starts Supabase, builds, starts the app, waits for `/api/health`, runs `bun run smoke`, then dumps and restores the public schema into a scratch database and verifies tables, RLS policies and a marker row
+- **Fault injection** — starts Supabase and runs `bun run fault:inject`, which applies each mutation, runs the targeted test, expects the declared result and resets the database
 
 The CI job reads its credentials from the running stack at job time via
 `supabase status -o env`. The service-role key is written to the test
