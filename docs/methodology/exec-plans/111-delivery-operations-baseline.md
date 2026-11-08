@@ -253,3 +253,21 @@ That limit is stated in the
 A documentation-only CI attempt failed because `supabase/setup-cli@v1` could
 not resolve `latest` (GitHub rate limit). Both CI jobs now pin Supabase CLI
 `3.0.0`; the final run passed.
+
+## 19. Addendum 2026-11-08 — recovery drill completed
+
+The backup/restore limitation above is superseded by the recovery increment
+(#117 / PR #118). CI run
+[42467767299](https://github.com/match-pulse/match-pulse/actions/runs/42467767299)
+restored a 67,009-byte public-schema backup into a scratch database:
+
+- public tables 10 → 10;
+- RLS policies 10 → 10;
+- tournaments 2 → 2;
+- the `Recovery drill marker` row was present;
+- health and smoke passed after the drill.
+
+The drill covers the application-owned `public` schema only. Supabase-managed
+`auth`/`storage` data, production backup/retention, RTO/RPO and a production
+recovery drill remain out of scope. The CI jobs now use the locked local
+Supabase CLI rather than downloading `latest`.

@@ -85,29 +85,57 @@ Because no production environment exists, "rollback" here means selecting a
 previous tag locally or in CI and proving it starts and passes the smoke check.
 It is not a zero-downtime production rollback claim.
 
-## 6. Backup and restore (local)
+## 6. Backup and restore (local/CI)
 
-The local Supabase stack can be dumped and restored. The exact CLI flags must be
-confirmed against the installed CLI version before use; record the observed
-commands and results in the verification record.
+The backup/restore procedure is exercised in the CI `Delivery and recovery`
+job and recorded in the
+[recovery verification record](../methodology/verification/2026-11-117-recovery-drill.md).
+It backs up the **application-owned `public` schema**, restores it into a
+scratch database, and verifies table/policy counts and a marker row.
 
 ```bash
-# Dump the local database
-supabase db dump -f /tmp/matchpulse-backup.sql
+# Run inside the Supabase database container.
+DB_CONTAINER=$(docker ps --filter "name=supabase_db" --format "{{.Names}}" | head -n 1)
 
-# Confirm the dump is non-empty and contains the expected tables
-grep -c "CREATE TABLE" /tmp/matchpulse-backup.sql
+# 1. Back up the application schema.
+docker exec "$DB_CONTAINER" pg_dump -U postgres -d postgres \
+  --schema=public -Fc -f /tmp/matchpulse-public.dump
+docker cp "$DB_CONTAINER:/tmp/matchpulse-public.dump" /tmp/matchpulse-public.dump
 
-# Restore into the local database (only after confirming local data may be replaced)
-psql "$(supabase status -o env | sed -n 's/^DB_URL=//p')" -f /tmp/matchpulse-backup.sql
+# 2. Create a disposable scratch database.
+docker exec "$DB_CONTAINER" dropdb -U postgres --if-exists matchpulse_restore
+docker exec "$DB_CONTAINER" createdb -U postgres -T template0 matchpulse_restore
+
+# 3. Minimal auth dependency for profiles.auth.users and auth.uid() policies.
+docker exec -i "$DB_CONTAINER" psql -U postgres -d matchpulse_restore -v ON_ERROR_STOP=1 <<'SQL'
+CREATE SCHEMA auth;
+CREATE TABLE auth.users (id UUID PRIMARY KEY);
+CREATE OR REPLACE FUNCTION auth.uid() RETURNS UUID
+  LANGUAGE SQL STABLE AS $$ SELECT NULL::UUID $$;
+SQL
+
+# 4. Restore the public schema.
+docker exec "$DB_CONTAINER" pg_restore -U postgres -d matchpulse_restore \
+  --clean --if-exists --no-owner --no-privileges /tmp/matchpulse-public.dump
 ```
 
-**Restore verification:** count rows in `profiles`, `tournaments`,
-`registrations`, `markets` and `market_trades`; start the app; `GET
-/api/health` returns `200`; `bun run smoke` passes.
+**Restore verification:** compare the public table count, RLS policy count and
+row counts; confirm the marker row exists; start the app; `GET /api/health`
+returns `200`; `bun run smoke` passes. The CI drill does this automatically.
 
-**Limits.** This is a local exercise, not a production recovery drill. The
-repository does not store backups, schedules or retention rules.
+**Observed 2026-11-08:** 67,009-byte backup; tables `10 → 10`, RLS policies
+`10 → 10`, tournaments `2 → 2`, marker restored; smoke passed. `pg_restore`
+exits `1` because `--clean` emits `DROP POLICY IF EXISTS` statements before the
+tables exist in a fresh scratch database; the explicit restored-state
+assertions are the gate.
+
+**Scope and limits.** The backup covers the application-owned `public` schema,
+not Supabase-managed `auth`, `storage`, `realtime` or `vault` data. The drill
+does not cut the app over to the restored database. There is no production
+backup, retention, PITR, off-site storage or measured RTO/RPO.
+
+**Safety.** The scratch database is disposable. Do not run a destructive
+restore against local data you need without explicit approval.
 
 ## 7. Incident steps
 

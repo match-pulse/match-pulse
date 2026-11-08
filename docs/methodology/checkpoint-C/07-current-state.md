@@ -143,8 +143,9 @@ The ranking now reads:
 
 1. **FND-002 — unverified market injections** remains the top verification risk.
 2. **FND-006 — delivery/operations** is partly fixed: local/CI health, logs,
-   smoke, runbook, SLOs and rollback/backup procedure exist; hosted deployment,
-   external monitoring and production recovery remain open.
+   smoke, runbook, SLOs, an exercised backup/restore drill and rollback
+   procedure exist; hosted deployment, external monitoring and production
+   recovery remain open.
 3. **FND-004 — load/p95** is partly fixed: p95 is observed and recorded, but
    sustained load and a hard gate remain open.
 4. **FND-007 and FND-008** remain open; they require human action.
@@ -152,3 +153,21 @@ The ranking now reads:
 
 `FND-006` is no longer the largest unaddressed gap in its original form, but it
 is still the largest **operational** gap because no hosted environment exists.
+
+## 11. Addendum 2026-11-08 — recovery drill exercised
+
+The recovery drill (#117 / PR #118) is verified in CI run
+[42467767299](https://github.com/match-pulse/match-pulse/actions/runs/42467767299).
+It backs up the application-owned public schema (67,009 bytes), restores it into
+a scratch database, and verifies:
+
+- public tables 10 → 10;
+- RLS policies 10 → 10;
+- tournaments 2 → 2;
+- the `Recovery drill marker` row;
+- health and smoke after the drill.
+
+`FND-006` remains **partly fixed**: recovery of the application schema is now
+observed, but there is no hosted deployment, production backup/retention, RTO/RPO
+or production recovery drill. The backup does not include Supabase-managed
+`auth`/`storage` data.

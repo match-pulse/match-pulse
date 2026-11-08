@@ -110,12 +110,19 @@ operational risks remain open; no risk is accepted by this addendum.
 ## 9. Addendum 2026-11-08 — delivery baseline added
 
 The delivery increment (#111 / PR #112) adds health, JSON logs, smoke, a
-`Delivery smoke` CI job, an operations runbook, proposed SLOs and a
+`Delivery and recovery` CI job, an operations runbook, proposed SLOs and a
 rollback/backup procedure. CI run
 [42435007354](https://github.com/match-pulse/match-pulse/actions/runs/42435007354)
 passes all three jobs; the 100-request burst observed p95 463 ms and 572 ms in
 two runs.
 
+## 10. Addendum 2026-11-08 — recovery drill exercised
+
+The recovery drill (#117 / PR #118) is verified in CI run
+[42467767299](https://github.com/match-pulse/match-pulse/actions/runs/42467767299):
+a 67,009-byte public-schema backup restored into a scratch database with tables
+10→10, RLS policies 10→10, tournaments 2→2 and the marker row present.
+
 R-05 (load/p95) and the operational risk are partly mitigated. Hosted
-deployment, external monitoring, production recovery and a hard latency gate
-remain open; no risk is accepted by this addendum.
+deployment, external monitoring, production backup/retention, RTO/RPO and a
+hard latency gate remain open; no risk is accepted by this addendum.

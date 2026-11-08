@@ -17,26 +17,28 @@ A bad release is corrected by a **new PATCH tag**, not by rewriting the old one.
 A bad migration is corrected by a new migration; applied migrations are not
 edited.
 
-## 2. Local backup and restore
+## 2. Backup and restore
 
-The local Supabase database can be dumped and restored. Commands must be
-verified against the installed CLI before documenting results.
+The procedure is exercised in the CI `Delivery and recovery` job. It backs up
+the application-owned `public` schema with `pg_dump`, restores it into a
+disposable scratch database with `pg_restore`, and verifies:
 
-```bash
-supabase db dump -f /tmp/matchpulse-backup.sql
-grep -c "CREATE TABLE" /tmp/matchpulse-backup.sql
-```
+- public table count (`10 → 10`);
+- public RLS policy count (`10 → 10`);
+- tournament row count (`2 → 2`);
+- a marker tournament inserted before the backup;
+- app health and smoke after the drill.
 
-Restore is destructive to local data. It requires explicit human approval and a
-confirmed local-only target:
+Observed 2026-11-08: 67,009-byte backup; all counts matched; marker restored;
+smoke passed. CI run
+[42467767299](https://github.com/match-pulse/match-pulse/actions/runs/42467767299).
+The full commands and the `pg_restore` clean-phase warning are documented in
+the [operations runbook](../../operations/runbook.md#6-backup-and-restore-localci)
+and the [verification record](../verification/2026-11-117-recovery-drill.md).
 
-```bash
-psql "$DB_URL" -f /tmp/matchpulse-backup.sql
-```
-
-**Verification after restore:** row counts for `profiles`, `tournaments`,
-`registrations`, `markets`, `market_trades`; `GET /api/health` returns `200`;
-`bun run smoke` passes.
+**Scope.** The backup covers the application-owned `public` schema, not
+Supabase-managed `auth`, `storage`, `realtime` or `vault` data. The app is not
+cut over to the restored database.
 
 ## 3. Incident sequence
 
@@ -49,6 +51,6 @@ psql "$DB_URL" -f /tmp/matchpulse-backup.sql
 ## 4. Limits
 
 - No production backup, retention, PITR or disaster-recovery drill.
-- The local restore exercise is evidence of procedure, not of production
-  recovery time or data-loss bounds.
+- The local/CI restore exercise is evidence of procedure and restored state, not
+  of production recovery time or data-loss bounds.
 - No on-call, paging or automated failover.
