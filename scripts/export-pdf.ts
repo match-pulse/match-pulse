@@ -13,7 +13,7 @@ import { chromium } from 'playwright'
 const root = process.cwd()
 
 const documents = [
-  ['docs/architecture/kata.md', 'docs/submissions/kata.pdf', 'MatchPulse — Kata'],
+  ['docs/architecture/kata.md', 'docs/submissions/kata.pdf', 'MatchPulse — Kata', true],
   [
     'docs/architecture/03-architecture-characteristics.md',
     'docs/submissions/architecture-characteristics.pdf',
@@ -22,12 +22,14 @@ const documents = [
   [
     'docs/architecture/reports/2026-11-08.md',
     'docs/submissions/architecture-report.pdf',
-    'MatchPulse — Architecture Report'
+    'MatchPulse — Architecture Report',
+    false
   ],
   [
     'docs/methodology/reports/2026-11-08.md',
     'docs/submissions/methodology-report.pdf',
-    'MatchPulse — Methodology Report'
+    'MatchPulse — Methodology Report',
+    false
   ]
 ] as const
 
@@ -44,6 +46,13 @@ const style = `
   pre { background: #0f172a; color: #e2e8f0; padding: 10px; border-radius: 6px; overflow-wrap: anywhere; white-space: pre-wrap; }
   a { color: #1d4ed8; text-decoration: none; }
   blockquote { border-left: 3px solid #94a3b8; margin-left: 0; padding-left: 12px; color: #334155; }
+  body.compact { font-size: 9.1pt; line-height: 1.32; }
+  body.compact h1 { font-size: 17pt; margin: 0 0 6px; }
+  body.compact h2 { font-size: 11.5pt; margin: 10px 0 4px; }
+  body.compact p, body.compact li { margin: 3px 0; }
+  body.compact table { font-size: 7.2pt; margin: 5px 0; }
+  body.compact th, body.compact td { padding: 2px 3px; }
+  body.compact ul { margin: 3px 0 3px 16px; }
 `
 
 async function main() {
@@ -51,10 +60,10 @@ async function main() {
   const page = await browser.newPage()
 
   try {
-    for (const [source, output, title] of documents) {
+    for (const [source, output, title, compact] of documents) {
       const markdown = readFileSync(join(root, source), 'utf8')
       const body = marked.parse(markdown, { async: false }) as string
-      const html = `<!doctype html><html lang="en"><head><meta charset="utf-8"><title>${title}</title><style>${style}</style></head><body>${body}</body></html>`
+      const html = `<!doctype html><html lang="en"><head><meta charset="utf-8"><title>${title}</title><style>${style}</style></head><body class="${compact ? 'compact' : ''}">${body}</body></html>`
 
       await page.setContent(html, { waitUntil: 'networkidle' })
       mkdirSync(dirname(join(root, output)), { recursive: true })
@@ -65,7 +74,9 @@ async function main() {
         displayHeaderFooter: true,
         headerTemplate: `<div style="font-size:8px;color:#64748b;width:100%;text-align:right;padding-right:14mm;">${title}</div>`,
         footerTemplate: '<div style="font-size:8px;color:#64748b;width:100%;text-align:center;"><span class="pageNumber"></span> / <span class="totalPages"></span></div>',
-        margin: { top: '20mm', bottom: '18mm', left: '16mm', right: '16mm' }
+        margin: compact
+          ? { top: '10mm', bottom: '10mm', left: '11mm', right: '11mm' }
+          : { top: '20mm', bottom: '18mm', left: '16mm', right: '16mm' }
       })
       console.log(`wrote ${output}`)
     }
