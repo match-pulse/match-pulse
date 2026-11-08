@@ -494,6 +494,21 @@ Secret hygiene re-verified: `release.env` in history contains only `APP_VERSION`
 
 ---
 
+## Entry 29 — Correct the v1.3.0 evidence label
+
+**Date:** 2026-11-08
+**Tool:** opencode CLI (`deepseek-v4.1-flash`)
+**Intent:** Correct a traceability label in the v1.3.0 changelog: run 42435627680 was the pull-request CI for #112, not the main-branch CI.
+**Boundary:** One dated correction line under the v1.3.0 Evidence section. The original line is preserved; no tagged content, application, schema, test or CI change.
+**Prior records reviewed:** v1.3.0 release notes, delivery verification record, CI run 42435627680, main CI run 42436376049.
+**Verification:** Main CI after the release merge was [42436376049](https://github.com/match-pulse/match-pulse/actions/runs/42436376049) and passed. The correction is documentation-only.
+**Learning:** A release-evidence line must name the event that produced the run (`pull_request` versus `push` on `main`); a green run is not automatically main-branch evidence.
+**Limitations:** The published GitHub Release notes retain the original label; this correction lives on `main` as a dated addendum and does not rewrite the tagged release.
+
+**Links:** issue #115 · [`CHANGELOG.md`](../../CHANGELOG.md) · [delivery verification](verification/2026-11-111-delivery-operations-baseline.md)
+
+---
+
 ## Standing rule
 
 AI may investigate, analyse, draft, implement within an approved scope, and run verification. The human retains every decision that affects business rules, architecture, schema, scope, priority, risk acceptance and merging. Contributions that cannot be verified are recorded as unverified rather than asserted.
