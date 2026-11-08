@@ -64,6 +64,7 @@ Delivery, observability and recovery baseline.
 
 - Main CI [42435627680](https://github.com/match-pulse/match-pulse/actions/runs/42435627680): build, 28 invariant tests, and delivery smoke all pass.
 - [Delivery verification](docs/methodology/verification/2026-11-111-delivery-operations-baseline.md); AI transparency Entry 27; [operations runbook](docs/operations/runbook.md); [SLO proposal](docs/operations/slo.md).
+- **Correction 2026-11-08:** run [42435627680](https://github.com/match-pulse/match-pulse/actions/runs/42435627680) was the pull-request CI for #112. Main CI after the release merge was [42436376049](https://github.com/match-pulse/match-pulse/actions/runs/42436376049), also green.
 
 ## [1.2.0] - 2026-11-08
 
