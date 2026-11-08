@@ -81,9 +81,9 @@ jobs:
         run: bun run test
 
   delivery:
-    name: Delivery smoke
+    name: Delivery and recovery
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 25
 
     steps:
       - name: Checkout repository
@@ -138,6 +138,80 @@ jobs:
 
       - name: Run smoke test
         run: bun run smoke
+
+      - name: Exercise backup and restore
+        run: |
+          set -euo pipefail
+          DB_CONTAINER=$(docker ps --filter "name=supabase_db" --format "{{.Names}}" | head -n 1)
+          if [ -z "$DB_CONTAINER" ]; then
+            echo "Supabase database container not found"
+            exit 1
+          fi
+          echo "Database container: $DB_CONTAINER"
+          MARKER_ID="44444444-4444-4444-4444-444444444444"
+
+          # Stop the app before resetting the database, then insert a marker row
+          # that only a successful data restore can bring back.
+          if [ -f /tmp/matchpulse-app.pid ]; then
+            kill "$(cat /tmp/matchpulse-app.pid)" || true
+          fi
+          sleep 2
+          docker exec "$DB_CONTAINER" psql -U postgres -d postgres -v ON_ERROR_STOP=1 -c \
+            "INSERT INTO public.tournaments (id, name, max_capacity, current_players) VALUES ('$MARKER_ID', 'Recovery drill marker', 10, 0) ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name;"
+
+          query() {
+            docker exec "$DB_CONTAINER" psql -U postgres -d "${2:-postgres}" -tAc "$1"
+          }
+
+          TABLES_BEFORE=$(query "SELECT count(*) FROM pg_tables WHERE schemaname = 'public';")
+          POLICIES_BEFORE=$(query "SELECT count(*) FROM pg_policies WHERE schemaname = 'public';")
+          TOURNAMENTS_BEFORE=$(query "SELECT count(*) FROM public.tournaments;")
+
+          docker exec "$DB_CONTAINER" pg_dump -U postgres -d postgres \
+            --data-only --schema=public --column-inserts --disable-triggers -f /tmp/matchpulse-data.sql
+          docker cp "$DB_CONTAINER:/tmp/matchpulse-data.sql" /tmp/matchpulse-data.sql
+          test -s /tmp/matchpulse-data.sql
+          echo "Backup size: $(wc -c < /tmp/matchpulse-data.sql) bytes"
+
+          # Rebuild the schema from migrations, clear the seed rows, and restore
+          # the data backup. Schema recovery comes from migrations; data recovery
+          # comes from the dump.
+          supabase db reset
+          TRUNCATE_SQL=$(query "SELECT 'TRUNCATE TABLE ' || string_agg(format('%I.%I', schemaname, tablename), ', ') || ' RESTART IDENTITY CASCADE;' FROM pg_tables WHERE schemaname = 'public';")
+          docker exec "$DB_CONTAINER" psql -U postgres -d postgres -v ON_ERROR_STOP=1 -c "$TRUNCATE_SQL"
+          docker cp /tmp/matchpulse-data.sql "$DB_CONTAINER:/tmp/matchpulse-data.sql"
+          docker exec "$DB_CONTAINER" psql -U postgres -d postgres -v ON_ERROR_STOP=1 -f /tmp/matchpulse-data.sql
+
+          TABLES_AFTER=$(query "SELECT count(*) FROM pg_tables WHERE schemaname = 'public';")
+          POLICIES_AFTER=$(query "SELECT count(*) FROM pg_policies WHERE schemaname = 'public';")
+          TOURNAMENTS_AFTER=$(query "SELECT count(*) FROM public.tournaments;")
+          MARKER=$(query "SELECT name FROM public.tournaments WHERE id = '$MARKER_ID';")
+
+          echo "tables: $TABLES_BEFORE -> $TABLES_AFTER"
+          echo "RLS policies: $POLICIES_BEFORE -> $POLICIES_AFTER"
+          echo "tournaments: $TOURNAMENTS_BEFORE -> $TOURNAMENTS_AFTER"
+          echo "restored marker: $MARKER"
+
+          test "$TABLES_BEFORE" = "$TABLES_AFTER"
+          test "$POLICIES_BEFORE" = "$POLICIES_AFTER"
+          test "$TOURNAMENTS_BEFORE" = "$TOURNAMENTS_AFTER"
+          test "$MARKER" = "Recovery drill marker"
+
+          # Prove the application works against the recovered data.
+          bun run start > /tmp/matchpulse-app.log 2>&1 &
+          echo $! > /tmp/matchpulse-app.pid
+          for i in $(seq 1 60); do
+            if curl -fsS http://127.0.0.1:3000/api/health >/dev/null; then
+              break
+            fi
+            if [ "$i" = "60" ]; then
+              echo "Health check did not pass after restore"
+              cat /tmp/matchpulse-app.log
+              exit 1
+            fi
+            sleep 2
+          done
+          bun run smoke
 
       - name: Stop application
         if: always()
