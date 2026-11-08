@@ -17,6 +17,48 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versioning: [S
 
 No unreleased changes yet.
 
+## [2.0.1] - 2026-11-08
+
+Request-key retention and accessibility hardening.
+
+### Added
+
+- Service-role-only `cleanup_completed_trade_requests(INTERVAL)` and `bun run maintenance:cleanup` (default 30 days).
+- Partial index on `trade_requests.completed_at`.
+- Integration test for old/recent deletion and authenticated denial.
+
+### Changed
+
+- The axe gate now blocks serious and critical WCAG A/AA violations, not only critical.
+- Login role selection is a labelled button group rather than an incomplete tab pattern.
+- Rewards/export buttons use a darker emerald background; footer and placeholder contrast improved.
+
+### Fixed
+
+- Completed idempotency rows can be retained and cleaned up instead of growing forever.
+- Serious colour-contrast and ARIA issues on the role pages.
+
+### Migration / upgrade notes
+
+- Apply `20261130_trade_request_retention.sql`.
+- Run `bun run maintenance:cleanup` from an authorized maintenance context; the application runtime does not hold the service role.
+- No scheduled production retention job exists.
+
+### Known gaps
+
+- FND-007 real-user evidence and FND-008 independent review remain open.
+- No hosted production deployment, external monitoring, production recovery or RTO/RPO.
+- Club privacy has not had an independent privacy review.
+- M-INV2 remains forced-failure verified, not observed-red.
+- Performance is a scheduled local/CI baseline, not a production load claim.
+- Dated reports/PDFs still need the post-MVP refresh.
+
+### Evidence
+
+- Retention PR #142 and accessibility PR #144.
+- Main CI [42501987291](https://github.com/match-pulse/match-pulse/actions/runs/42501987291): all five jobs passed.
+- E2E/accessibility run [42501196896](https://github.com/match-pulse/match-pulse/actions/runs/42501196896): serious/critical axe gate passed.
+
 ## [2.0.0] - 2026-11-08
 
 First MVP: three roles, complete role frontends, E2E/accessibility, security and performance baselines.
@@ -353,7 +395,8 @@ This table is the pre-policy execution record. It is kept for traceability and i
 - The first entry after this changelog is established is recorded contemporaneously and links its issue, PR, verification, and AI transparency entry.
 
 
-[Unreleased]: https://github.com/match-pulse/match-pulse/compare/v2.0.0...HEAD
+[Unreleased]: https://github.com/match-pulse/match-pulse/compare/v2.0.1...HEAD
+[2.0.1]: https://github.com/match-pulse/match-pulse/compare/v2.0.0...v2.0.1
 [2.0.0]: https://github.com/match-pulse/match-pulse/compare/v1.3.1...v2.0.0
 [1.3.1]: https://github.com/match-pulse/match-pulse/compare/v1.3.0...v1.3.1
 [1.3.0]: https://github.com/match-pulse/match-pulse/compare/v1.2.0...v1.3.0
