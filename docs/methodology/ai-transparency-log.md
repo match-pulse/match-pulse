@@ -584,7 +584,7 @@ Secret hygiene re-verified: `release.env` in history contains only `APP_VERSION`
 **Work performed:**
 - Installed OpenSpec 1.16.1 as a standalone CLI.
 - Initialized the project with the OpenCode tool integration; generated six commands and six skills under `.opencode/`.
-- Created `openspec/changes/add-market-fault-injections/` with `proposal.md`, `design.md`, `tasks.md` and `skip_specs: true`.
+- Created `openspec/changes/archive/2026-11-08-add-market-fault-injections/` with `proposal.md`, `design.md`, `tasks.md` and `skip_specs: true`.
 - The change specifies a mutation catalog and runner for M-INV1, M-INV2, M-INV3, M-INV5, M-INV8 and the M-INV7 detail set.
 - Added `openspec/README.md`, updated `development-practices.md` §4.6, the methodology index, the methodology report, the root README and AGENTS.md.
 **Verification:** `openspec --version` reports 1.16.1. `openspec doctor` reports the root is OK. `openspec validate add-market-fault-injections --type change --strict` reports the change is valid with `skip_specs` accepted. Local architecture/typecheck/lint and link checks are run before the PR; the change itself is proposed, not implemented.
@@ -594,7 +594,31 @@ Secret hygiene re-verified: `release.env` in history contains only `APP_VERSION`
 - OpenSpec is a change-planning layer, not a replacement for the kata, invariant registry or verification records.
 **Limitations:** The change is proposed, not implemented; no mutation has been run yet. The trial outcome is pending. There is no capability spec tree because no behavior changes. No independent human review (FND-008).
 
-**Links:** issue #123 · PR #124 · [OpenSpec project](../../openspec/README.md) · [first change](../../openspec/changes/add-market-fault-injections/proposal.md) · [development-practices §4.6](development-practices.md) · [methodology report](reports/2026-11-08.md)
+**Links:** issue #123 · PR #124 · [OpenSpec project](../../openspec/README.md) · [first change](../../openspec/changes/archive/2026-11-08-add-market-fault-injections/proposal.md) · [development-practices §4.6](development-practices.md) · [methodology report](reports/2026-11-08.md)
+
+---
+
+## Entry 34 — Applied the first OpenSpec change
+
+**Date:** 2026-11-08
+**Tool:** opencode CLI (`deepseek-v4.1-flash`)
+**Intent:** Apply the OpenSpec change `add-market-fault-injections`: build the mutation runner, add the M-INV2 forced-failure rollback test, run the matrix in CI and record the observed-red evidence.
+**Boundary:** Test tooling, CI and documentation. AI added `scripts/fault-injection/`, `tests/fault-injection/atomic-rollback.fault.ts`, the `Fault injection` CI job and the `fault:inject` script. No product behavior, schema, pricing, authorization or UI change. The mutations are temporary and the database is reset after each one.
+**Prior records reviewed:** OpenSpec change proposal/design/tasks, FND-002, invariant registry, market RPCs and tests, prior fault-injection evidence.
+**Work performed:**
+- Added a typed mutation catalog that transforms the current migration SQL and fails loudly when a target disappears.
+- Added a runner that resets the database, applies each mutation, runs the targeted test, compares the declared result and restores the schema.
+- Added the M-INV2 forced-failure rollback test.
+- Added the `Fault injection` CI job and `bun run fault:inject`.
+- Updated the invariant registry, FND-002, the verification record, the methodology report and the checkpoint risk records.
+**Verification:** CI run [42474762811](https://github.com/match-pulse/match-pulse/actions/runs/42474762811) passed all jobs. The matrix observed 10 expected-red mutations and the M-INV2 forced-failure test passing; the full suite returned 28 pass / 0 fail. The first attempt found two harness issues — Bun required an explicit `./` path for the non-standard test file, and the no-escalation mutation was rolled back by the exception. Both were corrected and rerun.
+**Learning:**
+- A mutation that updates the cooldown and then raises is rolled back by the transaction; it cannot demonstrate escalation. Returning no rows lets the update commit and the test fail for the intended reason.
+- Bun test treats a non-standard filename as a name filter unless the argument starts with `./`.
+- PostgreSQL function atomicity cannot be broken from inside the same function; M-INV2 needs a forced-failure test rather than an observed-red mutation.
+**Limitations:** M-INV2 is **Verified by forced-failure rollback**, not observed-red. The matrix is local/CI, one database instance. No independent human review (FND-008). The OpenSpec change was archived as `2026-11-08-add-market-fault-injections` after all tasks were complete.
+
+**Links:** issue #125 · PR #126 · [fault-injection verification](verification/2026-11-125-market-fault-injections.md) · [OpenSpec change](../../openspec/changes/archive/2026-11-08-add-market-fault-injections/proposal.md) · [invariant registry](checkpoint-A/02-invariants.md)
 
 ---
 

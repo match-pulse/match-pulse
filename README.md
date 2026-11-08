@@ -171,6 +171,7 @@ bun run typecheck     # tsc --noEmit
 bun run build         # production build
 bun run check:architecture  # architecture guards
 bun run smoke         # health/login/home against a running app
+bun run fault:inject  # mutation matrix; requires Supabase and Docker
 ```
 
 The invariant suites need a running database — complete steps 3 and 4 first. Missing credentials fail immediately with a clear error rather than passing silently.
@@ -184,6 +185,7 @@ The invariant suites need a running database — complete steps 3 and 4 first. M
 | `tests/invariants/market-pricing.test.ts` | Budget-bounded entry with `ceil` debit, `floor` credit on exit, over-sell and overspend refusals, share bookkeeping |
 | `tests/invariants/market-lifecycle.test.ts` | Pre-kickoff and post-resolution refusals, one-shot resolution payout, cooldown ladder/cap/decay/scope |
 | `tests/invariants/market-concurrency.test.ts` | Cross-market double-spend race and same-market entry burst |
+| `tests/fault-injection/atomic-rollback.fault.ts` | M-INV2 forced-failure rollback; run explicitly by `bun run fault:inject`, not by the normal suite |
 
 The invariant suites use authenticated user clients for the real mutation path
 and a local service-role client for setup and committed-state reads. The service
@@ -198,11 +200,12 @@ verified in CI run
 
 ### Continuous Integration
 
-[`.github/workflows/ci.yml`](.github/workflows/ci.yml) runs three jobs on every pull request:
+[`.github/workflows/ci.yml`](.github/workflows/ci.yml) runs four jobs on every pull request:
 
 - **Lint, typecheck and build** — ESLint, production build, `tsc --noEmit`, architecture guards
 - **Domain invariants** — starts a local Supabase, replays migrations, runs `bun run test`
 - **Delivery and recovery** — starts Supabase, builds, starts the app, waits for `/api/health`, runs `bun run smoke`, then dumps and restores the public schema into a scratch database and verifies tables, RLS policies and a marker row
+- **Fault injection** — starts Supabase and runs `bun run fault:inject`, which applies each mutation, runs the targeted test, expects the declared result and resets the database
 
 The CI job reads its credentials from the running stack at job time via
 `supabase status -o env`. The service-role key is written to the test
@@ -242,7 +245,7 @@ Recorded so they are not mistaken for delivered work. Full detail in the [invari
 - **No external observability or alerting.** Logs are JSON to stdout; there is no collector, dashboard, trace or alert.
 - **No production recovery drill.** CI restores a public-schema backup into a scratch database and verifies table/policy/row counts; there is still no production backup, retention, RTO/RPO or disaster-recovery evidence.
 - **Authentication and authorization are implemented**, but production session hardening, rate-limit tuning and service-role handling remain operational work.
-- **Five market invariants are enforced but not fault-injected.** M-INV1, M-INV2, M-INV3, M-INV5 and M-INV8 have passing tests; only M-INV4, M-INV6 and the M-INV7 gate were observed failing under injection.
+- **M-INV2 is verified by forced-failure rollback, not observed-red.** M-INV1, M-INV3, M-INV5, M-INV8 and all M-INV7 details were observed failing under fault injection; M-INV2's trade-insert failure test proves rollback but cannot break PostgreSQL function atomicity without a second connection.
 - **No request-key retention/cleanup policy.** Idempotency request rows grow with accepted/rejected requests; a retention policy is deferred.
 - **p95 latency is observed, not asserted.** The capacity burst records p50/p95/max, but the target is not a CI gate yet, and the value is environment-specific.
 - **No ticket-discount redemption and no club analytics aggregation.** The trade log exists; nothing consumes it yet.

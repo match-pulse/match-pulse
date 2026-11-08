@@ -8,10 +8,11 @@
     "start": "next start",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
-    "test": "bun test --env-file=.env.local",
+    "test": "bun test --env-file=.env.local --path-ignore-patterns='tests/fault-injection/**'",
     "auth:organizer": "bun --env-file=.env.local scripts/create-organizer.ts",
     "check:architecture": "bun scripts/check-architecture.ts",
-    "smoke": "bun scripts/smoke-test.ts"
+    "smoke": "bun scripts/smoke-test.ts",
+    "fault:inject": "bun scripts/fault-injection.ts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.7",

@@ -17,11 +17,14 @@ The decision and its limits are recorded in
 [`../docs/methodology/development-practices.md`](../docs/methodology/development-practices.md)
 §4.6.
 
-## Active changes
+## Changes
 
-| Change | Goal | Status |
-| :--- | :--- | :--- |
-| [`add-market-fault-injections`](./changes/add-market-fault-injections/proposal.md) | Close FND-002 with observed-red fault injections for the remaining market invariants | Proposed; 0/11 tasks |
+There are no active changes. The first trial,
+[`add-market-fault-injections`](./changes/archive/2026-11-08-add-market-fault-injections/proposal.md),
+was implemented and verified in CI run
+[42474762811](https://github.com/match-pulse/match-pulse/actions/runs/42474762811)
+and archived on 2026-11-08. Its tasks and evidence are in the archived change and
+the [fault-injection verification record](../docs/methodology/verification/2026-11-125-market-fault-injections.md).
 
 ## Commands
 

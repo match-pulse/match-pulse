@@ -82,6 +82,25 @@ Other rules:
 - Avoid brittle tests tied to harmless implementation details.
 - Record the environment and the values exercised.
 
+#### Fault-injection matrix (2026-11-08)
+
+`bun run fault:inject` applies each mutation in
+[`scripts/fault-injection/mutations.ts`](../../scripts/fault-injection/mutations.ts)
+to a disposable local database, runs the targeted test, compares the exit code
+with the declared expectation, resets the schema and records the result. CI run
+[42474762811](https://github.com/match-pulse/match-pulse/actions/runs/42474762811)
+passed all 11 entries:
+
+- 10 observed-red mutations: M-INV1, M-INV3, M-INV5, M-INV8 and the six M-INV7
+  details;
+- 1 forced-failure rollback check for M-INV2.
+
+M-INV2 is not observed-red: PostgreSQL function atomicity cannot be broken
+without a second connection. The forced-failure test proves that no partial
+balance, position, market update or trade survives; it does not prove that the
+suite would detect a deliberately non-atomic implementation. FND-002 remains
+partly fixed for that reason.
+
 ### 2.6 AI role in testing
 
 AI may draft test cases, generate data, propose equivalence classes and review assertions. A human must:
@@ -181,7 +200,7 @@ The trial must be recorded as a decision, not just a tool installation. It shoul
 
 The earlier decision not to adopt OpenSpec is superseded for a bounded trial.
 The first OpenSpec change is
-[`add-market-fault-injections`](../../openspec/changes/add-market-fault-injections/proposal.md),
+[`add-market-fault-injections`](../../openspec/changes/archive/2026-11-08-add-market-fault-injections/proposal.md),
 which targets the remaining fault-injection gap (FND-002).
 
 - **Why OpenSpec now.** The change is a verification increment, not a product
@@ -235,7 +254,7 @@ changes the current practice for this bounded trial only.
 ## 7. Limits
 
 - This record describes intentions and current practice; it does not prove that the practices are followed in every slice.
-- The test suite has unverified market invariants (FND-002); the previous independence gap (FND-005) is fixed. The authorization suite now uses authenticated clients and observes the database boundary (CI run 42397891717).
+- The fault-injection matrix covers 10 observed-red mutations and the M-INV2 forced-failure rollback; FND-002 remains partly fixed because M-INV2 cannot be observed-red without a second connection. The previous independence gap (FND-005) is fixed. The authorization suite uses authenticated clients and observes the database boundary (CI run 42397891717).
 - There is no independent human review (FND-008).
 - There is no load, performance or production evidence (FND-004, FND-006).
 - The OpenSpec trial is active for `add-market-fault-injections`; its outcome is

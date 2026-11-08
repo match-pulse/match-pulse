@@ -126,3 +126,18 @@ a 67,009-byte public-schema backup restored into a scratch database with tables
 R-05 (load/p95) and the operational risk are partly mitigated. Hosted
 deployment, external monitoring, production backup/retention, RTO/RPO and a
 hard latency gate remain open; no risk is accepted by this addendum.
+
+## 11. Addendum 2026-11-08 — R-05 fault-injection matrix
+
+The fault-injection increment (#125 / PR #126) is verified in CI run
+[42474762811](https://github.com/match-pulse/match-pulse/actions/runs/42474762811).
+
+- **R-05 (accounting and rounding):** the over-sell, bookkeeping, rounding/no-fee
+  and M-INV7 detail mechanisms now have observed-red mutations. The matrix
+  covers M-INV1, M-INV3, M-INV5, M-INV8 and the six M-INV7 details.
+- **M-INV2:** verified by forced-failure rollback, not observed-red. PostgreSQL
+  function atomicity cannot be broken without a second connection.
+- The full invariant suite returns to 28 pass / 0 fail.
+
+FND-002 remains **partly fixed** for the M-INV2 limit. No risk is accepted by
+this addendum.

@@ -117,3 +117,19 @@ The delivery baseline (#111 / PR #112) is verified in CI run
 
 No residual risk is accepted by this addendum; the human decision is still
 required.
+
+## 10. Addendum 2026-11-08 — RR-03 fault-injection matrix
+
+The fault-injection increment (#125 / PR #126) is verified in CI run
+[42474762811](https://github.com/match-pulse/match-pulse/actions/runs/42474762811).
+
+- **RR-03:** partly mitigated. Ten observed-red mutations pass for M-INV1,
+  M-INV3, M-INV5, M-INV8 and the six M-INV7 details. M-INV2 is verified by a
+  forced-failure rollback test, not by an observed-red mutation, because
+  PostgreSQL function atomicity cannot be broken without a second connection.
+- The full invariant suite returns to 28 pass / 0 fail after the matrix.
+- **RR-07 (real-user evidence) and RR-08 (independent review)** remain open.
+- **RR-05 and RR-06** remain partly mitigated; **RR-02** is mitigated.
+
+No residual risk is accepted by this addendum; the human decision is still
+required.
