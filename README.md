@@ -245,7 +245,7 @@ Recorded so they are not mistaken for delivered work. Full detail in the [invari
 - **No external observability or alerting.** Logs are JSON to stdout; there is no collector, dashboard, trace or alert.
 - **No production recovery drill.** CI restores a public-schema backup into a scratch database and verifies table/policy/row counts; there is still no production backup, retention, RTO/RPO or disaster-recovery evidence.
 - **Authentication and authorization are implemented**, but production session hardening, rate-limit tuning and service-role handling remain operational work.
-- **Five market invariants are enforced but not fault-injected.** M-INV1, M-INV2, M-INV3, M-INV5 and M-INV8 have passing tests; only M-INV4, M-INV6 and the M-INV7 gate were observed failing under injection.
+- **M-INV2 is verified by forced-failure rollback, not observed-red.** M-INV1, M-INV3, M-INV5, M-INV8 and all M-INV7 details were observed failing under fault injection; M-INV2's trade-insert failure test proves rollback but cannot break PostgreSQL function atomicity without a second connection.
 - **No request-key retention/cleanup policy.** Idempotency request rows grow with accepted/rejected requests; a retention policy is deferred.
 - **p95 latency is observed, not asserted.** The capacity burst records p50/p95/max, but the target is not a CI gate yet, and the value is environment-specific.
 - **No ticket-discount redemption and no club analytics aggregation.** The trade log exists; nothing consumes it yet.

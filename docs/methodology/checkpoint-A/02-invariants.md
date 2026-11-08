@@ -31,14 +31,14 @@ These replace the withdrawn prediction invariants. Enforcement and the first evi
 
 | ID | Invariant | Enforcement | Status |
 | :--- | :--- | :--- | :--- |
-| **M-INV1** | Entries are accepted only while the market is open (`status = OPEN` and authoritative database time at or after `kickoff_time`); entries at or after resolution are refused; exits are accepted while open. | Window guard inside `open_trade`/`close_trade`, after the market lock. | **Enforced, unverified.** Pre-kickoff and post-resolution refusals tested (`market-lifecycle.test.ts`). The window guard itself was not fault-injected. |
-| **M-INV2** | An entry or exit commits the position, the point debit/credit and the trade-log row together, or not at all. | One transaction per RPC; no separate read-modify-write. | **Enforced, unverified.** `open_trade`/`close_trade`; `market-pricing.test.ts` asserts committed state. Atomic rollback was not separately injected. |
-| **M-INV3** | A position cannot sell more shares than it holds; holdings never become negative. | Position guard in `close_trade`; `shares >= 0` constraint. | **Enforced, unverified.** Over-sell refused without writes (`market-pricing.test.ts`). Not fault-injected. |
+| **M-INV1** | Entries are accepted only while the market is open (`status = OPEN` and authoritative database time at or after `kickoff_time`); entries at or after resolution are refused; exits are accepted while open. | Window guard inside `open_trade`/`close_trade`, after the market lock. | **Verified.** `market-lifecycle.test.ts`; fault injection removed the window guard and the pre-kickoff test failed (CI 42474762811). |
+| **M-INV2** | An entry or exit commits the position, the point debit/credit and the trade-log row together, or not at all. | One transaction per RPC; no separate read-modify-write. | **Verified by forced-failure rollback.** `tests/fault-injection/atomic-rollback.fault.ts` forces a trade-insert failure and asserts no partial balance, position or trade survives (CI 42474762811). This is not an observed-red mutation: PostgreSQL function atomicity cannot be broken without a second connection. The limit is recorded in the verification record. |
+| **M-INV3** | A position cannot sell more shares than it holds; holdings never become negative. | Position guard in `close_trade`; `shares >= 0` constraint. | **Verified.** `market-pricing.test.ts`; fault injection removed the position guard and the non-negative constraints, and the over-sell test failed (CI 42474762811). |
 | **M-INV4** | A balance never becomes negative, including concurrent requests from the same user across markets. | Profile row lock plus conditional debit. | **Verified.** `market-concurrency.test.ts` races two 50-point spends against a 60-point balance. Injection removed the profile lock and both point guards: both spends were accepted and the balance reached **−40**. Restored; suite green. |
-| **M-INV5** | For every outcome, the sum of held position shares equals the market's outstanding quantity `q`. | Transactional updates of positions and `q` in the same statement path. | **Enforced, unverified.** Bookkeeping assertion in `market-pricing.test.ts`. Not fault-injected. |
+| **M-INV5** | For every outcome, the sum of held position shares equals the market's outstanding quantity `q`. | Transactional updates of positions and `q` in the same statement path. | **Verified.** Bookkeeping assertion in `market-pricing.test.ts`; fault injection advanced `q` without the matching position update and the test failed (CI 42474762811). |
 | **M-INV6** | Resolution is terminal and pays exactly one point per winning share, once per holder; losing shares pay nothing. | `resolve_market` with a terminal status check and one payout path. | **Verified.** `market-lifecycle.test.ts` pays winners once and refuses a second resolution. Injection removed the terminal check and the payout key: the second call was accepted instead of refused. Restored; suite green. |
-| **M-INV7** | Entry cooldown is per user × market: 5 s first rung, then a linear `+15 s` ladder capped at 600 s, decaying one level per five quiet minutes. Refusals do not escalate; exits are exempt. | Cooldown gate in `open_trade`; `close_trade` never reads it. | **Verified for the gate.** Burst test; injection removed the cooldown refusal and 10 of 10 same-market entries were accepted instead of one. Ladder, cap, decay, scope, no-escalation and the exit exemption have passing tests (`market-lifecycle.test.ts`) but were not separately injected. |
-| **M-INV8** | No commission of any kind: entry debits `ceil(cost)`, exit credits `floor(proceeds)`, and no fee path exists. | RPC formulas; no maker account. | **Enforced, unverified.** Ceil/floor and no-fee assertions in `market-pricing.test.ts`. Not fault-injected. |
+| **M-INV7** | Entry cooldown is per user × market: 5 s first rung, then a linear `+15 s` ladder capped at 600 s, decaying one level per five quiet minutes. Refusals do not escalate; exits are exempt. | Cooldown gate in `open_trade`; `close_trade` never reads it. | **Verified.** Gate, ladder, cap, decay, scope, no-escalation and exit exemption each have an observed-red mutation in `market-lifecycle.test.ts` (CI 42474762811). |
+| **M-INV8** | No commission of any kind: entry debits `ceil(cost)`, exit credits `floor(proceeds)`, and no fee path exists. | RPC formulas; no maker account. | **Verified.** `market-pricing.test.ts`; fault injection replaced `ceil` with `floor` and the debit assertion failed (CI 42474762811). |
 | **M-INV9** | A retried entry or exit with the same request key and payload returns the recorded trade and does not debit, credit, create a position or write a second trade. Reusing the key with a different payload is refused. | `trade_requests` unique `(user_id, request_id)`; claim-before-work in `open_trade`/`close_trade`; request and trade commit or roll back together. | **Verified.** `idempotency.test.ts`; CI run [42425131584](https://github.com/match-pulse/match-pulse/actions/runs/42425131584). Fault injection not yet observed locally. |
 
 ### Correction to an earlier draft
@@ -56,6 +56,7 @@ An earlier version of this table recorded INV-02 as enforced by "unique database
 | `tests/invariants/market-concurrency.test.ts` | M-INV4, M-INV7 | Cross-market double-spend race and same-market burst; both were observed red under fault injection |
 | `tests/invariants/authorization.test.ts` | INV-05, A-INV1–A-INV5 | Anonymous access, fan own-row isolation, organizer-only resolution, denied direct writes, the identity-free public trade feed and owner-only trade requests |
 | `tests/invariants/idempotency.test.ts` | M-INV9 | Sequential/concurrent replay, payload mismatch, retry after cooldown, exit replay and close-key mismatch |
+| `tests/fault-injection/atomic-rollback.fault.ts` | M-INV2 | Forced trade-insert failure; asserts no partial balance, position, market update or trade survives. Run explicitly by `bun run fault:inject`. |
 
 **Retired.** The former `prediction-duplicate-prevention.test.ts` (previously `prediction-lock.test.ts`) exercised `UNIQUE (user_id, match_id)` and never tested kickoff locking, because that rule (INV-03) was withdrawn. It was removed with the fixed-score feature in #67 and is not evidence for any market invariant. The table and `submit_prediction` were dropped by `20261023_retire_predictions.sql`.
 
@@ -178,12 +179,41 @@ The six idempotency tests cover:
 The request row is owner-only through RLS; direct writes are denied. The legacy
 null-key path remains non-idempotent and is exercised by the existing suites.
 
+### Fault-injection matrix (2026-11-08)
+
+`bun run fault:inject` applies each mutation to a disposable local database,
+runs the targeted test, compares the exit code with the declared expectation,
+resets the schema and records the result. CI run
+[42474762811](https://github.com/match-pulse/match-pulse/actions/runs/42474762811)
+passed all 11 entries:
+
+| Mutation | Invariant | Expected | Observed |
+| :--- | :--- | :--- | :--- |
+| `m-inv1-window` | M-INV1 | targeted test fails | exit 1 |
+| `m-inv2-rollback` | M-INV2 | forced-failure test passes | exit 0 |
+| `m-inv3-oversell` | M-INV3 | targeted test fails | exit 1 |
+| `m-inv5-bookkeeping` | M-INV5 | targeted test fails | exit 1 |
+| `m-inv8-floor` | M-INV8 | targeted test fails | exit 1 |
+| `m-inv7-ladder` | M-INV7 | targeted test fails | exit 1 |
+| `m-inv7-cap` | M-INV7 | targeted test fails | exit 1 |
+| `m-inv7-decay` | M-INV7 | targeted test fails | exit 1 |
+| `m-inv7-scope` | M-INV7 | targeted test fails | exit 1 |
+| `m-inv7-no-escalation` | M-INV7 | targeted test fails | exit 1 |
+| `m-inv7-exit-exemption` | M-INV7 | targeted test fails | exit 1 |
+
+The full invariant suite then returned **28 pass / 0 fail**. The M-INV2 row is a
+**forced-failure rollback** check, not an observed-red mutation: the trigger
+forces the trade insert to fail and the test asserts that no partial balance,
+position, market update or trade survives. PostgreSQL function atomicity cannot
+be broken without a second connection, so a true observed-red version of M-INV2
+is not claimed.
+
 ### What a green run does and does not establish
 
 It establishes that these scenarios hold, on this machine, against a single database instance, at this scale. It does **not** establish behaviour under sustained load, across multiple application instances, or where connections are dropped upstream before reaching a business decision. The authorization evidence is local Supabase/PostgreSQL; production session hardening and rate limits are not claimed.
 
 ## 4. Current focus
 
-INV-01 and INV-02 remain verified. INV-03 and INV-04 are withdrawn with the retired fixed-score feature (owner decision, 2026-10-19); M-INV1–M-INV9 replace them. M-INV4 (profile lock / double-spend), M-INV6 (one-shot resolution), the gate of M-INV7 (cooldown) and M-INV9 (request-key idempotency) are **Verified** by tests in CI; M-INV4/6/7 also have historical fault-injection evidence. M-INV1, M-INV2, M-INV3, M-INV5 and M-INV8, plus the ladder/decay details of M-INV7, are **Enforced, unverified**: passing tests, no injection yet (FND-002).
+INV-01 and INV-02 remain verified. INV-03 and INV-04 are withdrawn with the retired fixed-score feature (owner decision, 2026-10-19); M-INV1–M-INV9 replace them. M-INV1, M-INV3, M-INV4, M-INV5, M-INV6, M-INV7 (gate and every detail), M-INV8 and M-INV9 are **Verified** by tests in CI, with observed-red fault injection for the recorded mechanisms. M-INV2 is **Verified by forced-failure rollback**: the trade-insert failure test proves no partial state survives, but it is not an observed-red mutation because PostgreSQL function atomicity cannot be broken without a second connection. That limit is recorded in the verification record.
 
-INV-05 and A-INV1–A-INV5 are **Verified** for the platform boundary by the authorization suite in CI. The separate club-analytics privacy rule remains not implemented. The market page is authenticated and reads only the user's own private rows plus the identity-free public trade feed. The remaining open findings are unverified market injections (FND-002), load/p95 (FND-004), delivery/operations (FND-006), real-user evidence (FND-007) and independent review (FND-008). FND-003 is fixed by the idempotency increment.
+INV-05 and A-INV1–A-INV5 are **Verified** for the platform boundary by the authorization suite in CI. The separate club-analytics privacy rule remains not implemented. The market page is authenticated and reads only the user's own private rows plus the identity-free public trade feed. The remaining open findings are the M-INV2 observed-red limitation (FND-002, partly fixed), load/p95 (FND-004), delivery/operations (FND-006), real-user evidence (FND-007) and independent review (FND-008). FND-003 is fixed by the idempotency increment.

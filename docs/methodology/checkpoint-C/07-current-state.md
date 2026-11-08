@@ -171,3 +171,25 @@ a scratch database, and verifies:
 observed, but there is no hosted deployment, production backup/retention, RTO/RPO
 or production recovery drill. The backup does not include Supabase-managed
 `auth`/`storage` data.
+
+## 12. Addendum 2026-11-08 — FND-002 partly fixed
+
+The fault-injection matrix (#125 / PR #126) is verified in CI run
+[42474762811](https://github.com/match-pulse/match-pulse/actions/runs/42474762811).
+
+- Ten observed-red mutations pass for M-INV1, M-INV3, M-INV5, M-INV8 and the six
+  M-INV7 details.
+- M-INV2 is verified by a forced-failure rollback test. It is not observed-red:
+  PostgreSQL function atomicity cannot be broken without a second connection.
+- The full invariant suite returns to 28 pass / 0 fail.
+
+The ranking now reads:
+
+1. **FND-007 — real organizer evidence** is the top remaining project risk.
+2. **FND-008 — independent review** remains open.
+3. **FND-002 — fault injections** is partly fixed: only the M-INV2 observed-red
+   limit remains, and that limit is explicit.
+4. **FND-004 and FND-006** are partly fixed; **FND-003** is fixed.
+
+The M-INV2 limit is not a hidden failure. It is recorded in the invariant
+registry, the verification record and this addendum.
