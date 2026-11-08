@@ -1,5 +1,6 @@
 'use server'
 
+import { logError } from '@/lib/logger'
 import { getCurrentUser } from '@/lib/session'
 import { createSupabaseServerClient } from '@/lib/supabase/server'
 
@@ -34,6 +35,7 @@ export async function registerForTournament(formData: FormData) {
     if (error.message.includes('authentication required')) {
       return { success: false, message: 'Sign in required.' }
     }
+    logError('registration.failed', { tournamentId, message: error.message })
     return { success: false, message: 'Registration failed. Please try again.' }
   }
 

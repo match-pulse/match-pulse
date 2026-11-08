@@ -58,7 +58,7 @@ jobs:
       - name: Setup Supabase CLI
         uses: supabase/setup-cli@v1
         with:
-          version: latest
+          version: "3.0.0"
 
       - name: Start local Supabase
         run: supabase start
@@ -79,3 +79,70 @@ jobs:
 
       - name: Run domain invariant tests
         run: bun run test
+
+  delivery:
+    name: Delivery smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: "1.4.2"
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Setup Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: "3.0.0"
+
+      - name: Start local Supabase
+        run: supabase start
+
+      - name: Apply migrations and seed data
+        run: supabase db reset
+
+      - name: Write local credentials
+        run: |
+          eval "$(supabase status -o env)"
+          {
+            echo "NEXT_PUBLIC_SUPABASE_URL=$API_URL"
+            echo "NEXT_PUBLIC_SUPABASE_ANON_KEY=$ANON_KEY"
+          } > .env.local
+
+      - name: Build Next.js application
+        run: bun run build
+
+      - name: Start application
+        run: |
+          bun run start > /tmp/matchpulse-app.log 2>&1 &
+          echo $! > /tmp/matchpulse-app.pid
+
+      - name: Wait for health
+        run: |
+          for i in $(seq 1 60); do
+            if curl -fsS http://127.0.0.1:3000/api/health >/dev/null; then
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "Health check did not pass"
+          cat /tmp/matchpulse-app.log
+          exit 1
+
+      - name: Run smoke test
+        run: bun run smoke
+
+      - name: Stop application
+        if: always()
+        run: |
+          if [ -f /tmp/matchpulse-app.pid ]; then
+            kill "$(cat /tmp/matchpulse-app.pid)" || true
+          fi
+          cat /tmp/matchpulse-app.log || true

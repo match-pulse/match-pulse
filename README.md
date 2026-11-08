@@ -58,11 +58,17 @@ Read the architecture documents in this order:
 - [SDLC Decision — Hybrid Lifecycle](docs/methodology/checkpoint-B/04-sdlc-decision.md)
 - [Checkpoint C — Quality and Residual Risk](docs/methodology/checkpoint-C/README.md)
 - [Checkpoint D — Architecture and Changeability (Pre-read)](docs/methodology/checkpoint-D/README.md)
+- [Checkpoint E — Delivery, Observability and Recovery (Pre-read)](docs/methodology/checkpoint-E/README.md)
+- [Operations Runbook](docs/operations/runbook.md)
+- [Service-Level Objectives](docs/operations/slo.md)
 - [Development Practices — Testing, Specification and OpenSpec](docs/methodology/development-practices.md)
 - [AI Transparency Log](docs/methodology/ai-transparency-log.md)
 - [Execution Plan — Live Prediction Market](docs/methodology/exec-plans/live-prediction-market.md)
 - [Execution Plan — Authorization, RLS and Grants](docs/methodology/exec-plans/95-authorization-rls.md)
+- [Execution Plan — Idempotent Entry and Exit](docs/methodology/exec-plans/107-idempotent-trades.md)
+- [Execution Plan — Delivery, Observability and Recovery](docs/methodology/exec-plans/111-delivery-operations-baseline.md)
 - [Verification — Authorization, RLS and Grants](docs/methodology/verification/2026-11-95-authorization-rls.md)
+- [Verification — Idempotent Entry and Exit](docs/methodology/verification/2026-11-107-idempotent-trades.md)
 - [Execution Plan — Invariant Evidence and the Registration Path](docs/methodology/exec-plans/50-invariant-evidence-and-registration-path.md) *(superseded)*
 - [AI Agent Instructions](AGENTS.md)
 
@@ -158,6 +164,8 @@ bun run test          # all suites
 bun run lint          # ESLint
 bun run typecheck     # tsc --noEmit
 bun run build         # production build
+bun run check:architecture  # architecture guards
+bun run smoke         # health/login/home against a running app
 ```
 
 The invariant suites need a running database — complete steps 3 and 4 first. Missing credentials fail immediately with a clear error rather than passing silently.
@@ -166,7 +174,7 @@ The invariant suites need a running database — complete steps 3 and 4 first. M
 | :--- | :--- |
 | `tests/invariants/authorization.test.ts` | Anonymous public/private access, fan own-row isolation, organizer-only resolution, denied direct writes, identity-free public trades, owner-only trade requests |
 | `tests/invariants/idempotency.test.ts` | Request-key replay, concurrent duplicates, payload mismatch, retry after cooldown, exit replay |
-| `tests/invariants/tournament-capacity.test.ts` | 100 authenticated concurrent requests against capacity 32; accepted/refused split **and** committed rows, stored counter, `counter <= capacity` |
+| `tests/invariants/tournament-capacity.test.ts` | 100 authenticated concurrent requests against capacity 32; accepted/refused split **and** committed rows, stored counter, `counter <= capacity`; records p50/p95/max latency |
 | `tests/invariants/registration-uniqueness.test.ts` | A repeated registration is refused and consumes no second place; each test owns its fixtures |
 | `tests/invariants/market-pricing.test.ts` | Budget-bounded entry with `ceil` debit, `floor` credit on exit, over-sell and overspend refusals, share bookkeeping |
 | `tests/invariants/market-lifecycle.test.ts` | Pre-kickoff and post-resolution refusals, one-shot resolution payout, cooldown ladder/cap/decay/scope |
@@ -177,17 +185,19 @@ and a local service-role client for setup and committed-state reads. The service
 role is not an application runtime credential.
 
 These suites were confirmed **capable of failing**: reintroducing each defect in
-turn produced a non-zero exit. The authorization boundary is verified in CI run
-[42397891717](https://github.com/match-pulse/match-pulse/actions/runs/42397891717)
-(28 tests, 0 failures, CI run [42425131584](https://github.com/match-pulse/match-pulse/actions/runs/42425131584)). See the invariants registry and the
+turn produced a non-zero exit. The authorization and idempotency boundaries are
+verified in CI run
+[42425131584](https://github.com/match-pulse/match-pulse/actions/runs/42425131584)
+(28 tests, 0 failures). See the invariants registry and the
 [authorization verification record](docs/methodology/verification/2026-11-95-authorization-rls.md).
 
 ### Continuous Integration
 
-[`.github/workflows/ci.yml`](.github/workflows/ci.yml) runs two jobs on every pull request:
+[`.github/workflows/ci.yml`](.github/workflows/ci.yml) runs three jobs on every pull request:
 
-- **Lint, typecheck and build** — ESLint, production build, `tsc --noEmit`
+- **Lint, typecheck and build** — ESLint, production build, `tsc --noEmit`, architecture guards
 - **Domain invariants** — starts a local Supabase, replays migrations, runs `bun run test`
+- **Delivery smoke** — starts Supabase, builds, starts the app, waits for `/api/health`, runs `bun run smoke`
 
 The CI job reads its credentials from the running stack at job time via
 `supabase status -o env`. The service-role key is written to the test
@@ -223,11 +233,13 @@ satisfy `${...}` interpolation.
 Recorded so they are not mistaken for delivered work. Full detail in the [invariants registry](docs/methodology/checkpoint-A/02-invariants.md).
 
 - **No organizer management UI.** Market resolution is an authorized RPC and is exercised by tests; there is no browser management screen.
-- **No deployment, observability or recovery evidence.** The project runs locally and in CI only.
+- **No hosted deployment.** Delivery is local/CI only: health, structured logs, smoke test and a `Delivery smoke` CI job exist, but there is no cloud environment, TLS, DNS or production availability claim.
+- **No external observability or alerting.** Logs are JSON to stdout; there is no collector, dashboard, trace or alert.
+- **No production recovery drill.** The runbook documents backup/restore and rollback, and the local exercise is recorded, but there is no production backup, retention or disaster-recovery evidence.
 - **Authentication and authorization are implemented**, but production session hardening, rate-limit tuning and service-role handling remain operational work.
 - **Five market invariants are enforced but not fault-injected.** M-INV1, M-INV2, M-INV3, M-INV5 and M-INV8 have passing tests; only M-INV4, M-INV6 and the M-INV7 gate were observed failing under injection.
 - **No request-key retention/cleanup policy.** Idempotency request rows grow with accepted/rejected requests; a retention policy is deferred.
-- **No load or latency measurement.** The suites cover correctness under a burst, not throughput or p95 latency.
+- **p95 latency is observed, not asserted.** The capacity burst records p50/p95/max, but the target is not a CI gate yet, and the value is environment-specific.
 - **No ticket-discount redemption and no club analytics aggregation.** The trade log exists; nothing consumes it yet.
 
 ## Project Roles

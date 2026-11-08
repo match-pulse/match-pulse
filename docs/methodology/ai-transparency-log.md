@@ -448,6 +448,33 @@ Secret hygiene re-verified: `release.env` in history contains only `APP_VERSION`
 
 ---
 
+## Entry 27 — Delivery, observability and recovery baseline
+
+**Date:** 2026-11-08
+**Tool:** opencode CLI (`deepseek-v4.1-flash`)
+**Intent:** Implement the approved Checkpoint E baseline: a public health endpoint, structured JSON logs, a deterministic smoke test, a CI delivery job, an operations runbook, proposed SLOs and a recorded capacity-burst p95.
+**Boundary:** Approved medium-risk increment (#111). AI added the health route and a cookie-less health client, the logger, smoke script, CI delivery job, operations documents and the p95 instrumentation. The human approved local/CI delivery evidence instead of a cloud deployment. No pricing, settlement, schema, authorization model or UI behavior was changed.
+**Prior records reviewed:** Checkpoint D pre-read, architecture characteristics, release workflow, v1.2.0 release, README known gaps, FND-004 and FND-006.
+**Work performed:**
+- `GET /api/health` checks a public `markets` read through a cookie-less anon client, returns `200`/`503`, and uses `connection()` so it is dynamic rather than baked into the build.
+- `src/lib/logger.ts` emits JSON lines; health and key market/registration error paths log structured events.
+- `scripts/smoke-test.ts` waits for health and checks health, login and the unauthenticated home redirect.
+- `.github/workflows/ci.yml` gains a `Delivery smoke` job that starts Supabase, builds, starts the app, waits for health and runs smoke.
+- `docs/operations/runbook.md`, `docs/operations/slo.md` and the Checkpoint E pre-read record environments, health, logs, release, rollback, backup/restore, incident steps, SLOs and limits.
+- `tests/invariants/tournament-capacity.test.ts` records p50/p95/max for the 100-request burst.
+**Verification:** Local `bun run check:architecture`, `bun run typecheck`, `bun run lint` and `bun run build` passed. The first build exposed a real defect: the health route used the cookie client during prerender and logged `health.db_check_failed`. It was corrected with a cookie-less health client plus `connection()`, and the rebuild completed with `/api/health` marked dynamic and no prerender error. Database-backed and delivery-smoke verification is pending CI.
+**Learning:**
+- A health probe must not depend on request cookies; using the session client made build-time prerender attempt a database check and log a false failure.
+- With `cacheComponents`, route segment `dynamic` config is rejected; `connection()` is the supported way to keep the probe dynamic.
+- The p95 value must be recorded with its environment; a hard assertion on a shared runner would be flaky before the distribution is known.
+**Limitations:** No hosted deployment, external monitoring, alerting, tracing or production recovery. The backup/restore exercise and the actual p95 value are recorded only after they are observed. No independent human review.
+
+**Addendum 2026-11-08 (CI):** CI run [42435007354](https://github.com/match-pulse/match-pulse/actions/runs/42435007354) passed all three jobs: build/typecheck/lint/architecture, 28 invariant tests (0 failures), and the new `Delivery smoke` job (health, login UI, home HTML). The 100-request capacity burst observed **p50 245.46 ms, p95 463.11 ms, max 479.64 ms** in the first green run and **p95 571.68 ms** in the final run, against the proposed 1,000 ms target. The first delivery run failed because the smoke test expected `GET /` to return an HTTP redirect to `/login`; under Partial Prerender the market route returns a 200 shell and the auth gate resolves inside the streamed component. The smoke check was corrected to assert health, the login UI marker and a 200 HTML home shell. This is a test-assumption correction, not a product or authorization change. A later CI attempt hit a Supabase CLI `latest` resolution rate limit; both jobs now pin `3.0.0`. The backup/restore exercise remains documented but unexercised because Docker/Postgres is unavailable locally.
+
+**Links:** issue #111 · [execution plan](exec-plans/111-delivery-operations-baseline.md) · [runbook](../operations/runbook.md) · [SLO proposal](../operations/slo.md) · [Checkpoint E pre-read](checkpoint-E/README.md) · [verification record](verification/2026-11-111-delivery-operations-baseline.md)
+
+---
+
 ## Standing rule
 
 AI may investigate, analyse, draft, implement within an approved scope, and run verification. The human retains every decision that affects business rules, architecture, schema, scope, priority, risk acceptance and merging. Contributions that cannot be verified are recorded as unverified rather than asserted.

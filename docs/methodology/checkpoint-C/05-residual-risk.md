@@ -95,3 +95,23 @@ The idempotency increment (#107 / PR #108) is implemented and verified in CI run
 - **RR-01** remains mitigated by the authorization increment. **RR-03, RR-05, RR-06, RR-07 and RR-08** remain open.
 
 No residual risk is accepted by this addendum; the human decision is still required.
+
+## 9. Addendum 2026-11-08 — RR-05 and RR-06 partly mitigated
+
+The delivery baseline (#111 / PR #112) is verified in CI run
+[42435007354](https://github.com/match-pulse/match-pulse/actions/runs/42435007354).
+
+- **RR-05:** partly mitigated. The 100-request capacity burst now records
+  p50/p95/max; the observed CI values are p95 463.11 ms and 571.68 ms against
+  the proposed 1,000 ms target. Sustained load, throughput and a hard CI gate
+  remain open.
+- **RR-06:** partly mitigated. `/api/health`, JSON stdout logs, `bun run smoke`,
+  a `Delivery smoke` CI job, an operations runbook, proposed SLOs and a
+  rollback/backup procedure exist. There is still no hosted deployment,
+  external monitoring/alerting or production recovery drill.
+- **Backup/restore:** documented but unexercised because Docker/Postgres is not
+  available in the implementation environment.
+- **RR-03, RR-07 and RR-08** remain open.
+
+No residual risk is accepted by this addendum; the human decision is still
+required.

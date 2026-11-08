@@ -1,5 +1,6 @@
 'use server'
 
+import { logError } from '@/lib/logger'
 import { getCurrentUser } from '@/lib/session'
 import { createSupabaseServerClient } from '@/lib/supabase/server'
 
@@ -102,6 +103,7 @@ export async function enterPosition(formData: FormData) {
   })
 
   if (error) {
+    logError('market.enter_failed', { requestId, marketId, message: error.message })
     return { success: false, message: describeTradeError(error.message) }
   }
 
@@ -153,6 +155,7 @@ export async function exitPosition(formData: FormData) {
   })
 
   if (error) {
+    logError('market.exit_failed', { requestId, marketId, message: error.message })
     return { success: false, message: describeTradeError(error.message) }
   }
 

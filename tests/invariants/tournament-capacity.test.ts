@@ -13,6 +13,13 @@ const CAPACITY = 32
 const BURST_SIZE = 100
 const TEST_TIMEOUT_MS = 120_000
 
+function percentile(values: number[], fraction: number): number {
+  if (values.length === 0) return Number.NaN
+  const sorted = [...values].sort((a, b) => a - b)
+  const index = Math.min(sorted.length - 1, Math.ceil(fraction * sorted.length) - 1)
+  return sorted[index]
+}
+
 let tournamentId: string
 let users: TestUser[]
 
@@ -30,12 +37,34 @@ describe('INV-01 tournament capacity under a concurrent burst', () => {
   test(
     `accepts exactly ${CAPACITY} of ${BURST_SIZE} concurrent requests and commits consistent state`,
     async () => {
+      const started = performance.now()
       const results = await Promise.all(
         users.map(async (user) => {
+          const callStarted = performance.now()
           const { data, error } = await user.client.rpc('register_for_tournament', {
             p_tournament_id: tournamentId
           })
-          return { ok: !error, value: data, message: error?.message }
+          return {
+            ok: !error,
+            value: data,
+            message: error?.message,
+            durationMs: performance.now() - callStarted
+          }
+        })
+      )
+      const wallClockMs = performance.now() - started
+
+      const latencies = results.map((result) => result.durationMs)
+      const p95 = percentile(latencies, 0.95)
+
+      console.log(
+        JSON.stringify({
+          event: 'capacity.burst_latency',
+          requests: BURST_SIZE,
+          wallClockMs: Number(wallClockMs.toFixed(2)),
+          p50Ms: Number(percentile(latencies, 0.5).toFixed(2)),
+          p95Ms: Number(p95.toFixed(2)),
+          maxMs: Number(Math.max(...latencies).toFixed(2))
         })
       )
 
