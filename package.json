@@ -8,12 +8,14 @@
     "start": "next start",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
-    "test": "bun test --env-file=.env.local --path-ignore-patterns='tests/fault-injection/**'",
+    "test": "bun test --env-file=.env.local --path-ignore-patterns='tests/fault-injection/**' --path-ignore-patterns='tests/e2e/**'",
     "auth:organizer": "bun --env-file=.env.local scripts/create-organizer.ts",
     "check:architecture": "bun scripts/check-architecture.ts",
     "smoke": "bun scripts/smoke-test.ts",
     "fault:inject": "bun scripts/fault-injection.ts",
-    "auth:club": "bun --env-file=.env.local scripts/create-club.ts"
+    "auth:club": "bun --env-file=.env.local scripts/create-club.ts",
+    "test:e2e": "playwright test",
+    "test:e2e:install": "playwright install chromium"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.7",
@@ -23,6 +25,8 @@
     "react-dom": "19.3.0"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.14.0",
+    "@playwright/test": "^1.65.0",
     "@tailwindcss/turbopack": "^4",
     "@types/bun": "^1.4.3",
     "@types/node": "^20",

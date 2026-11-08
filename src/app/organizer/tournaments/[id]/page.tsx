@@ -10,6 +10,7 @@ export const instant = false
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
+type Market = { id: string; status: string; winning_outcome: string | null }
 type Match = {
   id: string
   home_team: string
@@ -18,7 +19,12 @@ type Match = {
   kickoff_time: string
   home_score: number
   away_score: number
-  markets: Array<{ id: string; status: string; winning_outcome: string | null }> | null
+  markets: Market | Market[] | null
+}
+
+function firstMarket(markets: Match['markets']): Market | null {
+  if (!markets) return null
+  return Array.isArray(markets) ? (markets[0] ?? null) : markets
 }
 
 export default async function OrganizerTournamentDetail({ params }: { params: Promise<{ id: string }> }) {
@@ -64,7 +70,7 @@ export default async function OrganizerTournamentDetail({ params }: { params: Pr
         <h2 className="mb-3 text-xl font-bold">Matches</h2>
         <div className="grid gap-3">
           {(matches as Match[] | null)?.map((match) => {
-            const market = match.markets?.[0]
+            const market = firstMarket(match.markets)
             return (
               <article key={match.id} className="rounded border border-slate-800 bg-slate-900 p-4">
                 <div className="flex flex-wrap items-center justify-between gap-2">
