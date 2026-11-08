@@ -104,6 +104,8 @@ Use the workflow contracts in `docs/workflows/`:
 
 Testing, security, privacy, recordkeeping, traceability, and human oversight apply across all workflows. Audit and refactor findings become tracked development work only after human-approved triage and scope.
 
+OpenSpec is adopted for bounded evidence and specification changes. For an OpenSpec-managed change, read [`openspec/README.md`](openspec/README.md), use `openspec status` and `openspec validate`, and keep the kata, domain model, invariant registry, ADRs, tests and verification records authoritative. A change with no behavior delta sets `skip_specs: true`; do not invent a behavioral requirement for test-only work. The adoption decision and its limits are in [`docs/methodology/development-practices.md`](docs/methodology/development-practices.md) §4.6.
+
 ## 7. Human Decision Gates
 
 Ask the human before making or executing a decision that affects:
