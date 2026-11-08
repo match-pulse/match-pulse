@@ -25,7 +25,7 @@ export default async function LoginPage() {
 
       <LoginForms />
 
-      <p className="mt-8 text-xs text-slate-600 text-center max-w-md">
+      <p className="mt-8 text-xs text-slate-400 text-center max-w-md">
         This is a course prototype. The database enforces who may act; the
         organizer account is a local development fixture.
       </p>

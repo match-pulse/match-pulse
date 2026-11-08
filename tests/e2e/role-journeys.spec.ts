@@ -29,7 +29,7 @@ test('fan can claim a ticket, register, view the portfolio and redeem a reward',
 
 test('organizer can create a tournament, create a match, update it and resolve the market', async ({ page }) => {
   await page.goto('/login')
-  await page.getByRole('tab', { name: 'Organizer' }).click()
+  await page.getByRole('button', { name: 'Organizer' }).click()
   await page.getByLabel('Organizer email').fill(ORGANIZER_EMAIL)
   await page.getByLabel('Password').fill(ORGANIZER_PASSWORD)
   await page.getByRole('button', { name: 'Sign in as organizer' }).click()
@@ -66,7 +66,7 @@ test('organizer can create a tournament, create a match, update it and resolve t
 
 test('club can view aggregate analytics and export CSV', async ({ page }) => {
   await page.goto('/login')
-  await page.getByRole('tab', { name: 'Club' }).click()
+  await page.getByRole('button', { name: 'Club' }).click()
   await page.getByLabel('Club email').fill(CLUB_EMAIL)
   await page.getByLabel('Password').fill(CLUB_PASSWORD)
   await page.getByRole('button', { name: 'Sign in as club' }).click()
