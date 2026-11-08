@@ -167,18 +167,29 @@ jobs:
           POLICIES_BEFORE=$(query "SELECT count(*) FROM pg_policies WHERE schemaname = 'public';")
           TOURNAMENTS_BEFORE=$(query "SELECT count(*) FROM public.tournaments;")
 
-          # A full dump carries schema, data, policies and grants. Restoring it
-          # into a scratch database proves the backup is usable without touching
-          # the working database.
-          docker exec "$DB_CONTAINER" pg_dump -U postgres -d postgres -Fc -f /tmp/matchpulse-full.dump
-          docker cp "$DB_CONTAINER:/tmp/matchpulse-full.dump" /tmp/matchpulse-full.dump
-          test -s /tmp/matchpulse-full.dump
-          echo "Backup size: $(wc -c < /tmp/matchpulse-full.dump) bytes"
+          # Back up the application-owned public schema. Platform-managed
+          # schemas (auth, storage, realtime, vault) are recreated by Supabase
+          # itself and are not part of this application backup.
+          docker exec "$DB_CONTAINER" pg_dump -U postgres -d postgres \
+            --schema=public -Fc -f /tmp/matchpulse-public.dump
+          docker cp "$DB_CONTAINER:/tmp/matchpulse-public.dump" /tmp/matchpulse-public.dump
+          test -s /tmp/matchpulse-public.dump
+          echo "Backup size: $(wc -c < /tmp/matchpulse-public.dump) bytes"
 
           docker exec "$DB_CONTAINER" dropdb -U postgres --if-exists "$RESTORE_DB"
           docker exec "$DB_CONTAINER" createdb -U postgres -T template0 "$RESTORE_DB"
+
+          # Minimal auth dependency for the public schema: profiles references
+          # auth.users(id) and RLS policies call auth.uid().
+          docker exec -i "$DB_CONTAINER" psql -U postgres -d "$RESTORE_DB" -v ON_ERROR_STOP=1 <<'SQL'
+          CREATE SCHEMA auth;
+          CREATE TABLE auth.users (id UUID PRIMARY KEY);
+          CREATE OR REPLACE FUNCTION auth.uid() RETURNS UUID
+            LANGUAGE SQL STABLE AS $$ SELECT NULL::UUID $$;
+          SQL
+
           docker exec "$DB_CONTAINER" pg_restore -U postgres -d "$RESTORE_DB" \
-            --clean --if-exists --no-owner --no-privileges /tmp/matchpulse-full.dump
+            --clean --if-exists --no-owner --no-privileges /tmp/matchpulse-public.dump
 
           TABLES_AFTER=$(query "SELECT count(*) FROM pg_tables WHERE schemaname = 'public';" "$RESTORE_DB")
           POLICIES_AFTER=$(query "SELECT count(*) FROM pg_policies WHERE schemaname = 'public';" "$RESTORE_DB")
