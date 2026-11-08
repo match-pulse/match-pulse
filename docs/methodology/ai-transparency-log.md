@@ -475,6 +475,25 @@ Secret hygiene re-verified: `release.env` in history contains only `APP_VERSION`
 
 ---
 
+## Entry 28 — Release v1.3.0
+
+**Date:** 2026-11-08
+**Tool:** opencode CLI (`deepseek-v4.1-flash`)
+**Intent:** Cut v1.3.0 for the delivery, observability and recovery baseline under the release policy: curate the release notes, align `package.json` and prepare the annotated tag and GitHub Release.
+**Boundary:** Release preparation only. AI edited `CHANGELOG.md`, `package.json` and this log. No application code, schema, test or CI change in the release PR. The human approved the delivery baseline and the release policy.
+**Prior records reviewed:** release workflow, `CHANGELOG.md`, PR #112, delivery verification record, AI log Entry 27, FND-004 and FND-006.
+**Verification:** Final PR CI run [42435627680](https://github.com/match-pulse/match-pulse/actions/runs/42435627680) passed all three jobs: build/typecheck/lint/architecture, 28 invariant tests with 0 failures, and delivery smoke. The p95 observations are 463.11 ms and 571.68 ms. The release PR CI is the final merge gate.
+**Learning:**
+- Delivery evidence belongs in the release notes with its environment and limits, not as a production claim.
+- Pinning the Supabase CLI removed a real external failure mode (`latest` resolution rate limit) from the delivery job.
+- A partially prerendered route can return a 200 shell before its auth gate resolves; smoke assertions must target observed behavior, not an assumed redirect.
+- The changelog must distinguish a fixed defect from a partly fixed finding: FND-004 and FND-006 remain partly open.
+**Limitations:** The tag and GitHub Release are created after this entry. Backup/restore is documented but unexercised. No hosted deployment, external monitoring or production recovery. No independent human review.
+
+**Links:** issue #113 · [`CHANGELOG.md`](../../CHANGELOG.md) · [`release-workflow.md`](../workflows/release-workflow.md) · [delivery verification](verification/2026-11-111-delivery-operations-baseline.md)
+
+---
+
 ## Standing rule
 
 AI may investigate, analyse, draft, implement within an approved scope, and run verification. The human retains every decision that affects business rules, architecture, schema, scope, priority, risk acceptance and merging. Contributions that cannot be verified are recorded as unverified rather than asserted.
