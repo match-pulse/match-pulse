@@ -51,6 +51,7 @@ Read the architecture documents in this order:
 6. [Code Map](docs/architecture/04-code-map.md) — documents and rules mapped to files and tests
 7. [Architecture Decision Records](docs/architecture/adr/) — the decisions behind the structure, including [ADR-003: authorization and RLS](docs/architecture/adr/003-authorization-rls.md)
 8. [Architecture Report — 2026-11-08](docs/architecture/reports/2026-11-08.md) — dated synthesis of the kata, characteristics, style, decisions and evidence
+9. [Course Submission Package](docs/submissions/README.md) — dated PDFs for Task 1, Task 2, the architecture description and the methodology report
 
 ### Development Methodology
 
@@ -252,7 +253,7 @@ Recorded so they are not mistaken for delivered work. Full detail in the [invari
 - **M-INV2 is verified by forced-failure rollback, not observed-red.** M-INV1, M-INV3, M-INV5, M-INV8 and all M-INV7 details were observed failing under fault injection; M-INV2's trade-insert failure test proves rollback but cannot break PostgreSQL function atomicity without a second connection.
 - **Request-key retention is a local maintenance command.** `bun run maintenance:cleanup` deletes completed requests older than 30 days; there is no scheduled production retention job.
 - **p95 latency is observed, not asserted.** The capacity burst records p50/p95/max, but the target is not a CI gate yet, and the value is environment-specific.
-- **E2E and accessibility are initial, not exhaustive.** The Playwright suite covers the three happy-path role journeys; edge cases remain in integration tests. The accessibility gate blocks critical violations only, not every serious violation.
+- **E2E and accessibility are initial, not exhaustive.** The Playwright suite covers the three happy-path role journeys; edge cases remain in integration tests. The accessibility gate blocks serious and critical violations, not moderate or minor ones.
 - **Performance is a scheduled baseline, not a release gate.** The 20/50/100 burst script records p50/p95/p99, but production load and multi-instance behaviour are not measured.
 - **No real-user validation or independent review.** FND-007 and FND-008 remain human gates.
 
