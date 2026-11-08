@@ -724,6 +724,22 @@ Secret hygiene re-verified: `release.env` in history contains only `APP_VERSION`
 
 ---
 
+## Entry 40 — Course submission package
+
+**Date:** 2026-11-08
+**Tool:** opencode CLI (`deepseek-v4.1-flash`)
+**Intent:** Commit the four generated course submission PDFs and a submission index so the package is available in the repository, not only as a CI artifact.
+**Boundary:** Submission packaging and documentation only. AI copied CI-generated PDFs, removed the `docs/submissions/*.pdf` ignore rule, added `docs/submissions/README.md`, updated the README link and accessibility gap, amended the architecture report's PDF appendix with a dated update, corrected the methodology report's axe wording, and edited this log. No application, schema, test or exporter change.
+**Prior records reviewed:** issue #147 / PR #148 PDF pipeline, CI run 42508702870, architecture report Appendix A/C, methodology report, v2.0.1 release, issue #143 / PR #144 accessibility gate.
+**Work performed:** Task 1 kata, Task 2 characteristics, architecture report and methodology report exported by `bun run docs:pdf` and committed under `docs/submissions/`; index maps each deliverable to its Markdown source and regeneration command.
+**Verification:** CI run [42510991205](https://github.com/match-pulse/match-pulse/actions/runs/42510991205) passed all five jobs and generated the artifact. Page counts verified with `pdfinfo`: kata 1, characteristics 11, architecture report 11, methodology report 8. First and last pages were rendered with `pdftoppm` and inspected; the kata is one readable page, and text extraction confirms the updated appendix and axe wording. The `file` utility misreported two reports as 8 pages; `pdfinfo` and the rendered footers agree on 11, so `pdfinfo` is recorded as the check.
+**Learning:** Generated-artifact page counts must be read from a reliable tool. Committing the PDFs makes the submission self-contained, but the Markdown sources remain authoritative and regeneration overwrites the binaries.
+**Limitations:** Interior pages were not individually reviewed. The package makes no real-user, independent-review, production-deployment or production-recovery claim. Regeneration can change PDF bytes without changing content.
+
+**Links:** issue #149 · PR #150 · [`docs/submissions/README.md`](../submissions/README.md)
+
+---
+
 ## Standing rule
 
 AI may investigate, analyse, draft, implement within an approved scope, and run verification. The human retains every decision that affects business rules, architecture, schema, scope, priority, risk acceptance and merging. Contributions that cannot be verified are recorded as unverified rather than asserted.
