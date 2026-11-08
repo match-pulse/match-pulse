@@ -70,6 +70,7 @@ async function main() {
       await page.pdf({
         path: join(root, output),
         format: 'A4',
+        scale: compact ? 0.78 : 1,
         printBackground: true,
         displayHeaderFooter: true,
         headerTemplate: `<div style="font-size:8px;color:#64748b;width:100%;text-align:right;padding-right:14mm;">${title}</div>`,
