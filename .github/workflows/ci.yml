@@ -55,6 +55,11 @@ jobs:
       - name: Install dependencies
         run: bun install --frozen-lockfile
 
+      - name: Clean up leftover Supabase containers
+        run: |
+          bunx supabase stop --no-backup || true
+          docker ps -aq --filter "name=supabase_" | xargs -r docker rm -f
+
       - name: Start local Supabase
         run: bunx supabase start
 
@@ -91,6 +96,11 @@ jobs:
 
       - name: Install dependencies
         run: bun install --frozen-lockfile
+
+      - name: Clean up leftover Supabase containers
+        run: |
+          bunx supabase stop --no-backup || true
+          docker ps -aq --filter "name=supabase_" | xargs -r docker rm -f
 
       - name: Start local Supabase
         run: bunx supabase start
