@@ -650,6 +650,29 @@ Secret hygiene re-verified: `release.env` in history contains only `APP_VERSION`
 
 ---
 
+## Entry 36 — Security, performance and MVP documentation
+
+**Date:** 2026-11-08
+**Tool:** opencode CLI (`deepseek-v4.1-flash`)
+**Intent:** Add the MVP security/performance baseline and the missing product/test/security/operations documentation: tracked-file secret scan, dependency audit, performance script/workflow, threat model, failure modes, test strategy, MVP scope and ADRs 004–006.
+**Boundary:** Tooling and documentation. AI added `scripts/check-secrets.ts`, `scripts/performance.ts`, `.github/workflows/performance.yml`, README/CI updates and the named documents. No product behavior or schema change.
+**Prior records reviewed:** Epic #127, backend #128, frontends #137, E2E #138, approved MVP scope/decisions, ADR-003, test strategy and security plan.
+**Work performed:**
+- Added `bun run check:secrets` and `bun audit --audit-level=high` to the build job.
+- Added a scheduled/manual `Performance baseline` workflow for 20/50/100 concurrent registration bursts.
+- Added `docs/product/mvp-scope.md`, `docs/methodology/test-strategy.md`, `docs/security/threat-model.md`, `docs/operations/failure-modes.md` and ADRs 004–006.
+- Updated README status, CI jobs, known gaps and documentation links.
+**Verification:** Local `bun run check:secrets` passes (placeholder lines ignored); `bun audit --audit-level=high` reports no vulnerabilities; typecheck/lint/build are run before the PR; CI will run the full suite. The performance workflow is scheduled/manual and not part of the PR gate.
+**Learning:**
+- The secret scan must ignore documentation placeholders such as `your-local-...`; a raw assignment regex otherwise flags the setup guide.
+- Performance evidence should be a separate scheduled/manual workflow to avoid slowing every PR.
+- The MVP docs must distinguish implemented role journeys from production/security limits.
+**Limitations:** No production load, external monitoring, independent security review or real-user validation. The accessibility gate blocks critical violations only. FND-007 and FND-008 remain human gates.
+
+**Links:** issue #133 · issue #134 · [MVP scope](../product/mvp-scope.md) · [test strategy](test-strategy.md) · [threat model](../security/threat-model.md) · [failure modes](../operations/failure-modes.md)
+
+---
+
 ## Standing rule
 
 AI may investigate, analyse, draft, implement within an approved scope, and run verification. The human retains every decision that affects business rules, architecture, schema, scope, priority, risk acceptance and merging. Contributions that cannot be verified are recorded as unverified rather than asserted.

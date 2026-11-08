@@ -38,6 +38,12 @@ jobs:
       - name: Run architecture guards
         run: bun run check:architecture
 
+      - name: Audit dependencies
+        run: bun audit --audit-level=high
+
+      - name: Scan tracked files for secrets
+        run: bun run check:secrets
+
   invariants:
     name: Domain invariants
     runs-on: ubuntu-latest

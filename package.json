@@ -15,7 +15,9 @@
     "fault:inject": "bun scripts/fault-injection.ts",
     "auth:club": "bun --env-file=.env.local scripts/create-club.ts",
     "test:e2e": "playwright test",
-    "test:e2e:install": "playwright install chromium"
+    "test:e2e:install": "playwright install chromium",
+    "check:secrets": "bun scripts/check-secrets.ts",
+    "perf": "bun --env-file=.env.local scripts/performance.ts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.7",
