@@ -1,7 +1,7 @@
 # Course Submission Package
 
 Dated snapshot generated on **2026-11-08** from commit
-[`04406a1`](https://github.com/match-pulse/match-pulse/commit/04406a141c5917f9167257ff0db445f7f2a9d4a7).
+[`f4d2dfe`](https://github.com/match-pulse/match-pulse/commit/f4d2dfeede1a93a501661e4733f2d3df13367eb9).
 
 This directory holds the PDF exports used for the course submissions. The
 Markdown sources remain authoritative; these PDFs are dated renders of them.
