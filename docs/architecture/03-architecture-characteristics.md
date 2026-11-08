@@ -35,7 +35,7 @@ Five characteristics are selected. Selection criterion: a characteristic is only
 
 **Target.** Given 100 concurrent requests against a tournament of capacity 32: exactly 32 accepted, exactly 68 rejected with a business reason, 0 unhandled errors, p95 response time under 1 second.
 
-**Status.** Partially measured. The burst test exists and now **asserts committed state** (`tests/invariants/tournament-capacity.test.ts`) — accepted, refused, committed rows, stored counter and `counter <= capacity`. It was demonstrated capable of failing by fault injection (recorded in the invariants registry). It runs on every pull request in CI ("Domain invariants" job, ~2.5 min). The p95 latency figure in the target is still **not measured** — the suite does not record latency, so that part of the target remains unverified.
+**Status.** Partially measured. The burst test exists and now **asserts committed state** (`tests/invariants/tournament-capacity.test.ts`) — accepted, refused, committed rows, stored counter and `counter <= capacity`. It was demonstrated capable of failing by fault injection (recorded in the invariants registry). It runs on every pull request in CI ("Domain invariants" job, ~2.5 min). The test now records p50/p95/max latency for the 100 requests and prints them as a JSON line; the observed value is recorded in the delivery verification record. It is not asserted against the 1-second target yet, so the target comparison remains a recorded observation rather than a passing gate.
 
 **Explicitly not claimed.** The figure of "10,000 fans logging in at kickoff" previously stated here was an unsourced illustrative number, not a requirement. It is removed. The only stated scale is the kata's "hundreds of concurrent spectators", which is itself an unvalidated estimate — see §6.
 
@@ -43,11 +43,11 @@ Five characteristics are selected. Selection criterion: a characteristic is only
 
 **Why it matters.** MatchPulse is built by one person across two assessment deadlines. The characteristic that matters is not zero-downtime at scale, but *whether an increment can reach a running environment without infrastructure work standing in the way*.
 
-**How it is measured.** Elapsed time from merge on `main` to a successful running deployment; count of manual steps required to deploy a schema change; failed deployments per month.
+**How it is measured.** Elapsed time from merge on `main` to a successful running environment; count of manual steps required to deploy a schema change; failed deliveries per month. For the course baseline, the `Delivery smoke` CI job starts Supabase, applies migrations, builds, starts the app, waits for health and runs `bun run smoke`; a failed delivery shows as a red job.
 
-**Target.** Merge to running environment in under 15 minutes. Schema changes are applied only through files under `supabase/migrations/` — never by hand. No manual database step in any release.
+**Target.** Merge to a running, verified environment in under 15 minutes for the local/CI baseline. Schema changes are applied only through files under `supabase/migrations/` — never by hand. No manual database step in any release.
 
-**Status.** Unverified. No deployment is configured in this repository. `.github/workflows/ci.yml` builds and lints on every pull request but does not deploy. The earlier claim that "Next.js + Vercel provides instant CI/CD" described a capability of the chosen platform, not an observed property of this system, and is withdrawn. Measured time is not available because no deployment exists to measure.
+**Status.** Measured for the **local/CI baseline**, not for production. `Delivery smoke` runs on every pull request and `main`; `docs/operations/runbook.md` records the release, rollback and recovery steps. The earlier claim that "Next.js + Vercel provides instant CI/CD" described a capability of the chosen platform, not an observed property of this system, and is withdrawn. There is no hosted deployment, so production deploy time and availability remain unmeasured.
 
 ### 3.3 Testability
 
@@ -130,6 +130,8 @@ The three questions previously left open here are decided by the human developer
 
 The structural decisions behind §3.4 are recorded in [ADR-002](./adr/002-live-prediction-market.md).
 
+**Addendum 2026-11-08 — delivery baseline.** Decision 3 remains in force (no hosted deployment), but the repository now has a local/CI delivery baseline: `/api/health`, JSON logs, `bun run smoke`, a `Delivery smoke` CI job, an operations runbook, proposed SLOs and a local backup/restore procedure. This moves §3.2 from *Specified/unverified* to *Measured for local/CI*; it does not create a production environment or a production availability claim.
+
 ## 7. Conclusion
 
-The selected characteristics are Elasticity, Deployability, Testability, Integrity under concurrency and Security/authorization. Testability, Integrity under concurrency and Security/authorization are **measured** for the recorded mechanisms (failure observed under injection or authorization tests in CI); Elasticity is partly measured (scenario and committed-state assertions hold in CI; p95 latency unmeasured); Deployability is deliberately unverified because this increment does not include deployment (§6). The remaining gaps are explicit: latency figures, injections for the unverified market invariants, an organizer management UI, and a deployment environment are still to be produced.
+The selected characteristics are Elasticity, Deployability, Testability, Integrity under concurrency and Security/authorization. Testability, Integrity under concurrency and Security/authorization are **measured** for the recorded mechanisms (failure observed under injection or authorization tests in CI); Elasticity is partly measured (scenario and committed-state assertions hold in CI; p95 is now observed and recorded, but not asserted against the target); Deployability is **measured for the local/CI baseline** (health, structured logs, smoke and the `Delivery smoke` CI job), while production deployment, external monitoring and production recovery remain unverified. The remaining gaps are explicit: a hosted environment, injections for the unverified market invariants, an organizer management UI and production-scale load evidence are still to be produced.

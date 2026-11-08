@@ -16,7 +16,7 @@ The process rules are in [`docs/workflows/recordkeeping-traceability-workflow.md
 | Verification records | [`verification/`](verification/) | `<YYYY-MM-DD>-<issue>-<slug>.md` | [`verification-record-template.md`](../workflows/templates/verification-record-template.md) |
 | AI transparency log | [`ai-transparency-log.md`](ai-transparency-log.md) | Append-only `## Entry N` | [`ai-transparency-entry-template.md`](../workflows/templates/ai-transparency-entry-template.md) |
 | Findings register | [`findings-register.md`](findings-register.md) | `FND-NNN` | — |
-| Changelog | [`../../CHANGELOG.md`](../../CHANGELOG.md) | One row per merged PR | — |
+| Changelog | [`../../CHANGELOG.md`](../../CHANGELOG.md) | Release-based (Keep a Changelog); no per-PR rows | — |
 
 ADRs remain in [`docs/architecture/adr/`](../architecture/adr/) and follow the existing `NNN-<slug>.md` convention.
 
@@ -26,6 +26,7 @@ ADRs remain in [`docs/architecture/adr/`](../architecture/adr/) and follow the e
 - [`checkpoint-B/`](checkpoint-B/) — operating model, system dynamics, flow evidence, and the [SDLC decision](checkpoint-B/04-sdlc-decision.md).
 - [`checkpoint-C/`](checkpoint-C/) — risk control map, quality story, review decisions, test-case process, residual risk, and documentation review.
 - [`checkpoint-D/`](checkpoint-D/) — pre-read for architecture ownership, dependency rules, fitness functions, change scenario, compatibility and technical debt.
+- [`checkpoint-E/`](checkpoint-E/) — pre-read for delivery, observability, recovery, SLOs and p95 measurement.
 - [`development-practices.md`](development-practices.md) — invariant-first testing, TDD fit, SDD mode, and the OpenSpec decision.
 - [`exec-plans/`](exec-plans/) — approved execution plans.
 - [`ai-transparency-log.md`](ai-transparency-log.md) — dated AI contributions and verification.
@@ -37,7 +38,7 @@ ADRs remain in [`docs/architecture/adr/`](../architecture/adr/) and follow the e
 3. Choose the record type, copy the template, and use the required dated filename.
 4. Assign a `FND-NNN` identifier to each finding and add it to the register.
 5. Link the issue, sub-issues, PR, remediation, and verification evidence.
-6. Add the changelog row and the AI transparency entry in the same PR.
+6. Add the AI transparency entry in the same PR. Add a changelog entry only when the release section is being prepared; the changelog is release-based, not a per-PR ledger.
 7. Verify that relative links resolve and that no historical record was modified.
 
 ## Rules

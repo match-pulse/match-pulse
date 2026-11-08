@@ -18,6 +18,7 @@
 | Market page (Server Component) | `src/app/market/[id]/page.tsx` | Loads the authenticated user's market, prices, positions and public trades |
 | Tournament page (Server Component) | `src/app/tournaments/[id]/page.tsx` | Tournament detail and authenticated registration entry point |
 | Market client component | `src/components/MarketTrader.tsx` | Entry/exit form; renders prices and holdings; keeps one request key across retries |
+| Health route | `src/app/api/health/route.ts` | Public read-only app/database health signal; no sensitive data |
 | Registration form | `src/components/RegistrationForm.tsx` | Registration form bound to the Server Action |
 | Login client component | `src/components/LoginForms.tsx` | Fan anonymous sign-in and organizer password sign-in |
 | Top bar | `src/components/TopBar.tsx` | Authenticated username, points and sign-out |
@@ -37,6 +38,7 @@ Cross-cutting seams:
 
 - **Identity:** `src/lib/session.ts` — `getCurrentUser()` reads the Supabase Auth session; `requireUser()` redirects unauthenticated page requests to `/login`. The database RPCs independently resolve the caller with `auth.uid()`.
 - **Database client:** `src/lib/supabase/server.ts` — a cookie-based `@supabase/ssr` client using `NEXT_PUBLIC_SUPABASE_URL` and the anon key. No service-role key is used by the application runtime.
+- **Logging:** `src/lib/logger.ts` — JSON lines to stdout/stderr for health and key action failures; no tokens, keys, emails or form bodies.
 - **Service role:** local `scripts/create-organizer.ts` and test setup only. It is never imported by `src/`.
 - **Input validation:** the Server Actions validate form input before it reaches the database; the database functions re-enforce every rule regardless.
 
@@ -78,9 +80,12 @@ Per-invariant statuses, targets and fault-injection evidence: [`02-invariants.md
 
 | Concern | Location |
 | :--- | :--- |
-| CI | `.github/workflows/ci.yml` — jobs "Lint, typecheck and build" and "Domain invariants" |
-| Scripts | `package.json` — `dev`, `build`, `start`, `lint`, `typecheck`, `test`, `auth:organizer`, `check:architecture` |
+| CI | `.github/workflows/ci.yml` — jobs "Lint, typecheck and build", "Domain invariants" and "Delivery smoke" |
+| Scripts | `package.json` — `dev`, `build`, `start`, `lint`, `typecheck`, `test`, `auth:organizer`, `check:architecture`, `smoke` |
 | Architecture guards | `scripts/check-architecture.ts` — service-role, direct-mutation, client/server import and RPC-definer checks; runs in CI |
+| Smoke test | `scripts/smoke-test.ts` — health, login and unauthenticated home redirect against a running app |
+| Operations | [`../operations/runbook.md`](../operations/runbook.md), [`../operations/slo.md`](../operations/slo.md) |
+| Delivery/observability pre-read | [`../methodology/checkpoint-E/README.md`](../methodology/checkpoint-E/README.md) |
 | Local database | `supabase/config.toml`; `bunx supabase start` / `bunx supabase db reset` |
 | Container | `Dockerfile`, `docker-compose.yml` |
 
@@ -98,4 +103,5 @@ Per-invariant statuses, targets and fault-injection evidence: [`02-invariants.md
 | Authorization verification | [`../methodology/verification/2026-11-95-authorization-rls.md`](../methodology/verification/2026-11-95-authorization-rls.md) |
 | Methodology checkpoints | [`../methodology/`](../methodology/) |
 | Checkpoint D pre-read | [`../methodology/checkpoint-D/README.md`](../methodology/checkpoint-D/README.md) |
+| Checkpoint E pre-read | [`../methodology/checkpoint-E/README.md`](../methodology/checkpoint-E/README.md) |
 | Agent instructions and governance | [`../../AGENTS.md`](../../AGENTS.md) |
