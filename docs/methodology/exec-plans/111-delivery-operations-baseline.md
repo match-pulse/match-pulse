@@ -243,9 +243,13 @@ and verified in CI run
 - build, typecheck, lint and architecture guards passed;
 - the invariant suite passed 28 tests with 0 failures;
 - the `Delivery smoke` job passed health, login UI and home HTML checks;
-- the 100-request burst observed p50 245.46 ms, p95 463.11 ms and max 479.64 ms.
+- the 100-request burst observed p50 245.46 ms, p95 463.11 ms and max 479.64 ms; the final run observed p95 571.68 ms.
 
 The backup/restore exercise is documented but was not run because Docker and
 the local Supabase stack are unavailable in the implementation environment.
 That limit is stated in the
 [verification record](../verification/2026-11-111-delivery-operations-baseline.md).
+
+A documentation-only CI attempt failed because `supabase/setup-cli@v1` could
+not resolve `latest` (GitHub rate limit). Both CI jobs now pin Supabase CLI
+`3.0.0`; the final run passed.

@@ -113,7 +113,8 @@ The delivery increment (#111 / PR #112) adds health, JSON logs, smoke, a
 `Delivery smoke` CI job, an operations runbook, proposed SLOs and a
 rollback/backup procedure. CI run
 [42435007354](https://github.com/match-pulse/match-pulse/actions/runs/42435007354)
-passes all three jobs; the 100-request burst observed p95 463.11 ms.
+passes all three jobs; the 100-request burst observed p95 463 ms and 572 ms in
+two runs.
 
 R-05 (load/p95) and the operational risk are partly mitigated. Hosted
 deployment, external monitoring, production recovery and a hard latency gate

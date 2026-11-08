@@ -136,7 +136,8 @@ risk record.
 The delivery baseline (#111 / PR #112) is verified in CI run
 [42435007354](https://github.com/match-pulse/match-pulse/actions/runs/42435007354):
 the `Delivery smoke` job passed health, login UI and home HTML; the invariant
-suite passed 28 tests; the 100-request burst observed p95 463.11 ms.
+suite passed 28 tests; the 100-request burst observed p95 463 ms and 572 ms in
+two runs.
 
 The ranking now reads:
 

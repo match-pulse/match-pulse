@@ -102,9 +102,9 @@ The delivery baseline (#111 / PR #112) is verified in CI run
 [42435007354](https://github.com/match-pulse/match-pulse/actions/runs/42435007354).
 
 - **RR-05:** partly mitigated. The 100-request capacity burst now records
-  p50/p95/max; the observed CI value is p50 245.46 ms, p95 463.11 ms and max
-  479.64 ms against the proposed 1,000 ms target. Sustained load, throughput and
-  a hard CI gate remain open.
+  p50/p95/max; the observed CI values are p95 463.11 ms and 571.68 ms against
+  the proposed 1,000 ms target. Sustained load, throughput and a hard CI gate
+  remain open.
 - **RR-06:** partly mitigated. `/api/health`, JSON stdout logs, `bun run smoke`,
   a `Delivery smoke` CI job, an operations runbook, proposed SLOs and a
   rollback/backup procedure exist. There is still no hosted deployment,

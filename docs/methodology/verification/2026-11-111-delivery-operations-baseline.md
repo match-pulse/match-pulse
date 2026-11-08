@@ -38,7 +38,7 @@
 | CI "Domain invariants" | Passed: 28 tests, 0 failures, 256 expectations, 7 files. |
 | CI "Delivery smoke" | Passed: health, login UI and home HTML. |
 
-CI run: [42435007354](https://github.com/match-pulse/match-pulse/actions/runs/42435007354)
+CI run: [42435627680](https://github.com/match-pulse/match-pulse/actions/runs/42435627680) (final, pinned Supabase CLI 3.0.0). The earlier green run [42435007354](https://github.com/match-pulse/match-pulse/actions/runs/42435007354) produced the first p95 observation.
 
 ### Delivery smoke output
 
@@ -52,18 +52,25 @@ Smoke test passed.
 
 ## 4. p95 measurement
 
-The 100-request concurrent registration burst recorded:
+The 100-request concurrent registration burst recorded two observations:
 
 ```json
 {"event":"capacity.burst_latency","requests":100,"wallClockMs":480.05,"p50Ms":245.46,"p95Ms":463.11,"maxMs":479.64}
+{"event":"capacity.burst_latency","requests":100,"wallClockMs":585.03,"p50Ms":335.89,"p95Ms":571.68,"maxMs":584.64}
 ```
 
-- **Observed p95:** 463.11 ms.
+- **Observed p95:** 463.11 ms and 571.68 ms across two CI runs.
 - **Proposed target:** under 1,000 ms.
 - **Scope:** one CI runner, one local PostgreSQL instance, 100 concurrent
   `register_for_tournament` calls against capacity 32.
-- **Claim:** this observation is below the proposed target in this environment.
-  It is **not** a production latency claim, and it is not asserted as a CI gate.
+- **Claim:** both observations are below the proposed target in this
+  environment. They are **not** production latency claims, and p95 is not
+  asserted as a CI gate. The spread between runs is itself evidence that a
+  hard threshold should wait for more observations.
+
+A documentation-only CI attempt failed because `supabase/setup-cli@v1` could
+not resolve `latest` (GitHub rate limit). Both jobs now pin Supabase CLI
+`3.0.0`; the final run passed.
 
 ## 5. Backup and restore
 
@@ -94,7 +101,8 @@ This means:
   rollback procedure exist. Production deployment, observability and recovery
   remain open.
 - **FND-004** — partly fixed: p95 and burst latency are now observed and
-  recorded. Sustained load, throughput and hard-latency assertions remain open.
+  recorded (463.11 ms and 571.68 ms in two CI runs). Sustained load, throughput
+  and hard-latency assertions remain open.
 - FND-002, FND-007 and FND-008 remain open.
 
 ## 8. Decision
