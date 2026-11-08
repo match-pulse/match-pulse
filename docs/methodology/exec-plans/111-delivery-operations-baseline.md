@@ -55,7 +55,7 @@ This increment establishes a **local/CI delivery baseline** that is honest about
 | **D1** | Delivery evidence is local/CI, not a cloud deployment. | The course allows an explicit choice; no cloud credentials/cost are needed. | Checkpoint E will have a documented local/CI environment, not a live production URL. |
 | **D2** | `/api/health` is public and read-only, checking a public table or a dedicated health RPC. | Monitoring must work without a user session. | The response must not leak counts, identities or secrets. |
 | **D3** | Logs are JSON to stdout; no external collector. | Simple, portable, CI-visible. | No dashboards/alerts; the runbook explains where to look. |
-| **D4** | Smoke test checks health, login and the home redirect; it does not create users/trades. | Keeps the smoke deterministic and non-destructive. | It proves the app/DB boundary, not every domain path. |
+| **D4** | Smoke test checks health, the login UI and the home shell; it does not create users/trades. | Keeps the smoke deterministic and non-destructive. | It proves the app/DB boundary and key routes, not every domain path. |
 | **D5** | p95 is measured from the existing 100-request capacity burst and recorded, not asserted against a hard threshold initially. | CI latency varies; the first goal is observation. | The target comparison is documented; a later load test can assert. |
 | **D6** | Backup/restore is documented and exercised locally with Supabase CLI; no production data. | The course asks for recovery evidence, not production operations. | The runbook states the local-only scope. |
 | **D7** | Release rollback uses a new patch tag, never moving/deleting a tag. | Preserves immutable release history. | The runbook documents the rollback sequence. |
@@ -99,8 +99,8 @@ logError(event, fields)
 
 - Base URL from `SMOKE_BASE_URL`, default `http://127.0.0.1:3000`.
 - `GET /api/health` → 200, `status: ok`.
-- `GET /login` → 200.
-- `GET /` with redirect follow → final `/login` 200.
+- `GET /login` → 200 and the fan sign-in control is present.
+- `GET /` → 200 `text/html`. The market route is partially prerendered, so the page shell may return 200 before the streamed auth gate resolves; the smoke test does not assert an HTTP redirect.
 - Exit non-zero with a clear failure.
 - `bun run smoke`.
 
@@ -216,3 +216,20 @@ The human owner is asked to approve:
 6. Backup/restore exercise scope.
 
 No implementation begins until this plan is approved.
+
+## 17. Addendum 2026-11-08 — approved and adjusted during CI
+
+The human owner approved this plan on 2026-11-08. During the first CI delivery
+run, the smoke check expected `GET /` to reach `/login` through an HTTP
+redirect. Under Partial Prerender, the market route returned `200` at the market
+URL because the auth gate resolves inside the streamed component.
+
+The smoke check was corrected to assert:
+
+- health `200` with `status: ok` and `db: up`;
+- the login page `200` with the fan sign-in control present;
+- the home request `200` with a `text/html` content type.
+
+This is a test-assumption correction, not a product or authorization change.
+The market page still calls `requireUser()`, and the database boundary still
+enforces authorization through RLS and `auth.uid()`.

@@ -34,7 +34,7 @@ hypothesis, not a finished answer.
 | :--- | :--- | :--- |
 | `GET /api/health` | App + database status, no sensitive data | Local/CI only; no continuous probe |
 | `src/lib/logger.ts` | JSON stdout logs for health and key action failures | No collector, dashboard or alerting |
-| `bun run smoke` | Health, login and home redirect against a running app | No auth/trade mutation; deterministic by design |
+| `bun run smoke` | Health, login UI and home shell against a running app | No auth/trade mutation; deterministic by design |
 | CI `Delivery smoke` job | Starts Supabase, builds, starts the app, waits for health, runs smoke | Runner environment, not production |
 | `docs/operations/runbook.md` | Environments, health, logs, release, rollback, backup/restore, incident steps | Local recovery exercise, no production drill |
 | `docs/operations/slo.md` | Proposed indicators and measurement method | Targets are proposed; availability is sampled only when run |

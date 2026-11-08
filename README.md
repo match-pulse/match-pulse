@@ -165,7 +165,7 @@ bun run lint          # ESLint
 bun run typecheck     # tsc --noEmit
 bun run build         # production build
 bun run check:architecture  # architecture guards
-bun run smoke         # health/login/redirect against a running app
+bun run smoke         # health/login/home against a running app
 ```
 
 The invariant suites need a running database — complete steps 3 and 4 first. Missing credentials fail immediately with a clear error rather than passing silently.

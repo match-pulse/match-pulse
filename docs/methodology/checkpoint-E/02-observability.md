@@ -6,7 +6,7 @@
 | :--- | :--- | :--- | :--- |
 | Health | `GET /api/health` returns `200`/`503`, app and db status | The process answers and can perform a public database read | Domain correctness, queue depth, write availability |
 | Logs | JSON lines from `src/lib/logger.ts` | A named event occurred with structured fields | Complete tracing or correlation across services |
-| Smoke | `bun run smoke` checks health, login and home redirect | The app starts, serves HTML and reaches the database | Authenticated trading or every route |
+| Smoke | `bun run smoke` checks health, the login UI and the home shell | The app starts, serves HTML and reaches the database | Authenticated trading or every route |
 | CI delivery job | Builds, starts and smokes the app | The delivery path works from a clean checkout | Production environment behavior |
 
 ## 2. Log events
