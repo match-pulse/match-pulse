@@ -55,22 +55,17 @@ jobs:
       - name: Install dependencies
         run: bun install --frozen-lockfile
 
-      - name: Setup Supabase CLI
-        uses: supabase/setup-cli@v1
-        with:
-          version: "3.0.0"
-
       - name: Start local Supabase
-        run: supabase start
+        run: bunx supabase start
 
       - name: Apply migrations and seed data
-        run: supabase db reset
+        run: bunx supabase db reset
 
       # Credentials are read from the running stack rather than stored as
       # repository secrets, so nothing sensitive is ever committed.
       - name: Write local credentials
         run: |
-          eval "$(supabase status -o env)"
+          eval "$(bunx supabase status -o env)"
           {
             echo "NEXT_PUBLIC_SUPABASE_URL=$API_URL"
             echo "NEXT_PUBLIC_SUPABASE_ANON_KEY=$ANON_KEY"
@@ -97,20 +92,15 @@ jobs:
       - name: Install dependencies
         run: bun install --frozen-lockfile
 
-      - name: Setup Supabase CLI
-        uses: supabase/setup-cli@v1
-        with:
-          version: "3.0.0"
-
       - name: Start local Supabase
-        run: supabase start
+        run: bunx supabase start
 
       - name: Apply migrations and seed data
-        run: supabase db reset
+        run: bunx supabase db reset
 
       - name: Write local credentials
         run: |
-          eval "$(supabase status -o env)"
+          eval "$(bunx supabase status -o env)"
           {
             echo "NEXT_PUBLIC_SUPABASE_URL=$API_URL"
             echo "NEXT_PUBLIC_SUPABASE_ANON_KEY=$ANON_KEY"
@@ -176,7 +166,7 @@ jobs:
           # Rebuild the schema from migrations, clear the seed rows, and restore
           # the data backup. Schema recovery comes from migrations; data recovery
           # comes from the dump.
-          supabase db reset
+          bunx supabase db reset
           TRUNCATE_SQL=$(query "SELECT 'TRUNCATE TABLE ' || string_agg(format('%I.%I', schemaname, tablename), ', ') || ' RESTART IDENTITY CASCADE;' FROM pg_tables WHERE schemaname = 'public';")
           docker exec "$DB_CONTAINER" psql -U postgres -d postgres -v ON_ERROR_STOP=1 -c "$TRUNCATE_SQL"
           docker cp /tmp/matchpulse-data.sql "$DB_CONTAINER:/tmp/matchpulse-data.sql"
