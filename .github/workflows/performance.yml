@@ -1,0 +1,47 @@
+name: Performance baseline
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 3 * * 1'
+
+jobs:
+  performance:
+    name: Registration load baseline
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: "1.4.2"
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Clean up leftover Supabase containers
+        run: |
+          bunx supabase stop --no-backup || true
+          docker ps -aq --filter "name=supabase_" | xargs -r docker rm -f
+
+      - name: Start local Supabase
+        run: bunx supabase start
+
+      - name: Apply migrations and seed data
+        run: bunx supabase db reset
+
+      - name: Write local credentials
+        run: |
+          eval "$(bunx supabase status -o env)"
+          {
+            echo "NEXT_PUBLIC_SUPABASE_URL=$API_URL"
+            echo "NEXT_PUBLIC_SUPABASE_ANON_KEY=$ANON_KEY"
+            echo "SUPABASE_SERVICE_ROLE_KEY=$SERVICE_ROLE_KEY"
+          } > .env.local
+
+      - name: Run performance baseline
+        run: bun run perf

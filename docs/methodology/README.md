@@ -31,6 +31,7 @@ ADRs remain in [`docs/architecture/adr/`](../architecture/adr/) and follow the e
 - [`reports/`](reports/) — dated project reports; [`2026-11-08.md`](reports/2026-11-08.md) is the current methodology synthesis.
 - [`../../openspec/`](../../openspec/README.md) — OpenSpec project and active change proposals; the first trial is `add-market-fault-injections`.
 - [`development-practices.md`](development-practices.md) — invariant-first testing, TDD fit, SDD mode, and the OpenSpec decision.
+- [`test-strategy.md`](test-strategy.md) — MVP test layers, gates, coverage rule and limits.
 - [`exec-plans/`](exec-plans/) — approved execution plans.
 - [`ai-transparency-log.md`](ai-transparency-log.md) — dated AI contributions and verification.
 

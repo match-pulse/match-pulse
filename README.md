@@ -6,7 +6,7 @@ MatchPulse is a football tournament web application that engages fans through ma
 
 ## Current status
 
-This is an early-stage project. **Tournament registration, a live prediction market, authentication, database-enforced authorization and retry-safe trading are implemented.** The market engine is tested and was observed failing under fault injection; the UI is authenticated. Rewards redemption and club analytics are not implemented.
+This is the first MVP. **Fan, organizer and club roles, tournament registration, the live prediction market, tickets, rewards, club analytics, authentication, database-enforced authorization and retry-safe trading are implemented.** The market engine, role boundaries and recovery path are tested; E2E and critical accessibility checks run in CI.
 
 What exists today:
 
@@ -14,9 +14,9 @@ What exists today:
 | :--- | :--- |
 | Tournament registration with capacity enforcement | **Implemented and verified** |
 | Live prediction market (LMSR entry, exit, resolution) | **Implemented** — engine verified; authenticated UI; request-key idempotency |
-| Points and rewards | Points balance and payouts only; ticket-discount redemption not implemented |
-| Authentication, roles, RLS and grants | **Implemented and verified** — fan/organizer sessions, own-row reads, organizer-only resolution |
-| Club analytics | Not implemented — the trade log is recorded, not aggregated or exported |
+| Points and rewards | **Implemented** — simulated ticket claim, points, local discount codes |
+| Authentication, roles, RLS and grants | **Implemented and verified** — fan/organizer/club sessions, own-row reads, organizer-only resolution, club aggregate-only access |
+| Club analytics | **Implemented** — aggregate-only dashboard with cohort suppression and CSV export |
 
 The database is the authorization boundary: Supabase Auth supplies identity, RLS restricts private rows to the owner, direct table writes are revoked, and the mutation RPCs check `auth.uid()` and the organizer role. The remaining gaps are listed below.
 
@@ -61,6 +61,10 @@ Read the architecture documents in this order:
 - [Checkpoint D — Architecture and Changeability (Pre-read)](docs/methodology/checkpoint-D/README.md)
 - [Checkpoint E — Delivery, Observability and Recovery (Pre-read)](docs/methodology/checkpoint-E/README.md)
 - [Methodology Report — 2026-11-08](docs/methodology/reports/2026-11-08.md) — dated synthesis of the claim, lifecycle, checkpoints, evidence and residual risk
+- [MVP Scope](docs/product/mvp-scope.md)
+- [Test Strategy](docs/methodology/test-strategy.md)
+- [Threat Model](docs/security/threat-model.md)
+- [Failure Modes and Recovery](docs/operations/failure-modes.md)
 - [Operations Runbook](docs/operations/runbook.md)
 - [Service-Level Objectives](docs/operations/slo.md)
 - [Development Practices — Testing, Specification and OpenSpec](docs/methodology/development-practices.md)
@@ -200,11 +204,12 @@ verified in CI run
 
 ### Continuous Integration
 
-[`.github/workflows/ci.yml`](.github/workflows/ci.yml) runs four jobs on every pull request:
+[`.github/workflows/ci.yml`](.github/workflows/ci.yml) runs five jobs on every pull request:
 
 - **Lint, typecheck and build** — ESLint, production build, `tsc --noEmit`, architecture guards
 - **Domain invariants** — starts a local Supabase, replays migrations, runs `bun run test`
 - **Delivery and recovery** — starts Supabase, builds, starts the app, waits for `/api/health`, runs `bun run smoke`, then dumps and restores the public schema into a scratch database and verifies tables, RLS policies and a marker row
+- **E2E and accessibility** — runs the fan, organizer and club Playwright journeys and axe checks against a production build
 - **Fault injection** — starts Supabase and runs `bun run fault:inject`, which applies each mutation, runs the targeted test, expects the declared result and resets the database
 
 The CI job reads its credentials from the running stack at job time via
@@ -240,7 +245,6 @@ satisfy `${...}` interpolation.
 
 Recorded so they are not mistaken for delivered work. Full detail in the [invariants registry](docs/methodology/checkpoint-A/02-invariants.md).
 
-- **No organizer management UI.** Market resolution is an authorized RPC and is exercised by tests; there is no browser management screen.
 - **No hosted deployment.** Delivery is local/CI only: health, structured logs, smoke test and a `Delivery and recovery` CI job exist, but there is no cloud environment, TLS, DNS or production availability claim.
 - **No external observability or alerting.** Logs are JSON to stdout; there is no collector, dashboard, trace or alert.
 - **No production recovery drill.** CI restores a public-schema backup into a scratch database and verifies table/policy/row counts; there is still no production backup, retention, RTO/RPO or disaster-recovery evidence.
@@ -248,7 +252,9 @@ Recorded so they are not mistaken for delivered work. Full detail in the [invari
 - **M-INV2 is verified by forced-failure rollback, not observed-red.** M-INV1, M-INV3, M-INV5, M-INV8 and all M-INV7 details were observed failing under fault injection; M-INV2's trade-insert failure test proves rollback but cannot break PostgreSQL function atomicity without a second connection.
 - **No request-key retention/cleanup policy.** Idempotency request rows grow with accepted/rejected requests; a retention policy is deferred.
 - **p95 latency is observed, not asserted.** The capacity burst records p50/p95/max, but the target is not a CI gate yet, and the value is environment-specific.
-- **No ticket-discount redemption and no club analytics aggregation.** The trade log exists; nothing consumes it yet.
+- **E2E and accessibility are initial, not exhaustive.** The Playwright suite covers the three happy-path role journeys; edge cases remain in integration tests. The accessibility gate blocks critical violations only, not every serious violation.
+- **Performance is a scheduled baseline, not a release gate.** The 20/50/100 burst script records p50/p95/p99, but production load and multi-instance behaviour are not measured.
+- **No real-user validation or independent review.** FND-007 and FND-008 remain human gates.
 
 ## Project Roles
 
