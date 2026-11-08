@@ -570,7 +570,7 @@ Secret hygiene re-verified: `release.env` in history contains only `APP_VERSION`
 - The elasticity target must not carry capacity-integrity assertions; those belong to Reliability.
 **Limitations:** No PDF export; no real organizer evidence (FND-007); no independent review (FND-008); Checkpoints D/E remain pre-reads until L13–L20 arrive; the remaining market fault injections (FND-002) are still open.
 
-**Links:** issue #121 · [architecture report](../architecture/reports/2026-11-08.md) · [methodology report](reports/2026-11-08.md) · [kata](../architecture/kata.md) · [characteristics](../architecture/03-architecture-characteristics.md)
+**Links:** issue #121 · PR #122 · [architecture report](../architecture/reports/2026-11-08.md) · [methodology report](reports/2026-11-08.md) · [kata](../architecture/kata.md) · [characteristics](../architecture/03-architecture-characteristics.md)
 
 ---
 
