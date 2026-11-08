@@ -50,6 +50,7 @@ Read the architecture documents in this order:
 5. [Architecture Characteristics](docs/architecture/03-architecture-characteristics.md) — priorities and measurements
 6. [Code Map](docs/architecture/04-code-map.md) — documents and rules mapped to files and tests
 7. [Architecture Decision Records](docs/architecture/adr/) — the decisions behind the structure, including [ADR-003: authorization and RLS](docs/architecture/adr/003-authorization-rls.md)
+8. [Architecture Report — 2026-11-08](docs/architecture/reports/2026-11-08.md) — dated synthesis of the kata, characteristics, style, decisions and evidence
 
 ### Development Methodology
 
@@ -59,6 +60,7 @@ Read the architecture documents in this order:
 - [Checkpoint C — Quality and Residual Risk](docs/methodology/checkpoint-C/README.md)
 - [Checkpoint D — Architecture and Changeability (Pre-read)](docs/methodology/checkpoint-D/README.md)
 - [Checkpoint E — Delivery, Observability and Recovery (Pre-read)](docs/methodology/checkpoint-E/README.md)
+- [Methodology Report — 2026-11-08](docs/methodology/reports/2026-11-08.md) — dated synthesis of the claim, lifecycle, checkpoints, evidence and residual risk
 - [Operations Runbook](docs/operations/runbook.md)
 - [Service-Level Objectives](docs/operations/slo.md)
 - [Development Practices — Testing, Specification and OpenSpec](docs/methodology/development-practices.md)

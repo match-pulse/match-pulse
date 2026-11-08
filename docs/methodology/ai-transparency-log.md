@@ -550,6 +550,30 @@ Secret hygiene re-verified: `release.env` in history contains only `APP_VERSION`
 
 ---
 
+## Entry 32 — Course alignment and dated reports
+
+**Date:** 2026-11-08
+**Tool:** opencode CLI (`deepseek-v4.1-flash`)
+**Intent:** Align the kata and architecture characteristics with the Software Architectures task 1/2 requirements, and add dated reports under `docs/architecture/reports/` and `docs/methodology/reports/` without calling them final.
+**Boundary:** Documentation only. AI edited the kata, characteristics, report files, indexes and this log. No application code, schema, test or CI change. The human owner approved the course-alignment implementation.
+**Prior records reviewed:** SA Lecture 1/2/3 slides and summaries, SA Lecture 4/5 summaries, DM L01/L12 summaries, cross-course Project Handbook, current kata and characteristics, Checkpoints A–E, findings register, AI log Entries 30–31.
+**Work performed:**
+- Added K1–K15 to the kata, a users/scale table, and an implementation-scope note.
+- Rebuilt the characteristics document around the course's vocabulary: Reliability for concurrency integrity, Elasticity/Reliability split, Security as an implicit cross-cutting characteristic, SMART owner/time/review, traceability and a deployability proxy.
+- Added `docs/architecture/reports/2026-11-08.md` and `docs/methodology/reports/2026-11-08.md`.
+- Linked the reports from the README, methodology index and code map.
+**Verification:** Local `bun run check:architecture`, `bun run typecheck` and `bun run lint` passed. The Markdown link check over 81 files and `git diff --check` passed. The PR CI runs the full build, invariant and delivery jobs; the report files are documentation-only. No PDF export was produced because no local PDF toolchain is installed; the reports are Markdown, which the final architecture deliverable permits. Task 1/2 submission PDFs still require an export step.
+**Learning:**
+- The course's consolidated 12-item characteristic table does not contain Reliability or Security even though the course discusses both; the document now explains the naming instead of silently substituting.
+- Task 1/2 submissions require PDF, while the final architecture description may be PDF **or Markdown**. The earlier assessment overgeneralised the PDF requirement.
+- The "modular monolith" label needs a precise boundary statement: the domain modules live in PostgreSQL/RPCs, while the Next.js layer is a layered delivery shell.
+- The elasticity target must not carry capacity-integrity assertions; those belong to Reliability.
+**Limitations:** No PDF export; no real organizer evidence (FND-007); no independent review (FND-008); Checkpoints D/E remain pre-reads until L13–L20 arrive; the remaining market fault injections (FND-002) are still open.
+
+**Links:** issue #121 · [architecture report](../architecture/reports/2026-11-08.md) · [methodology report](reports/2026-11-08.md) · [kata](../architecture/kata.md) · [characteristics](../architecture/03-architecture-characteristics.md)
+
+---
+
 ## Standing rule
 
 AI may investigate, analyse, draft, implement within an approved scope, and run verification. The human retains every decision that affects business rules, architecture, schema, scope, priority, risk acceptance and merging. Contributions that cannot be verified are recorded as unverified rather than asserted.

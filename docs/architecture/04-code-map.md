@@ -97,6 +97,7 @@ Per-invariant statuses, targets and fault-injection evidence: [`02-invariants.md
 | System overview (purpose, users, data flows) | [`01-system-overview.md`](./01-system-overview.md) |
 | Domain model (entities, relationships, journeys) | [`02-domain-model.md`](./02-domain-model.md) |
 | Characteristics and measures | [`03-architecture-characteristics.md`](./03-architecture-characteristics.md) |
+| Dated architecture report | [`reports/2026-11-08.md`](./reports/2026-11-08.md) |
 | C4 views (context, containers, components) | [`05-c4-diagrams.md`](./05-c4-diagrams.md) |
 | Decisions | [`adr/`](./adr/) — ADR-003 is the authorization model |
 | Invariants registry and evidence | [`../methodology/checkpoint-A/02-invariants.md`](../methodology/checkpoint-A/02-invariants.md) |
