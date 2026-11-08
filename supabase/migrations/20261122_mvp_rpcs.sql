@@ -338,6 +338,15 @@ BEGIN
         RAISE EXCEPTION 'tournament not found';
     END IF;
 
+    IF EXISTS (
+        SELECT 1
+          FROM public.tickets
+         WHERE tournament_id = p_tournament_id
+           AND user_id = v_user_id
+    ) THEN
+        RAISE EXCEPTION 'ticket already claimed';
+    END IF;
+
     SELECT count(*) INTO v_sold FROM public.tickets WHERE tournament_id = p_tournament_id;
     IF v_sold >= v_allocation THEN
         RAISE EXCEPTION 'tickets sold out';
