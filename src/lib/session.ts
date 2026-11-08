@@ -31,3 +31,45 @@ export async function requireUser() {
 
   return user
 }
+
+export type Profile = {
+  id: string
+  username: string
+  points: number
+  role: 'FAN' | 'ORGANIZER' | 'CLUB'
+}
+
+export async function getProfile(): Promise<Profile | null> {
+  const user = await getCurrentUser()
+
+  if (!user) {
+    return null
+  }
+
+  const supabase = await createSupabaseServerClient()
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('id, username, points, role')
+    .eq('id', user.id)
+    .maybeSingle()
+
+  if (error || !data) {
+    return null
+  }
+
+  return data as Profile
+}
+
+export async function requireRole(role: Profile['role']): Promise<Profile> {
+  const profile = await getProfile()
+
+  if (!profile) {
+    redirect('/login')
+  }
+
+  if (profile.role !== role) {
+    redirect('/')
+  }
+
+  return profile
+}
