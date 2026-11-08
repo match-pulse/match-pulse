@@ -17,6 +17,54 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versioning: [S
 
 No unreleased changes yet.
 
+## [2.0.0] - 2026-11-08
+
+First MVP: three roles, complete role frontends, E2E/accessibility, security and performance baselines.
+
+### Added
+
+- `CLUB` role and organizer ownership across tournaments and matches.
+- Fan, organizer and club role frontends: dashboards, tournaments, ticket claim, registration, portfolio, rewards, profile, tournament/match management, score updates, market resolution, club aggregate analytics and CSV export.
+- Simulated ticket claim with allocation and one ticket per user.
+- Reward catalog and local discount-code redemption.
+- Audit events for organizer and club actions.
+- Ownership-aware `resolve_market`.
+- Playwright E2E journeys for fan, organizer and club.
+- axe critical-accessibility checks on login, fan, organizer and club pages.
+- Tracked-file secret scan and `bun audit` in CI.
+- Performance baseline script and scheduled/manual workflow for 20/50/100 concurrent registration bursts.
+- MVP scope, test strategy, threat model, failure modes and ADRs 004–006.
+
+### Changed
+
+- Home redirects by role; login supports fan, organizer and club.
+- Club analytics is aggregate-only with a minimum cohort of 5.
+- The architecture guard covers the new mutation RPCs.
+- CI now runs five jobs: build/security, invariants, delivery/recovery, fault injection, E2E/accessibility.
+
+### Migration / upgrade notes
+
+- Apply `20261120_mvp_schema.sql`, `20261121_mvp_rls.sql` and `20261122_mvp_rpcs.sql`.
+- Local organizer and club accounts: `bun run auth:organizer`, `bun run auth:club`.
+- No real payment or coupon provider is involved.
+
+### Known gaps
+
+- FND-007 real-user evidence and FND-008 independent review remain open; the MVP is a course prototype, not validated with real organizers.
+- No hosted production deployment, external monitoring/alerting, production recovery or RTO/RPO.
+- Club privacy is aggregate-only but has not had an independent privacy review.
+- M-INV2 remains verified by forced-failure rollback, not observed-red.
+- Accessibility gates critical violations only; serious violations are reported and reviewed.
+- Performance is a scheduled baseline, not a production load claim.
+- No request-key retention/cleanup policy.
+
+### Evidence
+
+- Main CI [42488335436](https://github.com/match-pulse/match-pulse/actions/runs/42488335436): all five jobs passed.
+- E2E/accessibility CI run [42487526415](https://github.com/match-pulse/match-pulse/actions/runs/42487526415): 7 Playwright tests passed.
+- Backend verification: `docs/methodology/verification/2026-11-128-mvp-backend.md`.
+- Security/performance baseline: performance workflow and secret/audit CI steps.
+
 ## [1.3.1] - 2026-11-08
 
 Recovery drill and CI reliability.
@@ -305,7 +353,8 @@ This table is the pre-policy execution record. It is kept for traceability and i
 - The first entry after this changelog is established is recorded contemporaneously and links its issue, PR, verification, and AI transparency entry.
 
 
-[Unreleased]: https://github.com/match-pulse/match-pulse/compare/v1.3.1...HEAD
+[Unreleased]: https://github.com/match-pulse/match-pulse/compare/v2.0.0...HEAD
+[2.0.0]: https://github.com/match-pulse/match-pulse/compare/v1.3.1...v2.0.0
 [1.3.1]: https://github.com/match-pulse/match-pulse/compare/v1.3.0...v1.3.1
 [1.3.0]: https://github.com/match-pulse/match-pulse/compare/v1.2.0...v1.3.0
 [1.2.0]: https://github.com/match-pulse/match-pulse/compare/v1.1.0...v1.2.0

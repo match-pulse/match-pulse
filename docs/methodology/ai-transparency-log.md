@@ -673,6 +673,21 @@ Secret hygiene re-verified: `release.env` in history contains only `APP_VERSION`
 
 ---
 
+## Entry 37 — Release v2.0.0 First MVP
+
+**Date:** 2026-11-08
+**Tool:** opencode CLI (`deepseek-v4.1-flash`)
+**Intent:** Cut the first MVP release: curate the v2.0.0 changelog, align `package.json`, add the MVP report addenda, prepare the release PR, then tag and publish after CI.
+**Boundary:** Release preparation and documentation. AI edited `CHANGELOG.md`, `package.json`, the dated reports and this log. No application behavior, schema or test change in the release PR.
+**Prior records reviewed:** Epic #127, backend #128, frontends #137, E2E #138, security/performance/docs #139, MVP scope/test strategy/threat model, AI log Entry 36.
+**Verification:** Main CI [42488335436](https://github.com/match-pulse/match-pulse/actions/runs/42488335436) passed all five jobs. E2E/accessibility passed 7 Playwright tests. The release PR CI is the final merge gate. The performance baseline is scheduled/manual; its first run is recorded separately when complete.
+**Learning:** The MVP tag is a product milestone, not a claim of production readiness. The release notes must keep FND-007/FND-008, deployment, privacy review and the M-INV2 limit visible.
+**Limitations:** The tag and GitHub Release are created after this entry. No real-user validation, independent review, production deployment or production recovery. The accessibility gate blocks critical violations only.
+
+**Links:** issue #135 · [`CHANGELOG.md`](../../CHANGELOG.md) · [architecture report](../architecture/reports/2026-11-08.md) · [methodology report](reports/2026-11-08.md) · [release workflow](../workflows/release-workflow.md)
+
+---
+
 ## Standing rule
 
 AI may investigate, analyse, draft, implement within an approved scope, and run verification. The human retains every decision that affects business rules, architecture, schema, scope, priority, risk acceptance and merging. Contributions that cannot be verified are recorded as unverified rather than asserted.
