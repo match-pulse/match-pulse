@@ -76,8 +76,8 @@ export default async function FanTournamentDetail({ params }: { params: Promise<
       <section className="mt-8">
         <h2 className="mb-3 text-xl font-bold">Matches</h2>
         <div className="grid gap-3">
-          {(matches as Array<{ id: string; home_team: string; away_team: string; status: string; kickoff_time: string; home_score: number; away_score: number; markets: Array<{ id: string }> | null }> | null)?.map((match) => {
-            const market = match.markets?.[0]
+          {(matches as Array<{ id: string; home_team: string; away_team: string; status: string; kickoff_time: string; home_score: number; away_score: number; markets: { id: string } | Array<{ id: string }> | null }> | null)?.map((match) => {
+            const market = Array.isArray(match.markets) ? match.markets[0] : match.markets
             return (
               <article key={match.id} className="rounded border border-slate-800 bg-slate-900 p-4">
                 <div className="flex flex-wrap items-center justify-between gap-2">

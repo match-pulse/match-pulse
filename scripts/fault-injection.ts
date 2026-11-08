@@ -87,7 +87,8 @@ function runFullSuite(): number | null {
   const result = run(process.execPath, [
     'test',
     '--env-file=.env.local',
-    '--path-ignore-patterns=tests/fault-injection/**'
+    '--path-ignore-patterns=tests/fault-injection/**',
+    '--path-ignore-patterns=tests/e2e/**'
   ])
   return result.status
 }

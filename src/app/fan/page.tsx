@@ -15,6 +15,7 @@ type Tournament = {
   ticket_points: number
 }
 
+type Market = { id: string; status: string }
 type Match = {
   id: string
   home_team: string
@@ -23,7 +24,12 @@ type Match = {
   kickoff_time: string
   home_score: number
   away_score: number
-  markets: Array<{ id: string; status: string }> | null
+  markets: Market | Market[] | null
+}
+
+function firstMarket(markets: Match['markets']): Market | null {
+  if (!markets) return null
+  return Array.isArray(markets) ? (markets[0] ?? null) : markets
 }
 
 export default async function FanHome() {
@@ -69,7 +75,7 @@ export default async function FanHome() {
         <h2 id="matches-heading" className="mb-3 text-xl font-bold">Matches</h2>
         <div className="grid gap-3 md:grid-cols-2">
           {(matches as Match[] | null)?.map((match) => {
-            const market = match.markets?.[0]
+            const market = firstMarket(match.markets)
             return (
               <article key={match.id} className="rounded border border-slate-800 bg-slate-900 p-4">
                 <div className="flex items-center justify-between gap-2">

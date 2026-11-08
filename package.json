@@ -8,7 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
-    "test": "bun test --env-file=.env.local --path-ignore-patterns='tests/fault-injection/**'",
+    "test": "bun test --env-file=.env.local --path-ignore-patterns='tests/fault-injection/**' --path-ignore-patterns='tests/e2e/**'",
     "auth:organizer": "bun --env-file=.env.local scripts/create-organizer.ts",
     "check:architecture": "bun scripts/check-architecture.ts",
     "smoke": "bun scripts/smoke-test.ts",

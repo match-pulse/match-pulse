@@ -22,7 +22,7 @@ test('fan can claim a ticket, register, view the portfolio and redeem a reward',
   await expect(page.getByRole('heading', { name: 'Portfolio' })).toBeVisible()
 
   await page.goto('/fan/rewards')
-  await expect(page.getByRole('heading', { name: 'Rewards' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Rewards', exact: true })).toBeVisible()
   await page.getByRole('button', { name: /Redeem for 100 pts/ }).first().click()
   await expect(page.getByText(/Reward redeemed\. Code:/)).toBeVisible()
 })
