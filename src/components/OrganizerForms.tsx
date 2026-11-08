@@ -19,7 +19,7 @@ function Result({ message, error }: { message: string | null; error: boolean }) 
 }
 
 const input =
-  'rounded border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white placeholder:text-slate-500'
+  'rounded border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white placeholder:text-slate-400'
 const button =
   'rounded bg-blue-600 px-3 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:bg-slate-600'
 

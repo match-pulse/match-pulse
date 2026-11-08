@@ -28,13 +28,12 @@ export default function LoginForms() {
 
   return (
     <div className="w-full max-w-md">
-      <div role="tablist" aria-label="Sign-in role" className="mb-5 grid grid-cols-3 gap-2 rounded bg-slate-800 p-1 text-sm">
+      <div role="group" aria-label="Sign-in role" className="mb-5 grid grid-cols-3 gap-2 rounded bg-slate-800 p-1 text-sm">
         {(['FAN', 'ORGANIZER', 'CLUB'] as const).map((option) => (
           <button
             key={option}
             type="button"
-            role="tab"
-            aria-selected={mode === option}
+            aria-pressed={mode === option}
             onClick={() => {
               setMode(option)
               setMessage(null)
