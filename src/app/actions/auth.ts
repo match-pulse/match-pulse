@@ -37,6 +37,24 @@ export async function signInOrganizer(formData: FormData): Promise<AuthFailure> 
   redirect('/')
 }
 
+export async function signInClub(formData: FormData): Promise<AuthFailure> {
+  const email = formData.get('email')
+  const password = formData.get('password')
+
+  if (typeof email !== 'string' || typeof password !== 'string' || !email || !password) {
+    return { success: false, message: 'Enter the club email and password.' }
+  }
+
+  const supabase = await createSupabaseServerClient()
+  const { error } = await supabase.auth.signInWithPassword({ email, password })
+
+  if (error) {
+    return { success: false, message: 'Invalid club credentials.' }
+  }
+
+  redirect('/')
+}
+
 export async function signOut(): Promise<never> {
   const supabase = await createSupabaseServerClient()
   await supabase.auth.signOut()
