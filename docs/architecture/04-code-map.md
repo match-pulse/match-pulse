@@ -59,6 +59,9 @@ Migrations in `supabase/migrations/`, replayed in filename order:
 | `20261110_rpc_auth.sql` | — | `register_for_tournament`, `open_trade`, `close_trade`, `resolve_market` with auth checks |
 | `20261111_trade_requests.sql` | `trade_requests` | — |
 | `20261112_idempotent_rpcs.sql` | — | `open_trade`/`close_trade` with request-key replay; drops the 3-arg versions |
+| `20261120_mvp_schema.sql` | `tickets`, `rewards`, `reward_redemptions`, `audit_events`; adds `CLUB`, organizer ownership, match linkage/scores, ticket allocation | — |
+| `20261121_mvp_rls.sql` | — (RLS and grants for the MVP tables) | — |
+| `20261122_mvp_rpcs.sql` | — | organizer tournament/match CRUD, ticket claim, reward redemption, club analytics, export audit, ownership-aware `resolve_market` |
 
 `supabase/seed.sql` seeds one LIVE match, its `b = 100` market and one capacity-limited tournament. It does **not** seed a profile: profiles are created by the auth trigger when a user signs in.
 
@@ -73,6 +76,7 @@ The state-changing functions (`register_for_tournament`, `open_trade`, `close_tr
 | M-INV1 – M-INV8 market invariants | `20261021_market_core.sql`, `20261022_market_resolution.sql`, `20261110_rpc_auth.sql` | `tests/invariants/market-pricing.test.ts`, `market-lifecycle.test.ts`, `market-concurrency.test.ts` |
 | INV-05 / A-INV1 – A-INV5 authorization | `20261108_auth_profiles.sql`, `20261109_rls_grants.sql`, `20261110_rpc_auth.sql` | `tests/invariants/authorization.test.ts` |
 | M-INV9 request-key idempotency | `20261111_trade_requests.sql`, `20261112_idempotent_rpcs.sql` | `tests/invariants/idempotency.test.ts` |
+| Three-role MVP backend | `20261120_mvp_schema.sql`, `20261121_mvp_rls.sql`, `20261122_mvp_rpcs.sql` | `tests/integration/mvp-backend.test.ts` |
 
 Per-invariant statuses, targets and fault-injection evidence: [`02-invariants.md`](../methodology/checkpoint-A/02-invariants.md).
 
