@@ -18,7 +18,8 @@
     "test:e2e:install": "playwright install chromium",
     "check:secrets": "bun scripts/check-secrets.ts",
     "perf": "bun --env-file=.env.local scripts/performance.ts",
-    "maintenance:cleanup": "bun --env-file=.env.local scripts/cleanup-trade-requests.ts"
+    "maintenance:cleanup": "bun --env-file=.env.local scripts/cleanup-trade-requests.ts",
+    "docs:pdf": "bun scripts/export-pdf.ts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.7",
@@ -37,6 +38,7 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.4.2",
+    "marked": "^18.1.3",
     "supabase": "^2.121.0",
     "tailwindcss": "^4",
     "typescript": "^5"

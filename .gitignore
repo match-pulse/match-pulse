@@ -45,3 +45,6 @@ node_modules
 /playwright-report
 /test-results
 /blob-report
+
+# generated submission PDFs
+/docs/submissions/*.pdf
