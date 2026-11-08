@@ -106,3 +106,15 @@ debit and the request-key replay. Remaining limits: the legacy null-key path is
 non-idempotent, no request-key retention/cleanup policy exists, and fault
 injection for the unique constraint was not observed locally. R-02, R-05 and the
 operational risks remain open; no risk is accepted by this addendum.
+
+## 9. Addendum 2026-11-08 — delivery baseline added
+
+The delivery increment (#111 / PR #112) adds health, JSON logs, smoke, a
+`Delivery smoke` CI job, an operations runbook, proposed SLOs and a
+rollback/backup procedure. CI run
+[42435007354](https://github.com/match-pulse/match-pulse/actions/runs/42435007354)
+passes all three jobs; the 100-request burst observed p95 463.11 ms.
+
+R-05 (load/p95) and the operational risk are partly mitigated. Hosted
+deployment, external monitoring, production recovery and a hard latency gate
+remain open; no risk is accepted by this addendum.

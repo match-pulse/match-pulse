@@ -1,6 +1,6 @@
 # Execution Plan — Delivery, Observability and Recovery Baseline
 
-- **Status:** Approved and implemented; CI verification pending. The human owner approved the plan on 2026-11-08.
+- **Status:** Implemented and verified in CI (2026-11-08). See [verification record](../verification/2026-11-111-delivery-operations-baseline.md). The backup/restore exercise remains documented but unexercised.
 - **Issue:** #111
 - **Branch:** `feat/111-delivery-operations-baseline`
 - **Decision owner:** Human developer
@@ -233,3 +233,19 @@ The smoke check was corrected to assert:
 This is a test-assumption correction, not a product or authorization change.
 The market page still calls `requireUser()`, and the database boundary still
 enforces authorization through RLS and `auth.uid()`.
+
+## 18. Delivery note 2026-11-08
+
+The plan was implemented on `feat/111-delivery-operations-baseline` (PR #112)
+and verified in CI run
+[42435007354](https://github.com/match-pulse/match-pulse/actions/runs/42435007354):
+
+- build, typecheck, lint and architecture guards passed;
+- the invariant suite passed 28 tests with 0 failures;
+- the `Delivery smoke` job passed health, login UI and home HTML checks;
+- the 100-request burst observed p50 245.46 ms, p95 463.11 ms and max 479.64 ms.
+
+The backup/restore exercise is documented but was not run because Docker and
+the local Supabase stack are unavailable in the implementation environment.
+That limit is stated in the
+[verification record](../verification/2026-11-111-delivery-operations-baseline.md).

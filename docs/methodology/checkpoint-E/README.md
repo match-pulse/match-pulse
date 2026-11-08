@@ -4,6 +4,11 @@
 - **Status:** **Pre-read only.** The L17–L20 lecture materials are not yet in
   the course folder. This folder prepares the delivery/operations baseline; it
   is not the final Checkpoint E deliverable.
+- **Update 2026-11-08:** the local/CI delivery baseline is implemented and
+  verified (CI run [42435007354](https://github.com/match-pulse/match-pulse/actions/runs/42435007354)):
+  health, login and home smoke checks pass; 28 invariant tests pass; observed
+  p95 is 463.11 ms. Backup/restore is documented but unexercised. L17–L20
+  requirements are still pending.
 - **Purpose:** Make delivery, health, logging, release, rollback, backup and
   recovery explicit and testable against the actual L17–L20 requirements when
   they arrive.

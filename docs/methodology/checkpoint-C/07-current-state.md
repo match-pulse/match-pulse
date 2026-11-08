@@ -130,3 +130,24 @@ The current ranking above changes:
 
 This addendum updates the presentation state; it does not rewrite the original
 risk record.
+
+## 10. Addendum 2026-11-08 — FND-006 and FND-004 partly fixed
+
+The delivery baseline (#111 / PR #112) is verified in CI run
+[42435007354](https://github.com/match-pulse/match-pulse/actions/runs/42435007354):
+the `Delivery smoke` job passed health, login UI and home HTML; the invariant
+suite passed 28 tests; the 100-request burst observed p95 463.11 ms.
+
+The ranking now reads:
+
+1. **FND-002 — unverified market injections** remains the top verification risk.
+2. **FND-006 — delivery/operations** is partly fixed: local/CI health, logs,
+   smoke, runbook, SLOs and rollback/backup procedure exist; hosted deployment,
+   external monitoring and production recovery remain open.
+3. **FND-004 — load/p95** is partly fixed: p95 is observed and recorded, but
+   sustained load and a hard gate remain open.
+4. **FND-007 and FND-008** remain open; they require human action.
+5. **FND-003 is fixed.**
+
+`FND-006` is no longer the largest unaddressed gap in its original form, but it
+is still the largest **operational** gap because no hosted environment exists.
