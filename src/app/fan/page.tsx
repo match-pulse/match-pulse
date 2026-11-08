@@ -48,7 +48,7 @@ export default async function FanHome() {
           <h1 className="text-3xl font-extrabold tracking-tight">Fan home</h1>
           <p className="mt-1 text-slate-400">Claim a ticket, register, follow the match and trade points.</p>
         </div>
-        <Link href="/fan/rewards" className="rounded bg-emerald-600 px-3 py-2 text-sm font-semibold text-white hover:bg-emerald-700">
+        <Link href="/fan/rewards" className="rounded bg-emerald-700 px-3 py-2 text-sm font-semibold text-white hover:bg-emerald-800">
           Rewards
         </Link>
       </div>

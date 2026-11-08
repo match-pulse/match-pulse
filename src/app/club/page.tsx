@@ -39,7 +39,7 @@ export default async function ClubDashboard() {
           <h1 className="text-3xl font-extrabold tracking-tight">Club analytics</h1>
           <p className="mt-1 text-slate-400">Aggregated crowd view. Cohorts below 5 traders are suppressed.</p>
         </div>
-        <a href="/api/club/export" className="rounded bg-emerald-600 px-3 py-2 text-sm font-semibold text-white hover:bg-emerald-700">
+        <a href="/api/club/export" className="rounded bg-emerald-700 px-3 py-2 text-sm font-semibold text-white hover:bg-emerald-800">
           Export CSV
         </a>
       </div>

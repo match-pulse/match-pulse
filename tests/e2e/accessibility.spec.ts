@@ -28,7 +28,7 @@ test('fan page has no serious or critical accessibility violations', async ({ pa
 
 test('organizer page has no serious or critical accessibility violations', async ({ page }) => {
   await page.goto('/login')
-  await page.getByRole('tab', { name: 'Organizer' }).click()
+  await page.getByRole('button', { name: 'Organizer' }).click()
   await page.getByLabel('Organizer email').fill(ORGANIZER_EMAIL)
   await page.getByLabel('Password').fill(ORGANIZER_PASSWORD)
   await page.getByRole('button', { name: 'Sign in as organizer' }).click()
@@ -38,7 +38,7 @@ test('organizer page has no serious or critical accessibility violations', async
 
 test('club page has no serious or critical accessibility violations', async ({ page }) => {
   await page.goto('/login')
-  await page.getByRole('tab', { name: 'Club' }).click()
+  await page.getByRole('button', { name: 'Club' }).click()
   await page.getByLabel('Club email').fill(CLUB_EMAIL)
   await page.getByLabel('Password').fill(CLUB_PASSWORD)
   await page.getByRole('button', { name: 'Sign in as club' }).click()
