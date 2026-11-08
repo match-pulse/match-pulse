@@ -532,6 +532,24 @@ Secret hygiene re-verified: `release.env` in history contains only `APP_VERSION`
 
 ---
 
+## Entry 31 — Release v1.3.1
+
+**Date:** 2026-11-08
+**Tool:** opencode CLI (`deepseek-v4.1-flash`)
+**Intent:** Cut v1.3.1 for the recovery drill and CI reliability changes: curate the release notes, align `package.json` and prepare the annotated tag and GitHub Release.
+**Boundary:** Release preparation only. AI edited `CHANGELOG.md`, `package.json` and this log. No application code, schema, test or CI change in the release PR. The human approved the recovery increment and the release policy.
+**Prior records reviewed:** release workflow, `CHANGELOG.md`, PR #118, recovery verification record, AI log Entry 30, FND-006.
+**Verification:** CI run [42467767299](https://github.com/match-pulse/match-pulse/actions/runs/42467767299) passed all jobs, including the recovery drill: 67,009-byte backup, tables 10→10, RLS policies 10→10, tournaments 2→2, marker restored, smoke passed. The release PR CI is the final merge gate.
+**Learning:**
+- The recovery drill belongs in the release notes with its scope: application-owned public schema, not Supabase-managed auth/storage data.
+- `pg_restore --clean` can exit 1 on expected clean-phase warnings; the release note must state that the explicit restored-state assertions are the gate.
+- Removing the external CLI download and cleaning leftover containers made delivery CI depend on fewer external services.
+**Limitations:** The tag and GitHub Release are created after this entry. No production backup, retention, RTO/RPO or recovery drill. No hosted deployment and no independent human review.
+
+**Links:** issue #119 · [`CHANGELOG.md`](../../CHANGELOG.md) · [`release-workflow.md`](../workflows/release-workflow.md) · [recovery verification](verification/2026-11-117-recovery-drill.md)
+
+---
+
 ## Standing rule
 
 AI may investigate, analyse, draft, implement within an approved scope, and run verification. The human retains every decision that affects business rules, architecture, schema, scope, priority, risk acceptance and merging. Contributions that cannot be verified are recorded as unverified rather than asserted.

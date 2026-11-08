@@ -17,6 +17,46 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versioning: [S
 
 No unreleased changes yet.
 
+## [1.3.1] - 2026-11-08
+
+Recovery drill and CI reliability.
+
+### Added
+
+- CI recovery drill: dumps the application-owned `public` schema, restores it into a scratch database, and verifies table count, RLS policy count, row count and a marker row.
+- Recovery verification record with the observed counts and the restore-scope limits.
+- Runbook commands for the public-schema backup, scratch restore and minimal `auth` shim.
+
+### Changed
+
+- The delivery job is now `Delivery and recovery`; it runs the backup/restore drill after smoke and re-runs smoke against the working database.
+- CI uses the locked Supabase CLI dev dependency instead of downloading `supabase/setup-cli`.
+- CI cleans up leftover Supabase containers before starting the local stack.
+
+### Fixed
+
+- Removed the external Supabase CLI download failure mode (`latest` resolution/504) from CI.
+- Mitigated a leftover-container port conflict on the Supabase database port.
+
+### Migration / upgrade notes
+
+- No application or database migration.
+- The recovery drill backs up only the application-owned `public` schema; Supabase-managed `auth`, `storage`, `realtime` and `vault` data are not in scope.
+
+### Known gaps
+
+- `pg_restore --clean` exits `1` on expected `DROP POLICY IF EXISTS` warnings in a fresh scratch database; the drill gates on explicit restored-state assertions and records the status.
+- No production backup, retention, PITR, off-site storage, RTO/RPO or production recovery drill.
+- No hosted deployment, external monitoring, alerting or tracing.
+- M-INV1/2/3/5/8 and the M-INV7 details still lack fault injection (FND-002).
+- No real-user evidence (FND-007) and no independent human review (FND-008).
+- p95 remains an observation, not a hard gate.
+
+### Evidence
+
+- CI [42467767299](https://github.com/match-pulse/match-pulse/actions/runs/42467767299): build, 28 invariant tests and the recovery drill pass; 67,009-byte backup, tables 10→10, RLS policies 10→10, tournaments 2→2, marker restored.
+- [Recovery verification](docs/methodology/verification/2026-11-117-recovery-drill.md); AI transparency Entry 30; [operations runbook](docs/operations/runbook.md).
+
 ## [1.3.0] - 2026-11-08
 
 Delivery, observability and recovery baseline.
@@ -265,7 +305,8 @@ This table is the pre-policy execution record. It is kept for traceability and i
 - The first entry after this changelog is established is recorded contemporaneously and links its issue, PR, verification, and AI transparency entry.
 
 
-[Unreleased]: https://github.com/match-pulse/match-pulse/compare/v1.3.0...HEAD
+[Unreleased]: https://github.com/match-pulse/match-pulse/compare/v1.3.1...HEAD
+[1.3.1]: https://github.com/match-pulse/match-pulse/compare/v1.3.0...v1.3.1
 [1.3.0]: https://github.com/match-pulse/match-pulse/compare/v1.2.0...v1.3.0
 [1.2.0]: https://github.com/match-pulse/match-pulse/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/match-pulse/match-pulse/compare/v1.0.0...v1.1.0
