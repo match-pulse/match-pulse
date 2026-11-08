@@ -139,9 +139,9 @@ jobs:
           fi
           echo "Database container: $DB_CONTAINER"
           MARKER_ID="44444444-4444-4444-4444-444444444444"
+          RESTORE_DB="matchpulse_restore"
 
-          # Stop the app before resetting the database, then insert a marker row
-          # that only a successful data restore can bring back.
+          # Stop the app so the drill does not depend on a live connection.
           if [ -f /tmp/matchpulse-app.pid ]; then
             kill "$(cat /tmp/matchpulse-app.pid)" || true
           fi
@@ -157,25 +157,23 @@ jobs:
           POLICIES_BEFORE=$(query "SELECT count(*) FROM pg_policies WHERE schemaname = 'public';")
           TOURNAMENTS_BEFORE=$(query "SELECT count(*) FROM public.tournaments;")
 
-          docker exec "$DB_CONTAINER" pg_dump -U postgres -d postgres \
-            --data-only --schema=public --column-inserts --disable-triggers -f /tmp/matchpulse-data.sql
-          docker cp "$DB_CONTAINER:/tmp/matchpulse-data.sql" /tmp/matchpulse-data.sql
-          test -s /tmp/matchpulse-data.sql
-          echo "Backup size: $(wc -c < /tmp/matchpulse-data.sql) bytes"
+          # A full dump carries schema, data, policies and grants. Restoring it
+          # into a scratch database proves the backup is usable without touching
+          # the working database.
+          docker exec "$DB_CONTAINER" pg_dump -U postgres -d postgres -Fc -f /tmp/matchpulse-full.dump
+          docker cp "$DB_CONTAINER:/tmp/matchpulse-full.dump" /tmp/matchpulse-full.dump
+          test -s /tmp/matchpulse-full.dump
+          echo "Backup size: $(wc -c < /tmp/matchpulse-full.dump) bytes"
 
-          # Rebuild the schema from migrations, clear the seed rows, and restore
-          # the data backup. Schema recovery comes from migrations; data recovery
-          # comes from the dump.
-          bunx supabase db reset
-          TRUNCATE_SQL=$(query "SELECT 'TRUNCATE TABLE ' || string_agg(format('%I.%I', schemaname, tablename), ', ') || ' RESTART IDENTITY CASCADE;' FROM pg_tables WHERE schemaname = 'public';")
-          docker exec "$DB_CONTAINER" psql -U postgres -d postgres -v ON_ERROR_STOP=1 -c "$TRUNCATE_SQL"
-          docker cp /tmp/matchpulse-data.sql "$DB_CONTAINER:/tmp/matchpulse-data.sql"
-          docker exec "$DB_CONTAINER" psql -U postgres -d postgres -v ON_ERROR_STOP=1 -f /tmp/matchpulse-data.sql
+          docker exec "$DB_CONTAINER" dropdb -U postgres --if-exists "$RESTORE_DB"
+          docker exec "$DB_CONTAINER" createdb -U postgres -T template0 "$RESTORE_DB"
+          docker exec "$DB_CONTAINER" pg_restore -U postgres -d "$RESTORE_DB" \
+            --clean --if-exists --no-owner --no-privileges /tmp/matchpulse-full.dump
 
-          TABLES_AFTER=$(query "SELECT count(*) FROM pg_tables WHERE schemaname = 'public';")
-          POLICIES_AFTER=$(query "SELECT count(*) FROM pg_policies WHERE schemaname = 'public';")
-          TOURNAMENTS_AFTER=$(query "SELECT count(*) FROM public.tournaments;")
-          MARKER=$(query "SELECT name FROM public.tournaments WHERE id = '$MARKER_ID';")
+          TABLES_AFTER=$(query "SELECT count(*) FROM pg_tables WHERE schemaname = 'public';" "$RESTORE_DB")
+          POLICIES_AFTER=$(query "SELECT count(*) FROM pg_policies WHERE schemaname = 'public';" "$RESTORE_DB")
+          TOURNAMENTS_AFTER=$(query "SELECT count(*) FROM public.tournaments;" "$RESTORE_DB")
+          MARKER=$(query "SELECT name FROM public.tournaments WHERE id = '$MARKER_ID';" "$RESTORE_DB")
 
           echo "tables: $TABLES_BEFORE -> $TABLES_AFTER"
           echo "RLS policies: $POLICIES_BEFORE -> $POLICIES_AFTER"
@@ -187,7 +185,10 @@ jobs:
           test "$TOURNAMENTS_BEFORE" = "$TOURNAMENTS_AFTER"
           test "$MARKER" = "Recovery drill marker"
 
-          # Prove the application works against the recovered data.
+          docker exec "$DB_CONTAINER" dropdb -U postgres "$RESTORE_DB"
+
+          # The working database was not changed; restart the app and re-run
+          # smoke to prove the drill did not disturb it.
           bun run start > /tmp/matchpulse-app.log 2>&1 &
           echo $! > /tmp/matchpulse-app.pid
           for i in $(seq 1 60); do
@@ -195,7 +196,7 @@ jobs:
               break
             fi
             if [ "$i" = "60" ]; then
-              echo "Health check did not pass after restore"
+              echo "Health check did not pass after the drill"
               cat /tmp/matchpulse-app.log
               exit 1
             fi
