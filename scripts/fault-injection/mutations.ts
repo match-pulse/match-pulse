@@ -200,7 +200,7 @@ FOR EACH ROW EXECUTE FUNCTION public.fault_inject_trade_insert();`
             UPDATE public.market_entry_cooldowns
                SET level = LEAST(v_level + 1, 40)
              WHERE market_id = p_market_id AND user_id = v_user_id;
-            RAISE EXCEPTION 'entry cooldown active';
+            RETURN;
         END IF;`
         }
       ])

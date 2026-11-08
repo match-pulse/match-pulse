@@ -75,7 +75,11 @@ function resetDatabase() {
 }
 
 function runTest(file: string): number | null {
-  const result = run(process.execPath, ['test', '--env-file=.env.local', file])
+  // Bun only treats an argument as a path (rather than a name filter) when it
+  // starts with ./ or is absolute. The forced-failure file does not use the
+  // normal .test/.spec suffix, so the explicit path is required.
+  const path = file.startsWith('./') || file.startsWith('/') ? file : `./${file}`
+  const result = run(process.execPath, ['test', '--env-file=.env.local', path])
   return result.status
 }
 
