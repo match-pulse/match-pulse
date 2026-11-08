@@ -63,7 +63,7 @@ First MVP: three roles, complete role frontends, E2E/accessibility, security and
 - Main CI [42488335436](https://github.com/match-pulse/match-pulse/actions/runs/42488335436): all five jobs passed.
 - E2E/accessibility CI run [42487526415](https://github.com/match-pulse/match-pulse/actions/runs/42487526415): 7 Playwright tests passed.
 - Backend verification: `docs/methodology/verification/2026-11-128-mvp-backend.md`.
-- Security/performance baseline: performance workflow and secret/audit CI steps.
+- Security/performance baseline: performance workflow run [42491482504](https://github.com/match-pulse/match-pulse/actions/runs/42491482504) observed p95 461.15 ms at 100 concurrent registrations; secret scan and dependency audit pass. See `docs/methodology/verification/2026-11-133-performance-security.md`.
 
 ## [1.3.1] - 2026-11-08
 
