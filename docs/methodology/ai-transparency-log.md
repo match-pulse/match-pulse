@@ -594,7 +594,7 @@ Secret hygiene re-verified: `release.env` in history contains only `APP_VERSION`
 - OpenSpec is a change-planning layer, not a replacement for the kata, invariant registry or verification records.
 **Limitations:** The change is proposed, not implemented; no mutation has been run yet. The trial outcome is pending. There is no capability spec tree because no behavior changes. No independent human review (FND-008).
 
-**Links:** issue #123 · [OpenSpec project](../../openspec/README.md) · [first change](../../openspec/changes/add-market-fault-injections/proposal.md) · [development-practices §4.6](development-practices.md) · [methodology report](reports/2026-11-08.md)
+**Links:** issue #123 · PR #124 · [OpenSpec project](../../openspec/README.md) · [first change](../../openspec/changes/add-market-fault-injections/proposal.md) · [development-practices §4.6](development-practices.md) · [methodology report](reports/2026-11-08.md)
 
 ---
 
