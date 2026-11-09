@@ -49,7 +49,7 @@ Read the architecture documents in this order:
 4. [C4 Diagrams](docs/architecture/05-c4-diagrams.md) — context, containers and market components
 5. [Architecture Characteristics](docs/architecture/03-architecture-characteristics.md) — priorities and measurements
 6. [Code Map](docs/architecture/04-code-map.md) — documents and rules mapped to files and tests
-7. [Architecture Decision Records](docs/architecture/adr/) — the decisions behind the structure, including [ADR-003: authorization and RLS](docs/architecture/adr/003-authorization-rls.md)
+7. [Architecture Decision Records](docs/architecture/adr/) — the decisions behind the structure, including [ADR-003: authorization and RLS](docs/architecture/adr/003-authorization-rls.md), [ADR-007: club tenancy and entitlements](docs/architecture/adr/007-club-tenancy-and-entitlements.md), [ADR-008: platform admin boundary](docs/architecture/adr/008-platform-admin-and-operator-boundary.md), [ADR-009: email/password and simulated commerce](docs/architecture/adr/009-email-password-and-simulated-commerce.md) and [ADR-010: nominal ticketing](docs/architecture/adr/010-nominal-ticketing-and-attendee-identity.md)
 8. [Architecture Report — 2026-11-08](docs/architecture/reports/2026-11-08.md) — dated synthesis of the kata, characteristics, style, decisions and evidence
 9. [Course Submission Package](docs/submissions/README.md) — dated PDFs for Task 1, Task 2, the architecture description and the methodology report
 
@@ -63,6 +63,7 @@ Read the architecture documents in this order:
 - [Checkpoint E — Delivery, Observability and Recovery (Pre-read)](docs/methodology/checkpoint-E/README.md)
 - [Methodology Report — 2026-11-08](docs/methodology/reports/2026-11-08.md) — dated synthesis of the claim, lifecycle, checkpoints, evidence and residual risk
 - [MVP Scope](docs/product/mvp-scope.md)
+- [Competitive Landscape — Italian Football Ticketing](docs/product/competitive-landscape.md)
 - [Test Strategy](docs/methodology/test-strategy.md)
 - [Threat Model](docs/security/threat-model.md)
 - [Failure Modes and Recovery](docs/operations/failure-modes.md)
@@ -74,6 +75,9 @@ Read the architecture documents in this order:
 - [Execution Plan — Authorization, RLS and Grants](docs/methodology/exec-plans/95-authorization-rls.md)
 - [Execution Plan — Idempotent Entry and Exit](docs/methodology/exec-plans/107-idempotent-trades.md)
 - [Execution Plan — Delivery, Observability and Recovery](docs/methodology/exec-plans/111-delivery-operations-baseline.md)
+- [Execution Plan — v3.0.0 Club Subscriptions, Cross-Club Fans and CLI](docs/methodology/exec-plans/153-v3-club-subscriptions.md)
+- [Agent Playbook](docs/testing/agent-playbook.md) — CLI-driven end-to-end scenarios and evidence
+- [Capability Manifest](docs/testing/capabilities.md) — every feature mapped to its CLI command, database contract and test
 - [Verification — Authorization, RLS and Grants](docs/methodology/verification/2026-11-95-authorization-rls.md)
 - [Verification — Idempotent Entry and Exit](docs/methodology/verification/2026-11-107-idempotent-trades.md)
 - [Verification — Delivery, Observability and Recovery](docs/methodology/verification/2026-11-111-delivery-operations-baseline.md)
@@ -84,7 +88,7 @@ Read the architecture documents in this order:
 ### Engineering Workflows and Records
 
 - [Engineering Workflows](docs/workflows/README.md) — requirements, development, agentic execution, testing, audit, refactoring, release, operations, and recordkeeping.
-- [OpenSpec](openspec/README.md) — bounded change proposals, delta specs, design and tasks; the first trial is `add-market-fault-injections`.
+- [OpenSpec](openspec/README.md) — bounded change proposals, delta specs, design and tasks; the active change is `add-club-tenancy-and-cli`.
 - [Methodology Records](docs/methodology/README.md) — record index, retention rules, and locations.
 - [Findings Register](docs/methodology/findings-register.md) — permanent finding index and lifecycle.
 - [Changelog](CHANGELOG.md) — append-only change history.

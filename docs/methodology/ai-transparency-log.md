@@ -755,6 +755,38 @@ Secret hygiene re-verified: `release.env` in history contains only `APP_VERSION`
 
 ---
 
+## Entry 42 — v3.0.0 contract and Phase 0
+
+**Date:** 2026-11-09
+**Tool:** opencode CLI (`deepseek-v4.1-flash`)
+**Intent:** Establish the approved v3.0.0 contract: club tenancy, subscription entitlements, platform admin, email/password identity, cross-club fans, simulated commerce, CLI parity and an executable agent playbook.
+**Boundary:** Phase 0 planning and documentation only. AI wrote the execution plan, ADR-007/008/009, capability manifest, agent playbook specification, OpenSpec change and documentation links. No application, schema, migration, auth or test behavior changed.
+**Prior records reviewed:** epic #153, v2.0.0/v2.0.1 releases, ADR-001–006, MVP scope, invariant registry, findings register (FND-007/FND-008 open), submission package, OpenSpec README and archived fault-injection change.
+**Work performed:** approved `docs/methodology/exec-plans/153-v3-club-subscriptions.md`; ADR-007 club tenancy and entitlements; ADR-008 platform-admin boundary; ADR-009 email/password, cross-club fans and simulated commerce; `docs/testing/capabilities.md`; `docs/testing/README.md`; `docs/testing/agent-playbook.md`; OpenSpec change `add-club-tenancy-and-cli` with six capability specs, design and tasks.
+**Verification:** `openspec validate add-club-tenancy-and-cli --type change --strict` returned “Change is valid”; a relative-link check over the new documents found no missing targets; `git diff --check` passed. Implementation evidence is not yet claimed.
+**Learning:** Writing the capability manifest and playbook before the schema forces every planned feature to name its CLI command, database contract, authorization test and scenario target.
+**Limitations:** The playbook is a specification until the CLI and scenarios exist. No tenancy, entitlement, auth or ticketing behavior is implemented in this entry. FND-007 and FND-008 remain human gates.
+
+**Links:** issue #153 · [`execution plan`](../exec-plans/153-v3-club-subscriptions.md) · [`OpenSpec change`](../../../openspec/changes/add-club-tenancy-and-cli/proposal.md) · [`agent playbook`](../../testing/agent-playbook.md)
+
+---
+
+## Entry 43 — Nominal ticketing contract
+
+**Date:** 2026-11-09
+**Tool:** opencode CLI (`deepseek-v4.1-flash`)
+**Intent:** Fold Italian nominal ticketing into the approved v3.0.0 contract: buyer vs attendee, identity fields, max four, digital QR, name change, fan cards, box office and away-sector rules.
+**Boundary:** Contract and documentation only. AI updated the execution plan, ADR-010, the competitive landscape, OpenSpec specs/design/tasks, the capability manifest, the agent playbook and documentation links. No code, schema, auth or test behavior changed.
+**Prior records reviewed:** epic #153, Phase 0 #154, PR #155, ADR-007/008/009, Inter ticket conditions, Juventus ticketing, Torino FAQ, Roma ticketing, and the earlier v3.0.0 plan.
+**Work performed:** ADR-010 nominal ticketing and attendee identity; competitive landscape for TicketOne, Vivaticket, Ticketmaster Italy, club in-house systems and secondary marketplaces; nominal ticketing requirements in the OpenSpec ticketing spec; attendee/privacy separation in the prediction spec; CLI/playbook updates; revised execution plan.
+**Verification:** `openspec validate add-club-tenancy-and-cli --type change --strict` passed after the edits; relative links in the new and changed documents were checked; `git diff --check` passed. Implementation evidence is not claimed.
+**Learning:** Italian ticketing is nominative; the buyer and the attendee are different people. Treating attendee identity as event-access data keeps it separate from financial KYC and from aggregate prediction insights.
+**Limitations:** The plan and playbook are specifications until the schema/CLI/UI exist. Deep FIGC/Questura/fan-card integration, wallet passes and seat maps are out of scope. FND-007 and FND-008 remain human gates.
+
+**Links:** issue #156 · [`execution plan`](../exec-plans/153-v3-club-subscriptions.md) · [`ADR-010`](../../architecture/adr/010-nominal-ticketing-and-attendee-identity.md) · [`competitive landscape`](../../product/competitive-landscape.md)
+
+---
+
 ## Standing rule
 
 AI may investigate, analyse, draft, implement within an approved scope, and run verification. The human retains every decision that affects business rules, architecture, schema, scope, priority, risk acceptance and merging. Contributions that cannot be verified are recorded as unverified rather than asserted.

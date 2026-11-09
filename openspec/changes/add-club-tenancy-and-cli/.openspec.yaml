@@ -1,0 +1,5 @@
+schema: spec-driven
+created: 2026-11-09
+goal: Deliver v3.0.0 with club tenancy, plans and entitlements, email/password
+  identity, simulated ticketing, aggregate prediction insights, a CLI for every
+  feature and an executable agent playbook.

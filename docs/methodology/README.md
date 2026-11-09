@@ -29,7 +29,11 @@ ADRs remain in [`docs/architecture/adr/`](../architecture/adr/) and follow the e
 - [`checkpoint-D/`](checkpoint-D/) — pre-read for architecture ownership, dependency rules, fitness functions, change scenario, compatibility and technical debt.
 - [`checkpoint-E/`](checkpoint-E/) — pre-read for delivery, observability, recovery, SLOs and p95 measurement.
 - [`reports/`](reports/) — dated project reports; [`2026-11-08.md`](reports/2026-11-08.md) is the current methodology synthesis.
-- [`../../openspec/`](../../openspec/README.md) — OpenSpec project and active change proposals; the first trial is `add-market-fault-injections`.
+- [`exec-plans/153-v3-club-subscriptions.md`](exec-plans/153-v3-club-subscriptions.md) — approved v3.0.0 execution plan.
+- [`../testing/agent-playbook.md`](../testing/agent-playbook.md) — CLI-driven agent scenarios and evidence.
+- [`../testing/capabilities.md`](../testing/capabilities.md) — capability-to-command parity manifest.
+- [`../product/competitive-landscape.md`](../product/competitive-landscape.md) — TicketOne/Vivaticket positioning and nominal ticketing context.
+- [`../../openspec/`](../../openspec/README.md) — OpenSpec project and active change proposals; the active change is `add-club-tenancy-and-cli`.
 - [`development-practices.md`](development-practices.md) — invariant-first testing, TDD fit, SDD mode, and the OpenSpec decision.
 - [`test-strategy.md`](test-strategy.md) — MVP test layers, gates, coverage rule and limits.
 - [`exec-plans/`](exec-plans/) — approved execution plans.
