@@ -86,6 +86,9 @@ jobs:
       - name: Run domain invariant tests
         run: bun run test
 
+      - name: Run agent CLI scenarios
+        run: bun run test:agent
+
   delivery:
     name: Delivery and recovery
     runs-on: ubuntu-latest

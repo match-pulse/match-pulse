@@ -6,9 +6,11 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
+    "cli": "bun --env-file=.env.local src/cli/index.ts",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
-    "test": "bun test --env-file=.env.local --path-ignore-patterns='tests/fault-injection/**' --path-ignore-patterns='tests/e2e/**'",
+    "test": "bun test --env-file=.env.local --path-ignore-patterns='tests/fault-injection/**' --path-ignore-patterns='tests/e2e/**' --path-ignore-patterns='tests/agent/**'",
+    "test:agent": "bun test --env-file=.env.local tests/agent",
     "auth:organizer": "bun --env-file=.env.local scripts/create-organizer.ts",
     "check:architecture": "bun scripts/check-architecture.ts",
     "smoke": "bun scripts/smoke-test.ts",
@@ -44,6 +46,9 @@
     "typescript": "^5"
   },
   "packageManager": "bun@1.4.2",
+  "bin": {
+    "matchpulse": "src/cli/index.ts"
+  },
   "ignoreScripts": [
     "sharp",
     "unrs-resolver"
