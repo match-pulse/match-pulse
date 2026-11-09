@@ -5,11 +5,17 @@ import { getCurrentUser } from '@/lib/session'
 // The login gate reads cookies and must block; it is not a cacheable page.
 export const instant = false
 
-export default async function LoginPage() {
+export default async function LoginPage({
+  searchParams
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>
+}) {
+  const params = await searchParams
+  const next = typeof params.next === 'string' ? params.next : undefined
   const user = await getCurrentUser()
 
   if (user) {
-    redirect('/')
+    redirect(next && next.startsWith('/') && !next.startsWith('//') ? next : '/')
   }
 
   return (
@@ -23,7 +29,7 @@ export default async function LoginPage() {
         </p>
       </div>
 
-      <LoginForms />
+      <LoginForms next={next} />
 
       <p className="mt-8 text-xs text-slate-400 text-center max-w-md">
         This is a course prototype. The database enforces who may act; the

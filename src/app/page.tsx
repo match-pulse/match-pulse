@@ -1,23 +1,49 @@
 import { redirect } from 'next/navigation'
-import { getProfile } from '@/lib/session'
+import { getCurrentUser, getProfile } from '@/lib/session'
+import { createSupabaseServerClient } from '@/lib/supabase/server'
 
-// The home redirect reads the session; it must block, not prerender.
+// The home redirect reads the session and the v3 context; it must block.
 export const instant = false
 
 export default async function Home() {
-  const profile = await getProfile()
+  const user = await getCurrentUser()
 
-  if (!profile) {
+  if (!user) {
     redirect('/login')
   }
 
-  if (profile.role === 'ORGANIZER') {
+  const supabase = await createSupabaseServerClient()
+
+  const [{ data: admin }, { data: membership }, profile] = await Promise.all([
+    supabase
+      .from('platform_admins')
+      .select('profile_id')
+      .eq('profile_id', user.id)
+      .maybeSingle(),
+    supabase
+      .from('club_members')
+      .select('club_id')
+      .eq('profile_id', user.id)
+      .limit(1)
+      .maybeSingle(),
+    getProfile()
+  ])
+
+  if (admin) {
+    redirect('/admin')
+  }
+
+  if (profile?.role === 'ORGANIZER') {
     redirect('/organizer')
   }
 
-  if (profile.role === 'CLUB') {
+  if (profile?.role === 'CLUB') {
     redirect('/club')
   }
 
-  redirect('/fan')
+  if (membership) {
+    redirect('/club/dashboard')
+  }
+
+  redirect('/events')
 }

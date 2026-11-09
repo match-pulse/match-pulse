@@ -5,26 +5,36 @@ const ORGANIZER_PASSWORD = process.env.ORGANIZER_PASSWORD ?? 'matchpulse-organiz
 const CLUB_EMAIL = process.env.CLUB_EMAIL ?? 'club@matchpulse.local'
 const CLUB_PASSWORD = process.env.CLUB_PASSWORD ?? 'matchpulse-club'
 
-test('fan can claim a ticket, register, view the portfolio and redeem a reward', async ({ page }) => {
+test('fan can sign up, buy a nominal ticket and view the ticket', async ({ page }) => {
+  const fanEmail = `e2e-fan-${Date.now()}@matchpulse.local`
+  const fanPassword = 'matchpulse-fan'
+
   await page.goto('/login')
-  await page.getByRole('button', { name: 'Continue as fan' }).click()
-  await expect(page.getByRole('heading', { name: 'Fan home' })).toBeVisible()
+  await page.getByRole('button', { name: 'New fan? Create an account' }).click()
+  await page.getByLabel('Fan email').fill(fanEmail)
+  await page.getByLabel('Username').fill('E2E Fan')
+  await page.getByLabel('Password', { exact: true }).fill(fanPassword)
+  await page.getByLabel('Confirm password').fill(fanPassword)
+  await page.getByRole('button', { name: 'Create fan account' }).click()
 
-  await page.getByRole('link', { name: 'Open tournament' }).first().click()
-  await expect(page.getByRole('button', { name: 'Claim ticket' })).toBeVisible()
-  await page.getByRole('button', { name: 'Claim ticket' }).click()
-  await expect(page.getByText(/Ticket claimed/)).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Events' })).toBeVisible()
 
-  await page.getByRole('button', { name: 'Register' }).click()
-  await expect(page.getByText('Your place is confirmed.')).toBeVisible()
+  const demo = page.locator('article').filter({ hasText: 'Demo Derby' }).first()
+  await demo.getByRole('link', { name: 'Open event' }).click()
+  await expect(page.getByRole('heading', { name: 'Demo Derby' })).toBeVisible()
 
-  await page.goto('/fan/portfolio')
-  await expect(page.getByRole('heading', { name: 'Portfolio' })).toBeVisible()
+  await page.getByLabel('First name').fill('E2E')
+  await page.getByLabel('Last name').fill('Fan')
+  await page.getByLabel('Date of birth').fill('1990-01-01')
+  await page.getByLabel('Place of birth').fill('Milano')
+  await page.getByLabel('Tax code').fill('E2EFAN123')
+  await page.getByLabel(/I accept the club ticket terms/).check()
+  await page.getByRole('button', { name: 'Buy tickets' }).click()
 
-  await page.goto('/fan/rewards')
-  await expect(page.getByRole('heading', { name: 'Rewards', exact: true })).toBeVisible()
-  await page.getByRole('button', { name: /Redeem for 100 pts/ }).first().click()
-  await expect(page.getByText(/Reward redeemed\. Code:/)).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'My tickets' })).toBeVisible()
+  const ticketCard = page.locator('article').filter({ hasText: 'E2E Fan' }).first()
+  await expect(ticketCard).toBeVisible()
+  await expect(ticketCard.getByText(/MP-/)).toBeVisible()
 })
 
 test('organizer can create a tournament, create a match, update it and resolve the market', async ({ page }) => {
