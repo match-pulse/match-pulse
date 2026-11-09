@@ -148,6 +148,17 @@ bun run maintenance:cleanup
 
 The function deletes only `COMPLETED` requests older than the window; recent rows and in-progress rows remain. Authenticated users cannot execute it. Run it from an authorized local/CI maintenance context, never from the application runtime.
 
+### Attendee-data retention
+
+Nominal ticket identity is event-access data. The cleanup is service-role-only and defaults to 365 days:
+
+```bash
+bun run maintenance:cleanup-attendees
+# optional: ATTENDEE_RETENTION='400 days' bun run maintenance:cleanup-attendees
+```
+
+The function clears attendee name, date/place of birth, tax code/document and fan-card number for tickets whose event is older than the window. It keeps the ticket code, order, points and audit record, and writes an `attendee.retention` audit event. Authenticated users cannot execute it. Production scheduling and legal retention review are out of scope.
+
 ## 7. Incident steps
 
 1. **Detect** — failed CI, a smoke-test failure, a `503` health response or a

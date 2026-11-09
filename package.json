@@ -21,6 +21,7 @@
     "check:secrets": "bun scripts/check-secrets.ts",
     "perf": "bun --env-file=.env.local scripts/performance.ts",
     "maintenance:cleanup": "bun --env-file=.env.local scripts/cleanup-trade-requests.ts",
+    "maintenance:cleanup-attendees": "bun --env-file=.env.local scripts/cleanup-attendee-data.ts",
     "docs:pdf": "bun scripts/export-pdf.ts"
   },
   "dependencies": {

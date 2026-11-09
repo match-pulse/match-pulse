@@ -440,3 +440,72 @@ describe('v3 platform admin', () => {
     TEST_TIMEOUT_MS
   )
 })
+
+describe('v3 attendee retention', () => {
+  test(
+    'clears identity from past tickets only and refuses authenticated execution',
+    async () => {
+      const owner = await createUser()
+      const fan = await createUser()
+      let clubId: string | null = null
+
+      try {
+        clubId = await createClub(owner, 'Retention Club', 'PRO')
+        const oldEvent = await createEvent(owner, clubId)
+        const oldType = await createTicketType(owner, oldEvent, { allocation: 10 })
+        await publishEvent(owner, oldEvent)
+        const oldOrder = await buy(fan, oldType, [attendee('Old', 'Attendee')])
+
+        const recentEvent = await createEvent(owner, clubId)
+        const recentType = await createTicketType(owner, recentEvent, { allocation: 10 })
+        await publishEvent(owner, recentEvent)
+        await buy(fan, recentType, [attendee('Recent', 'Attendee')])
+
+        await admin
+          .from('tournaments')
+          .update({ created_at: new Date(Date.now() - 400 * 86_400_000).toISOString() })
+          .eq('id', oldEvent)
+
+        const cleanup = await admin.rpc('cleanup_expired_attendee_data', {
+          p_older_than: '365 days'
+        })
+        expect(cleanup.error).toBeNull()
+        expect(Number(cleanup.data)).toBeGreaterThanOrEqual(1)
+
+        const { data: oldTicket } = await admin
+          .from('tickets')
+          .select('attendee_first_name, attendee_last_name, attendee_tax_code, ticket_code, order_id')
+          .eq('order_id', oldOrder?.order_id as string)
+          .single()
+        expect(oldTicket?.attendee_first_name).toBeNull()
+        expect(oldTicket?.attendee_last_name).toBeNull()
+        expect(oldTicket?.attendee_tax_code).toBeNull()
+        expect(oldTicket?.ticket_code).toBeTruthy()
+        expect(oldTicket?.order_id).toBe(oldOrder?.order_id)
+
+        const { data: recentTicket } = await admin
+          .from('tickets')
+          .select('attendee_first_name, attendee_last_name')
+          .eq('tournament_id', recentEvent)
+          .single()
+        expect(recentTicket?.attendee_first_name).toBe('Recent')
+        expect(recentTicket?.attendee_last_name).toBe('Attendee')
+
+        const { data: audit } = await admin
+          .from('audit_events')
+          .select('id')
+          .eq('action', 'attendee.retention')
+        expect((audit ?? []).length).toBeGreaterThanOrEqual(1)
+
+        const denied = await fan.client.rpc('cleanup_expired_attendee_data', {
+          p_older_than: '365 days'
+        })
+        expect(denied.error).not.toBeNull()
+      } finally {
+        await cleanupClub(clubId)
+        await deleteUsers([owner, fan])
+      }
+    },
+    TEST_TIMEOUT_MS
+  )
+})

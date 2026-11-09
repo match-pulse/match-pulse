@@ -86,6 +86,7 @@ Read the architecture documents in this order:
 - [Verification — v3 Shared Contract and CLI](docs/methodology/verification/2026-11-159-cli-and-agent-playbook.md)
 - [Verification — v3 Email/Password Auth and Member UI](docs/methodology/verification/2026-11-161-v3-auth-ui.md)
 - [Verification — v3 Club Members, Rewards, Insights and Market Resolution](docs/methodology/verification/2026-11-163-club-members-rewards-insights.md)
+- [Verification — v3 Attendee-Data Retention](docs/methodology/verification/2026-11-165-attendee-retention.md)
 - [Execution Plan — Invariant Evidence and the Registration Path](docs/methodology/exec-plans/50-invariant-evidence-and-registration-path.md) *(superseded)*
 - [AI Agent Instructions](AGENTS.md)
 
@@ -260,6 +261,7 @@ Recorded so they are not mistaken for delivered work. Full detail in the [invari
 - **Authentication and authorization are implemented**, but production session hardening, rate-limit tuning and service-role handling remain operational work.
 - **M-INV2 is verified by forced-failure rollback, not observed-red.** M-INV1, M-INV3, M-INV5, M-INV8 and all M-INV7 details were observed failing under fault injection; M-INV2's trade-insert failure test proves rollback but cannot break PostgreSQL function atomicity without a second connection.
 - **Request-key retention is a local maintenance command.** `bun run maintenance:cleanup` deletes completed requests older than 30 days; there is no scheduled production retention job.
+- **Attendee-data retention is a local maintenance command.** `bun run maintenance:cleanup-attendees` clears identity from past-event tickets older than 365 days; there is no scheduled production job or legal retention review.
 - **p95 latency is observed, not asserted.** The capacity burst records p50/p95/max, but the target is not a CI gate yet, and the value is environment-specific.
 - **E2E and accessibility are initial, not exhaustive.** The Playwright suite covers the three happy-path role journeys; edge cases remain in integration tests. The accessibility gate blocks serious and critical violations, not moderate or minor ones.
 - **Performance is a scheduled baseline, not a release gate.** The 20/50/100 burst script records p50/p95/p99, but production load and multi-instance behaviour are not measured.
