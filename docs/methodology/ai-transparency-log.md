@@ -869,6 +869,22 @@ Secret hygiene re-verified: `release.env` in history contains only `APP_VERSION`
 
 ---
 
+## Entry 49 — v3.0.0 current-state documentation refresh
+
+**Date:** 2026-11-09
+**Tool:** opencode CLI (`deepseek-v4.1-flash`)
+**Intent:** Bring the current-state documentation and reports in line with the implemented v3.0.0 system before the release.
+**Boundary:** README, kata, domain model, system overview, C4 views, code map, characteristics, test strategy, threat model, failure modes, runbook, SLOs, product scope, checkpoints D/E, ADR updates, report addenda, changelog and package version. No application behavior change in this entry.
+**Prior records reviewed:** all v3 execution/verification records, ADR-007–010, capability manifest, agent playbook, competitive landscape.
+**Work performed:** v3 README and product scope; K16–K20 and the club-first kata; v3 domain model and flows; C4 containers/components for the CLI, club/ticketing and admin; v3 code map; K16–K20 characteristic traceability; tenancy/ticketing/privacy invariants; test strategy, threat model, failure modes, runbook and SLOs; dated report addenda; ADR updates; v3.0.0 changelog and package version.
+**Verification:** `bun run typecheck`, `bun run lint`, `bun run build` and `bun run check:architecture` passed locally; a relative-link check over the changed documents found no missing local targets. CI is the final gate.
+**Learning:** The current-state docs now describe the implemented model rather than the v2 prototype; the dated reports keep the v2 snapshot and add a v3 addendum.
+**Limitations:** The submission PDFs are regenerated after this documentation merge; no release tag is created in this entry. FND-007/FND-008 remain human gates.
+
+**Links:** issue #169 · [`execution plan`](../exec-plans/153-v3-club-subscriptions.md) · [`architecture report`](../../architecture/reports/2026-11-08.md) · [`methodology report`](../reports/2026-11-08.md)
+
+---
+
 ## Standing rule
 
 AI may investigate, analyse, draft, implement within an approved scope, and run verification. The human retains every decision that affects business rules, architecture, schema, scope, priority, risk acceptance and merging. Contributions that cannot be verified are recorded as unverified rather than asserted.
