@@ -804,6 +804,22 @@ Secret hygiene re-verified: `release.env` in history contains only `APP_VERSION`
 
 ---
 
+## Entry 45 — v3 shared contract and CLI
+
+**Date:** 2026-11-09
+**Tool:** opencode CLI (`deepseek-v4.1-flash`)
+**Intent:** Add a shared domain contract and a `matchpulse` CLI exposing the v3 club, nominal ticketing, prediction, analytics and admin capabilities.
+**Boundary:** `src/lib/domain/`, `src/cli/`, a CLI end-to-end test, the `test:agent` CI step, package metadata and the capability manifest. No web auth or UI migration in this entry.
+**Prior records reviewed:** #153, #157, execution plan, capability manifest, agent playbook, ADR-007/008/009/010, schema verification.
+**Work performed:** typed domain wrappers for auth, clubs, events, tickets, predictions, analytics and admin; CLI parser, profile/session storage with `0600` permissions, JSON output, help, `commands`/`describe`, fan/club/admin/ops commands; `tests/agent/cli.test.ts`; `bun run test:agent`; CI step in the domain-invariants job.
+**Verification:** CI run [42612258666](https://github.com/match-pulse/match-pulse/actions/runs/42612258666) passed all five jobs. The database suite remained **41 pass / 0 fail**; the CLI suite was **2 pass / 0 fail**, covering the match-day journey, cross-club denial and max-four refusal. Details: [verification record](../verification/2026-11-159-cli-and-agent-playbook.md).
+**Learning:** A CLI is a useful second client because it exposes authorization and state-transition gaps that the UI masks. The database contract, not the CLI, remains the source of truth.
+**Limitations:** The web app still uses anonymous fan auth and v2 roles. OS keychain storage, `ops cleanup` as a CLI command and the full UI migration remain. FND-007 and FND-008 are open human gates.
+
+**Links:** issue #159 · PR #160 · [`execution plan`](../exec-plans/153-v3-club-subscriptions.md) · [`capability manifest`](../../testing/capabilities.md) · [`verification`](../verification/2026-11-159-cli-and-agent-playbook.md)
+
+---
+
 ## Standing rule
 
 AI may investigate, analyse, draft, implement within an approved scope, and run verification. The human retains every decision that affects business rules, architecture, schema, scope, priority, risk acceptance and merging. Contributions that cannot be verified are recorded as unverified rather than asserted.
