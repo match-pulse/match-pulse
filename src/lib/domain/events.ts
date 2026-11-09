@@ -57,6 +57,19 @@ export async function listClubEvents(
   return callRpc<ClubEvent[]>(client, 'list_club_events', { p_club_id: clubId })
 }
 
+export async function getClubEvent(
+  client: SupabaseClient,
+  eventId: string
+): Promise<ClubEvent | null> {
+  return selectOne<ClubEvent>(
+    client
+      .from('tournaments')
+      .select('id, name, status, max_capacity, current_players, ticket_allocation, ticket_points, published_at, created_at, club_id')
+      .eq('id', eventId)
+      .maybeSingle()
+  )
+}
+
 export async function createClubMatch(
   client: SupabaseClient,
   eventId: string,

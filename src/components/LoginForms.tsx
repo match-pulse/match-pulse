@@ -1,29 +1,29 @@
 'use client'
 
 import { useState } from 'react'
-import { signInAnonymously, signInClub, signInOrganizer } from '@/app/actions/auth'
+import { signInClub, signInFan, signInOrganizer, signUpFan } from '@/app/actions/auth'
 
 type Mode = 'FAN' | 'ORGANIZER' | 'CLUB'
+type AuthAction = (formData: FormData) => Promise<{ success: false; message: string }>
 
-export default function LoginForms() {
+export default function LoginForms({ next }: { next?: string }) {
   const [mode, setMode] = useState<Mode>('FAN')
+  const [fanSignup, setFanSignup] = useState(false)
   const [busy, setBusy] = useState(false)
   const [message, setMessage] = useState<string | null>(null)
 
-  async function handleFan() {
-    setBusy(true)
-    setMessage(null)
-    const result = await signInAnonymously()
-    if (result) setMessage(result.message)
-    setBusy(false)
-  }
-
-  async function handlePassword(formData: FormData, action: typeof signInOrganizer) {
+  async function handlePassword(formData: FormData, action: AuthAction) {
     setBusy(true)
     setMessage(null)
     const result = await action(formData)
     if (result) setMessage(result.message)
     setBusy(false)
+  }
+
+  function selectMode(nextMode: Mode) {
+    setMode(nextMode)
+    setMessage(null)
+    if (nextMode !== 'FAN') setFanSignup(false)
   }
 
   return (
@@ -34,10 +34,7 @@ export default function LoginForms() {
             key={option}
             type="button"
             aria-pressed={mode === option}
-            onClick={() => {
-              setMode(option)
-              setMessage(null)
-            }}
+            onClick={() => selectMode(option)}
             className={`rounded px-2 py-2 font-semibold ${
               mode === option ? 'bg-blue-600 text-white' : 'text-slate-300 hover:bg-slate-700'
             }`}
@@ -48,26 +45,103 @@ export default function LoginForms() {
       </div>
 
       {mode === 'FAN' && (
-        <div className="flex flex-col gap-4">
+        <form
+          action={(formData) =>
+            handlePassword(formData, fanSignup ? signUpFan : signInFan)
+          }
+          className="flex flex-col gap-3"
+        >
+          {next && <input type="hidden" name="next" value={next} />}
           <p className="text-sm text-slate-400">
-            Start an anonymous fan session. You receive 200 starting points.
+            {fanSignup
+              ? 'Create a fan account with email and password. You receive 200 starting points.'
+              : 'Sign in with your fan email and password to buy tickets and predict across clubs.'}
           </p>
+          <label className="text-sm text-slate-400" htmlFor="fan-email">
+            Fan email
+          </label>
+          <input
+            id="fan-email"
+            name="email"
+            type="email"
+            autoComplete="email"
+            required
+            className="rounded p-2 font-semibold text-black"
+          />
+          {fanSignup && (
+            <>
+              <label className="text-sm text-slate-400" htmlFor="fan-username">
+                Username
+              </label>
+              <input
+                id="fan-username"
+                name="username"
+                type="text"
+                autoComplete="nickname"
+                required
+                className="rounded p-2 font-semibold text-black"
+              />
+            </>
+          )}
+          <label className="text-sm text-slate-400" htmlFor="fan-password">
+            Password
+          </label>
+          <input
+            id="fan-password"
+            name="password"
+            type="password"
+            autoComplete={fanSignup ? 'new-password' : 'current-password'}
+            minLength={6}
+            required
+            className="rounded p-2 font-semibold text-black"
+          />
+          {fanSignup && (
+            <>
+              <label className="text-sm text-slate-400" htmlFor="fan-confirm-password">
+                Confirm password
+              </label>
+              <input
+                id="fan-confirm-password"
+                name="confirmPassword"
+                type="password"
+                autoComplete="new-password"
+                minLength={6}
+                required
+                className="rounded p-2 font-semibold text-black"
+              />
+            </>
+          )}
           <button
-            type="button"
-            onClick={handleFan}
+            type="submit"
             disabled={busy}
             className="rounded bg-blue-600 py-3 font-bold text-white hover:bg-blue-700 disabled:bg-slate-600"
           >
-            Continue as fan
+            {fanSignup ? 'Create fan account' : 'Sign in as fan'}
           </button>
-        </div>
+          <button
+            type="button"
+            onClick={() => {
+              setFanSignup((value) => !value)
+              setMessage(null)
+            }}
+            className="text-sm text-slate-300 underline hover:text-white"
+          >
+            {fanSignup ? 'Already have an account? Sign in' : 'New fan? Create an account'}
+          </button>
+        </form>
       )}
 
       {mode !== 'FAN' && (
         <form
-          action={(formData) => handlePassword(formData, mode === 'ORGANIZER' ? signInOrganizer : signInClub)}
+          action={(formData) =>
+            handlePassword(
+              formData,
+              mode === 'ORGANIZER' ? signInOrganizer : signInClub
+            )
+          }
           className="flex flex-col gap-3"
         >
+          {next && <input type="hidden" name="next" value={next} />}
           <label className="text-sm text-slate-400" htmlFor={`${mode}-email`}>
             {mode === 'ORGANIZER' ? 'Organizer email' : 'Club email'}
           </label>

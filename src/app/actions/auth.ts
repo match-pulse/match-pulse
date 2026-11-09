@@ -2,57 +2,82 @@
 
 import { redirect } from 'next/navigation'
 import { createSupabaseServerClient } from '@/lib/supabase/server'
+import { signIn as domainSignIn, signUpFan as domainSignUpFan } from '@/lib/domain/auth'
+import { fromUnknownError } from '@/lib/domain/errors'
 
 type AuthFailure = { success: false; message: string }
 
-export async function signInAnonymously(): Promise<AuthFailure> {
-  const supabase = await createSupabaseServerClient()
-  const { error } = await supabase.auth.signInAnonymously()
+function safeNext(formData: FormData): string {
+  const next = formData.get('next')
+  if (typeof next === 'string' && next.startsWith('/') && !next.startsWith('//')) {
+    return next
+  }
+  return '/'
+}
 
-  if (error) {
-    return {
-      success: false,
-      message: 'Could not start a fan session. Check that anonymous sign-in is enabled.'
-    }
+function failure(error: unknown): AuthFailure {
+  return { success: false, message: fromUnknownError(error).message }
+}
+
+async function passwordSignIn(formData: FormData): Promise<AuthFailure> {
+  const email = formData.get('email')
+  const password = formData.get('password')
+
+  if (typeof email !== 'string' || typeof password !== 'string' || !email || !password) {
+    return { success: false, message: 'Enter your email and password.' }
   }
 
-  redirect('/')
+  const supabase = await createSupabaseServerClient()
+
+  try {
+    await domainSignIn(supabase, email, password)
+  } catch (error) {
+    return failure(error)
+  }
+
+  redirect(safeNext(formData))
+}
+
+export async function signInFan(formData: FormData): Promise<AuthFailure> {
+  return passwordSignIn(formData)
 }
 
 export async function signInOrganizer(formData: FormData): Promise<AuthFailure> {
-  const email = formData.get('email')
-  const password = formData.get('password')
-
-  if (typeof email !== 'string' || typeof password !== 'string' || !email || !password) {
-    return { success: false, message: 'Enter the organizer email and password.' }
-  }
-
-  const supabase = await createSupabaseServerClient()
-  const { error } = await supabase.auth.signInWithPassword({ email, password })
-
-  if (error) {
-    return { success: false, message: 'Invalid organizer credentials.' }
-  }
-
-  redirect('/')
+  return passwordSignIn(formData)
 }
 
 export async function signInClub(formData: FormData): Promise<AuthFailure> {
+  return passwordSignIn(formData)
+}
+
+export async function signUpFan(formData: FormData): Promise<AuthFailure> {
   const email = formData.get('email')
   const password = formData.get('password')
+  const confirmPassword = formData.get('confirmPassword')
+  const username = formData.get('username')
 
-  if (typeof email !== 'string' || typeof password !== 'string' || !email || !password) {
-    return { success: false, message: 'Enter the club email and password.' }
+  if (typeof email !== 'string' || !email) {
+    return { success: false, message: 'Enter your email.' }
+  }
+  if (typeof password !== 'string' || password.length < 6) {
+    return { success: false, message: 'The password must be at least 6 characters.' }
+  }
+  if (typeof confirmPassword !== 'string' || password !== confirmPassword) {
+    return { success: false, message: 'The passwords do not match.' }
+  }
+  if (typeof username !== 'string' || username.trim().length < 2) {
+    return { success: false, message: 'Choose a username with at least 2 characters.' }
   }
 
   const supabase = await createSupabaseServerClient()
-  const { error } = await supabase.auth.signInWithPassword({ email, password })
 
-  if (error) {
-    return { success: false, message: 'Invalid club credentials.' }
+  try {
+    await domainSignUpFan(supabase, email, password, username.trim())
+  } catch (error) {
+    return failure(error)
   }
 
-  redirect('/')
+  redirect(safeNext(formData))
 }
 
 export async function signOut(): Promise<never> {

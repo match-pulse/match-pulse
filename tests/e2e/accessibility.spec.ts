@@ -19,10 +19,23 @@ test('login page has no serious or critical accessibility violations', async ({ 
   await assertNoCriticalViolations(page)
 })
 
-test('fan page has no serious or critical accessibility violations', async ({ page }) => {
+test('fan events page has no serious or critical accessibility violations', async ({ page }) => {
+  const fanEmail = `axe-fan-${Date.now()}@matchpulse.local`
+
   await page.goto('/login')
-  await page.getByRole('button', { name: 'Continue as fan' }).click()
-  await expect(page.getByRole('heading', { name: 'Fan home' })).toBeVisible()
+  await page.getByRole('button', { name: 'New fan? Create an account' }).click()
+  await page.getByLabel('Fan email').fill(fanEmail)
+  await page.getByLabel('Username').fill('Axe Fan')
+  await page.getByLabel('Password', { exact: true }).fill('matchpulse-fan')
+  await page.getByLabel('Confirm password').fill('matchpulse-fan')
+  await page.getByRole('button', { name: 'Create fan account' }).click()
+
+  await expect(page.getByRole('heading', { name: 'Events' })).toBeVisible()
+  await assertNoCriticalViolations(page)
+
+  const demo = page.locator('article').filter({ hasText: 'Demo Derby' }).first()
+  await demo.getByRole('link', { name: 'Open event' }).click()
+  await expect(page.getByRole('heading', { name: 'Demo Derby' })).toBeVisible()
   await assertNoCriticalViolations(page)
 })
 

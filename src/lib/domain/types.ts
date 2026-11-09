@@ -43,6 +43,7 @@ export type ClubEvent = {
   ticket_points: number
   published_at: string | null
   created_at: string
+  club_id?: string
 }
 
 export type ClubMatch = {
