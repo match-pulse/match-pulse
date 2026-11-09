@@ -429,7 +429,7 @@ BEGIN
         RAISE EXCEPTION 'member limit reached';
     END IF;
 
-    v_token := encode(gen_random_bytes(16), 'hex');
+    v_token := replace(gen_random_uuid()::text, '-', '');
 
     UPDATE public.club_invites
        SET role = v_role,

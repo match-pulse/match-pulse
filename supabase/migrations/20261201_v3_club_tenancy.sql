@@ -40,7 +40,7 @@ CREATE TABLE public.club_invites (
     club_id UUID NOT NULL REFERENCES public.clubs(id) ON DELETE CASCADE,
     email TEXT NOT NULL CHECK (position('@' in email) > 1),
     role TEXT NOT NULL CHECK (role IN ('ADMIN', 'STAFF', 'ANALYST')),
-    token TEXT NOT NULL UNIQUE DEFAULT encode(gen_random_bytes(16), 'hex'),
+    token TEXT NOT NULL UNIQUE DEFAULT replace(gen_random_uuid()::text, '-', ''),
     invited_by UUID REFERENCES public.profiles(id) ON DELETE SET NULL,
     expires_at TIMESTAMPTZ NOT NULL DEFAULT (NOW() + INTERVAL '7 days'),
     accepted_at TIMESTAMPTZ,

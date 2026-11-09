@@ -489,6 +489,8 @@ SECURITY DEFINER
 SET search_path = public, pg_temp
 AS $$
 BEGIN
+    PERFORM public.require_auth();
+
     RETURN QUERY
         SELECT *
           FROM public.purchase_ticket(
@@ -1208,8 +1210,23 @@ BEGIN
         IF NOT public.has_club_role(v_club_id, ARRAY['OWNER', 'ADMIN', 'STAFF']) THEN
             RAISE EXCEPTION 'club authorization required';
         END IF;
-    ELSIF v_organizer_id IS DISTINCT FROM v_user_id THEN
-        RAISE EXCEPTION 'organizer authorization required';
+    ELSIF v_tournament_id IS NOT NULL THEN
+        IF v_organizer_id IS DISTINCT FROM v_user_id THEN
+            RAISE EXCEPTION 'organizer does not own this market';
+        END IF;
+        IF NOT EXISTS (
+            SELECT 1 FROM public.profiles WHERE id = v_user_id AND role = 'ORGANIZER'
+        ) THEN
+            RAISE EXCEPTION 'organizer authorization required';
+        END IF;
+    ELSE
+        -- Legacy market without a tournament link: preserve the v2 rule that an
+        -- authenticated organizer may resolve it.
+        IF NOT EXISTS (
+            SELECT 1 FROM public.profiles WHERE id = v_user_id AND role = 'ORGANIZER'
+        ) THEN
+            RAISE EXCEPTION 'organizer authorization required';
+        END IF;
     END IF;
 
     IF v_status <> 'OPEN' THEN
