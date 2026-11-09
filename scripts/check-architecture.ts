@@ -117,7 +117,33 @@ const mutationRpcs = [
   { name: 'update_match', signature: '(UUID, INT, INT, TEXT)' },
   { name: 'claim_ticket', signature: '(UUID)' },
   { name: 'redeem_reward', signature: '(UUID)' },
-  { name: 'record_club_export', signature: '(TEXT, JSONB)' }
+  { name: 'record_club_export', signature: '(TEXT, JSONB)' },
+  { name: 'create_club', signature: '(TEXT, TEXT, TEXT)' },
+  { name: 'update_club', signature: '(UUID, TEXT, TEXT)' },
+  { name: 'request_plan_change', signature: '(UUID, TEXT)' },
+  { name: 'admin_assign_plan', signature: '(UUID, TEXT, TEXT)' },
+  { name: 'admin_set_subscription_status', signature: '(UUID, TEXT)' },
+  { name: 'invite_club_member', signature: '(UUID, TEXT, TEXT)' },
+  { name: 'accept_club_invite', signature: '(TEXT)' },
+  { name: 'set_club_member_role', signature: '(UUID, UUID, TEXT)' },
+  { name: 'remove_club_member', signature: '(UUID, UUID)' },
+  { name: 'create_club_event', signature: '(UUID, TEXT, INT, INT, INT)' },
+  { name: 'update_club_event', signature: '(UUID, TEXT, INT, INT, INT)' },
+  { name: 'publish_club_event', signature: '(UUID)' },
+  { name: 'create_club_match', signature: '(UUID, TEXT, TEXT, TIMESTAMPTZ, BOOLEAN)' },
+  { name: 'update_club_match', signature: '(UUID, INT, INT, TEXT)' },
+  { name: 'set_prediction_enabled', signature: '(UUID, BOOLEAN)' },
+  {
+    name: 'create_ticket_type',
+    signature:
+      '(UUID, TEXT, TEXT, INT, INT, TIMESTAMPTZ, TIMESTAMPTZ, TIMESTAMPTZ, INT, BOOLEAN, BOOLEAN, BOOLEAN)'
+  },
+  { name: 'purchase_ticket', signature: '(UUID, JSONB, BOOLEAN, UUID, TEXT, UUID)' },
+  { name: 'box_office_sell', signature: '(UUID, UUID, JSONB, BOOLEAN, UUID)' },
+  { name: 'transfer_ticket', signature: '(UUID, JSONB)' },
+  { name: 'check_in_ticket', signature: '(TEXT)' },
+  { name: 'create_club_reward', signature: '(UUID, TEXT, INT, INT)' },
+  { name: 'issue_club_fan_card', signature: '(UUID, TEXT, UUID)' }
 ]
 
 function functionBlock(name: string): string {
@@ -144,8 +170,8 @@ for (const rpc of mutationRpcs) {
   if (!block.includes('SECURITY DEFINER')) {
     fail('Mutation RPC is SECURITY DEFINER', rpc.name)
   }
-  if (!block.includes('auth.uid()') && !block.includes("public.require_role('")) {
-    fail('Mutation RPC resolves auth.uid() or require_role', rpc.name)
+  if (!block.includes('auth.uid()') && !block.includes('public.require_')) {
+    fail('Mutation RPC resolves auth.uid() or an auth helper', rpc.name)
   }
   if (!rpcSql.includes(`REVOKE ALL ON FUNCTION public.${rpc.name}${rpc.signature}`)) {
     fail('Mutation RPC revokes broad execute', rpc.name)
@@ -155,8 +181,14 @@ for (const rpc of mutationRpcs) {
   }
 }
 
-if (!functionBlock('resolve_market').includes("role = 'ORGANIZER'")) {
-  fail('resolve_market requires organizer role', 'ORGANIZER check not found')
+if (
+  !functionBlock('resolve_market').includes('has_club_role') ||
+  !functionBlock('resolve_market').includes('organizer authorization required')
+) {
+  fail(
+    'resolve_market requires club or organizer authorization',
+    'club/organizer check not found'
+  )
 }
 
 if (failures.length === 0) {

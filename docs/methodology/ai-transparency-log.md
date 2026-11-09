@@ -787,6 +787,23 @@ Secret hygiene re-verified: `release.env` in history contains only `APP_VERSION`
 
 ---
 
+## Entry 44 — v3.0.0 club tenancy and nominal ticketing schema
+
+**Date:** 2026-11-09
+**Tool:** opencode CLI (`deepseek-v4.1-flash`)
+**Intent:** Implement the v3 database foundation for club tenancy, subscription entitlements, platform administration and nominal ticketing.
+**Boundary:** Database migrations, RLS/grants, helper functions, club/plan/ticketing RPCs, architecture-guard updates, integration tests, a CI port-cleanup step, OpenSpec task checkboxes and the verification record. No UI, Server Action, auth or CLI migration in this entry.
+**Prior records reviewed:** epic #153, contract #156, execution plan, ADR-007/008/009/010, migrations 20261018–20261130, invariant registry, findings register.
+**Work performed:** `20261201_v3_club_tenancy.sql` (clubs, members, invites, platform admins, plans, entitlements, subscriptions, ticket types/orders/attendees/transfers/fan cards, event ownership, backfill); `20261202_v3_club_rls.sql` (helpers, public views, RLS, grants); `20261203_v3_club_rpcs.sql` (club, membership, plan, event, match, admin); `20261204_v3_ticketing_rpcs.sql` (nominal purchase, transfer, check-in, box office, analytics, rewards, club-aware resolution); `tests/integration/v3-club-tenancy.test.ts`; architecture guard updates.
+**Verification:** CI run [42609325110](https://github.com/match-pulse/match-pulse/actions/runs/42609325110) passed all five jobs. Domain invariants: **41 pass / 0 fail across 10 files**. Delivery/recovery restored 26 tables and 35 policies with the marker intact. Fault injection produced its expected results. E2E/accessibility and build passed. Details: [verification record](../verification/2026-11-157-v3-club-tenancy.md).
+**Corrections during verification:** removed an `extensions.gen_random_bytes` dependency that broke scratch-database restore; restored legacy organizer resolution for markets without a tournament link; qualified an ambiguous `checked_in_at` in check-in; added a CI port cleanup after two port-54322 collisions.
+**Learning:** A tenancy migration must preserve the old authorization path until the application is migrated, and generated defaults can break a restore even when the live database is healthy.
+**Limitations:** The UI/auth/CLI still use the v2 paths. Attendee retention cleanup, real payments, financial KYC, hosted deployment and production recovery are not implemented. FND-007 and FND-008 remain human gates.
+
+**Links:** issue #157 · PR #158 · [`execution plan`](../exec-plans/153-v3-club-subscriptions.md) · [`verification`](../verification/2026-11-157-v3-club-tenancy.md)
+
+---
+
 ## Standing rule
 
 AI may investigate, analyse, draft, implement within an approved scope, and run verification. The human retains every decision that affects business rules, architecture, schema, scope, priority, risk acceptance and merging. Contributions that cannot be verified are recorded as unverified rather than asserted.
