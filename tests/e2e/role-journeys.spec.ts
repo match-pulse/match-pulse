@@ -4,6 +4,8 @@ const ORGANIZER_EMAIL = process.env.ORGANIZER_EMAIL ?? 'organizer@matchpulse.loc
 const ORGANIZER_PASSWORD = process.env.ORGANIZER_PASSWORD ?? 'matchpulse-organizer'
 const CLUB_EMAIL = process.env.CLUB_EMAIL ?? 'club@matchpulse.local'
 const CLUB_PASSWORD = process.env.CLUB_PASSWORD ?? 'matchpulse-club'
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL ?? 'admin@matchpulse.local'
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD ?? 'matchpulse-admin'
 
 test('fan can sign up, buy a nominal ticket and view the ticket', async ({ page }) => {
   const fanEmail = `e2e-fan-${Date.now()}@matchpulse.local`
@@ -87,4 +89,40 @@ test('club can view aggregate analytics and export CSV', async ({ page }) => {
   expect(response.status()).toBe(200)
   expect(response.headers()['content-type']).toContain('text/csv')
   expect(await response.text()).toContain('match_id,home_team,away_team')
+})
+
+test('club owner can open the v3 dashboard and create a reward', async ({ page }) => {
+  await page.goto('/login')
+  await page.getByRole('button', { name: 'Organizer' }).click()
+  await page.getByLabel('Organizer email').fill(ORGANIZER_EMAIL)
+  await page.getByLabel('Password').fill(ORGANIZER_PASSWORD)
+  await page.getByRole('button', { name: 'Sign in as organizer' }).click()
+  await expect(page.getByRole('heading', { name: 'Organizer dashboard' })).toBeVisible()
+
+  await page.goto('/club/dashboard')
+  await expect(page.getByRole('heading', { name: 'MatchPulse Demo Club' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Members' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Club rewards' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Aggregate prediction insights' })).toBeVisible()
+
+  const rewardName = `E2E reward ${Date.now()}`
+  await page.getByLabel('Reward name').fill(rewardName)
+  await page.getByLabel('Reward cost points').fill('50')
+  await page.getByLabel('Reward discount percent').fill('10')
+  await page.getByRole('button', { name: 'Create reward' }).click()
+  await expect(page.getByText('Reward created.')).toBeVisible()
+  await expect(page.getByText(rewardName)).toBeVisible()
+})
+
+test('platform admin can view clubs and audit', async ({ page }) => {
+  await page.goto('/login')
+  await page.getByRole('button', { name: 'Organizer' }).click()
+  await page.getByLabel('Organizer email').fill(ADMIN_EMAIL)
+  await page.getByLabel('Password').fill(ADMIN_PASSWORD)
+  await page.getByRole('button', { name: 'Sign in as organizer' }).click()
+
+  await expect(page.getByRole('heading', { name: 'Platform admin' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Clubs' })).toBeVisible()
+  await expect(page.getByText('MatchPulse Demo Club')).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Audit' })).toBeVisible()
 })
