@@ -853,6 +853,22 @@ Secret hygiene re-verified: `release.env` in history contains only `APP_VERSION`
 
 ---
 
+## Entry 48 — v3 attendee-data retention
+
+**Date:** 2026-11-09
+**Tool:** opencode CLI (`deepseek-v4.1-flash`)
+**Intent:** Add a service-role-only cleanup that removes attendee identity from past-event tickets while preserving ticket, order, points and audit.
+**Boundary:** Migration, maintenance script, package script, integration test, runbook and README known-gap update. No application runtime service-role use.
+**Prior records reviewed:** #156, ADR-010, execution plan task 2.7, privacy rule, CLI/schema verification records.
+**Work performed:** `cleanup_expired_attendee_data(INTERVAL)`; `scripts/cleanup-attendee-data.ts`; `bun run maintenance:cleanup-attendees`; an old/recent ticket test and authenticated denial; runbook section.
+**Verification:** CI run [42626348710](https://github.com/match-pulse/match-pulse/actions/runs/42626348710) passed all five jobs. The database suite was **42 pass / 0 fail**, including the retention test; the CLI suite remained 2 pass; E2E/accessibility passed. Details: [verification record](../verification/2026-11-165-attendee-retention.md).
+**Learning:** A privacy promise needs an executable cleanup path; keeping the ticket code and order while clearing identity preserves operations and evidence.
+**Limitations:** No scheduled production job, no independent legal/privacy review, and the audit actor is null because the maintenance context is the service role. FND-007/FND-008 remain human gates.
+
+**Links:** issue #165 · PR #166 · [`runbook`](../../operations/runbook.md) · [`verification`](../verification/2026-11-165-attendee-retention.md)
+
+---
+
 ## Standing rule
 
 AI may investigate, analyse, draft, implement within an approved scope, and run verification. The human retains every decision that affects business rules, architecture, schema, scope, priority, risk acceptance and merging. Contributions that cannot be verified are recorded as unverified rather than asserted.

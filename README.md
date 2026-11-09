@@ -86,6 +86,7 @@ Read the architecture documents in this order:
 - [Verification — v3 Shared Contract and CLI](docs/methodology/verification/2026-11-159-cli-and-agent-playbook.md)
 - [Verification — v3 Email/Password Auth and Member UI](docs/methodology/verification/2026-11-161-v3-auth-ui.md)
 - [Verification — v3 Club Members, Rewards, Insights and Market Resolution](docs/methodology/verification/2026-11-163-club-members-rewards-insights.md)
+- [Verification — v3 Attendee-Data Retention](docs/methodology/verification/2026-11-165-attendee-retention.md)
 - [Execution Plan — Invariant Evidence and the Registration Path](docs/methodology/exec-plans/50-invariant-evidence-and-registration-path.md) *(superseded)*
 - [AI Agent Instructions](AGENTS.md)
 
