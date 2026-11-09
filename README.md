@@ -83,6 +83,7 @@ Read the architecture documents in this order:
 - [Verification — Delivery, Observability and Recovery](docs/methodology/verification/2026-11-111-delivery-operations-baseline.md)
 - [Verification — Backup and Restore Recovery Drill](docs/methodology/verification/2026-11-117-recovery-drill.md)
 - [Verification — v3.0.0 Club Tenancy and Nominal Ticketing Schema](docs/methodology/verification/2026-11-157-v3-club-tenancy.md)
+- [Verification — v3 Shared Contract and CLI](docs/methodology/verification/2026-11-159-cli-and-agent-playbook.md)
 - [Execution Plan — Invariant Evidence and the Registration Path](docs/methodology/exec-plans/50-invariant-evidence-and-registration-path.md) *(superseded)*
 - [AI Agent Instructions](AGENTS.md)
 

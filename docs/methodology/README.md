@@ -31,6 +31,7 @@ ADRs remain in [`docs/architecture/adr/`](../architecture/adr/) and follow the e
 - [`reports/`](reports/) — dated project reports; [`2026-11-08.md`](reports/2026-11-08.md) is the current methodology synthesis.
 - [`exec-plans/153-v3-club-subscriptions.md`](exec-plans/153-v3-club-subscriptions.md) — approved v3.0.0 execution plan.
 - [`verification/2026-11-157-v3-club-tenancy.md`](verification/2026-11-157-v3-club-tenancy.md) — verified v3 database foundation.
+- [`verification/2026-11-159-cli-and-agent-playbook.md`](verification/2026-11-159-cli-and-agent-playbook.md) — verified CLI and agent playbook.
 - [`../testing/agent-playbook.md`](../testing/agent-playbook.md) — CLI-driven agent scenarios and evidence.
 - [`../testing/capabilities.md`](../testing/capabilities.md) — capability-to-command parity manifest.
 - [`../product/competitive-landscape.md`](../product/competitive-landscape.md) — TicketOne/Vivaticket positioning and nominal ticketing context.

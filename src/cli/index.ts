@@ -71,10 +71,12 @@ const COMMANDS: CommandInfo[] = [
   { command: 'fan events show', group: 'fan', description: 'Show an event, ticket types and matches', usage: '--event <id>', mutates: false },
   { command: 'fan tickets buy', group: 'fan', description: 'Buy one to four nominal tickets', usage: '--ticket-type <id> --attendee <json> [--attendee <json>] --accept-terms', mutates: true },
   { command: 'fan tickets list', group: 'fan', description: 'List the buyer tickets', usage: '', mutates: false },
+  { command: 'fan tickets show', group: 'fan', description: 'Show one ticket and its code', usage: '--ticket <id>', mutates: false },
   { command: 'fan tickets transfer', group: 'fan', description: 'Change the named attendee before the deadline', usage: '--ticket <id> --attendee <json>', mutates: true },
   { command: 'fan predictions enter', group: 'fan', description: 'Enter a points-only prediction position', usage: '--market <id> --outcome HOME|DRAW|AWAY --budget <points> [--request-id]', mutates: true },
   { command: 'fan predictions exit', group: 'fan', description: 'Exit part or all of a position', usage: '--market <id> --outcome HOME|DRAW|AWAY --shares <number> [--request-id]', mutates: true },
   { command: 'fan portfolio', group: 'fan', description: 'Show positions, trades and payouts', usage: '', mutates: false },
+  { command: 'fan portfolio show', group: 'fan', description: 'Show positions, trades and payouts', usage: '', mutates: false },
   { command: 'fan rewards list', group: 'fan', description: 'List active club rewards', usage: '', mutates: false },
   { command: 'fan rewards redeem', group: 'fan', description: 'Redeem points for a club reward', usage: '--reward <id>', mutates: true },
 
@@ -265,6 +267,13 @@ async function dispatch(
       const client = await getClient(profile)
       return listMyTickets(client)
     }
+    case 'fan tickets show': {
+      const client = await getClient(profile)
+      const tickets = await listMyTickets(client)
+      const ticket = tickets.find((row) => row.ticket_id === required(flags, 'ticket'))
+      if (!ticket) throw new DomainError('NOT_FOUND', 'Ticket not found for this profile.')
+      return ticket
+    }
     case 'fan tickets transfer': {
       const client = await getClient(profile)
       const attendees = attendeesFrom(flags)
@@ -294,7 +303,8 @@ async function dispatch(
         requestId(flags)
       )
     }
-    case 'fan portfolio': {
+    case 'fan portfolio':
+    case 'fan portfolio show': {
       const client = await getClient(profile)
       return myPortfolio(client)
     }
