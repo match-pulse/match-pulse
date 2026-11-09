@@ -35,6 +35,7 @@ ADRs remain in [`docs/architecture/adr/`](../architecture/adr/) and follow the e
 - [`verification/2026-11-161-v3-auth-ui.md`](verification/2026-11-161-v3-auth-ui.md) — verified email/password auth and core v3 UI.
 - [`verification/2026-11-163-club-members-rewards-insights.md`](verification/2026-11-163-club-members-rewards-insights.md) — verified club management, rewards, insights, export and resolution.
 - [`verification/2026-11-165-attendee-retention.md`](verification/2026-11-165-attendee-retention.md) — verified attendee-data retention cleanup.
+- [`verification/2026-11-169-v3-release.md`](verification/2026-11-169-v3-release.md) — verified v3.0.0 documentation and release package.
 - [`../testing/agent-playbook.md`](../testing/agent-playbook.md) — CLI-driven agent scenarios and evidence.
 - [`../testing/capabilities.md`](../testing/capabilities.md) — capability-to-command parity manifest.
 - [`../product/competitive-landscape.md`](../product/competitive-landscape.md) — TicketOne/Vivaticket positioning and nominal ticketing context.

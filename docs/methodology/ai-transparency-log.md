@@ -885,6 +885,22 @@ Secret hygiene re-verified: `release.env` in history contains only `APP_VERSION`
 
 ---
 
+## Entry 50 — v3.0.0 release package
+
+**Date:** 2026-11-09
+**Tool:** opencode CLI (`deepseek-v4.1-flash`)
+**Intent:** Prepare the v3.0.0 release package: current-state docs, dated report addenda, submission PDFs, version/changelog and verification record.
+**Boundary:** Documentation, PDFs and release metadata only. No application behavior change in this entry.
+**Prior records reviewed:** all v3 schema/CLI/auth/UI/club/retention/QR verification records, ADR-007–010, execution plan, capability manifest, findings register.
+**Work performed:** updated README/product scope/kata/domain/system/C4/code map/characteristics/test strategy/threat model/failure modes/runbook/SLOs/checkpoints/ADRs; added v3 report addenda; regenerated and committed the four submission PDFs (kata 1 page, characteristics 12, architecture report 13, methodology report 10); updated the submission index; set `package.json` to `3.0.0`; added the v3.0.0 changelog section.
+**Verification:** CI run [42633841431](https://github.com/match-pulse/match-pulse/actions/runs/42633841431) passed all five jobs: 42 database tests, 2 CLI tests, 11 E2E/axe tests, delivery/recovery and fault injection. `pdfinfo` confirmed the page counts; the kata was rendered and inspected. Details: [verification record](../verification/2026-11-169-v3-release.md).
+**Learning:** A release package is more than a tag: the current-state docs, dated addenda, PDFs, version and evidence must name the same system and the same limits.
+**Limitations:** The tag and GitHub Release follow after merge and are not claimed in this entry. No real payments, financial KYC, hosted deployment or independent review. FND-007/FND-008 remain human gates.
+
+**Links:** issue #169 · PR #170 · [`execution plan`](../exec-plans/153-v3-club-subscriptions.md) · [`submission index`](../../submissions/README.md) · [`verification`](../verification/2026-11-169-v3-release.md)
+
+---
+
 ## Standing rule
 
 AI may investigate, analyse, draft, implement within an approved scope, and run verification. The human retains every decision that affects business rules, architecture, schema, scope, priority, risk acceptance and merging. Contributions that cannot be verified are recorded as unverified rather than asserted.
