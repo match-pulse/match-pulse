@@ -54,3 +54,7 @@ The course's quality and review material treats authentication and authorization
 - [`../02-domain-model.md`](../02-domain-model.md) — roles, identity and invariants
 - [`../03-architecture-characteristics.md`](../03-architecture-characteristics.md) — security/authorization characteristic
 - [`../../methodology/checkpoint-C/05-residual-risk.md`](../../methodology/checkpoint-C/05-residual-risk.md) — RR-01 and its closure evidence
+
+## Update 2026-11-09 — v3 tenancy and entitlements
+
+The database-boundary decision is unchanged. v3 adds a second authorization dimension: a caller must be a club member with the required role and an active subscription entitlement. Platform administration is a separate `platform_admins` capability. The service role remains an operator/fixture/retention credential outside the application runtime. See [ADR-007](./007-club-tenancy-and-entitlements.md) and [ADR-008](./008-platform-admin-and-operator-boundary.md).

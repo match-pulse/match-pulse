@@ -295,6 +295,16 @@ export controls) are **not implemented** and are stated as limits.
 | **Testability** | K2, K4, K6–K8, K10–K12 | The central rules cannot be verified by inspection; a green suite that cannot fail is not evidence. | Every enforced invariant has a failable test; suite <3 min; every PR. | 28 tests, 0 failures, 8.28 s; fault injection for key mechanisms. | Measured; FND-002 open. |
 | **Security** (implicit) | K1, K13, K14 | Staff-only management, the points ledger and club privacy create a trust boundary. | No anonymous private read/mutation; no cross-user read; organizer-only resolution; direct writes denied; no service-role key in the client. | `authorization.test.ts`; CI 42435627680. | Measured; production hardening and club privacy unverified. |
 
+### 4.1 v3.0.0 traceability
+
+| Characteristic | Kata points | Why this point led to the characteristic | Quantified target | Evidence | Status |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **Reliability** | K16–K18 | Club tenancy, nominal ticketing and cross-club fans add concurrency and accounting rules: ticket allocation, max-four, idempotent purchase/check-in and club-scoped isolation. | 42 database tests; no oversell; one order per request id; one check-in per ticket; no cross-club read. | `v3-club-tenancy.test.ts`; CLI match-day; CI 42626348710. | Measured; M-INV2 forced-failure limit remains. |
+| **Elasticity** | K5, K6 | Match-time traffic still arrives as a step change; v3 ticket purchase is not separately load-tested. | Existing p95 < 1,000 ms for 100 concurrent registrations; ticket burst not measured. | Existing capacity burst; v3 purchase tests are functional. | Partially measured. |
+| **Deployability** | K1–K20 | The solo operator must ship schema, web and CLI increments without infrastructure work. | Merge to verified local/CI <15 min; five CI jobs; migrations only; CLI build. | CI run 42626348710; runbook; CLI. | Measured for local/CI; production unverified. |
+| **Testability** | K16–K20 | Tenancy, entitlements, attendee identity and admin actions cannot be verified by inspection; agents need a browser-free path. | Every v3 capability has a DB test, CLI command and/or E2E/axe check. | 42 DB, 2 CLI, 11 E2E; fault injection; capability manifest. | Measured; some UI paths are only partially covered. |
+| **Security** (implicit) | K15–K20 | Club isolation, role + entitlement, attendee identity, platform admin and retention create the v3 trust boundary. | No cross-club read; only `ACTIVE` plans grant features; no attendee identity in insights; service-role cleanup only; admin audited. | `v3-club-tenancy.test.ts`; `authorization.test.ts`; CLI denial; verification records. | Measured; independent privacy/security review pending. |
+
 ## 5. Deliberately not selected
 
 | Characteristic | Why not selected |
@@ -360,9 +370,10 @@ requirement that needs it.
 
 **Explicitly not claimed.** No production availability, no production latency, no
 real-user validation, and no independent human review. The kata's user numbers
-are planning assumptions. The system is not yet a complete product: ticket
-purchase, rewards redemption and club analytics are described in the kata but not
-all implemented.
+are planning assumptions. The v3.0.0 increment implements club tenancy, nominal
+ticketing, cross-club fans, rewards, aggregate insights and the admin/CLI
+surface. Remaining gaps are real payments and financial KYC, hosted deployment,
+seat maps/wallet/FIGC integration, sustained load and independent review.
 
 ## 8. Revision history
 
@@ -372,6 +383,7 @@ all implemented.
 | 2026-11-07 | Authorization/RLS implemented and verified. Integrity and security evidence strengthened. |
 | 2026-11-08 | Idempotency, delivery health, smoke, p95 and recovery drill added. |
 | 2026-11-08 | Course alignment revision: numbered kata requirements K1–K15; traceability table; SMART owner/time/review; Integrity under concurrency renamed Reliability; Security labelled implicit; Elasticity and Reliability targets separated; Performance/Responsiveness distinction documented; local deployability proxy added. |
+| 2026-11-09 | v3.0.0: club tenancy, plans/entitlements, nominal ticketing, cross-club fans, admin, CLI and retention; K16–K20 traceability; revised evidence and limits. |
 
 This revision supersedes the earlier naming and traceability, but it preserves the
 earlier evidence and limits. The history is a dated addendum, not a rewrite of

@@ -767,7 +767,7 @@ Secret hygiene re-verified: `release.env` in history contains only `APP_VERSION`
 **Learning:** Writing the capability manifest and playbook before the schema forces every planned feature to name its CLI command, database contract, authorization test and scenario target.
 **Limitations:** The playbook is a specification until the CLI and scenarios exist. No tenancy, entitlement, auth or ticketing behavior is implemented in this entry. FND-007 and FND-008 remain human gates.
 
-**Links:** issue #153 · [`execution plan`](../exec-plans/153-v3-club-subscriptions.md) · [`OpenSpec change`](../../../openspec/changes/add-club-tenancy-and-cli/proposal.md) · [`agent playbook`](../../testing/agent-playbook.md)
+**Links:** issue #153 · [`execution plan`](exec-plans/153-v3-club-subscriptions.md) · [`OpenSpec change`](../../openspec/changes/add-club-tenancy-and-cli/proposal.md) · [`agent playbook`](../testing/agent-playbook.md)
 
 ---
 
@@ -783,7 +783,7 @@ Secret hygiene re-verified: `release.env` in history contains only `APP_VERSION`
 **Learning:** Italian ticketing is nominative; the buyer and the attendee are different people. Treating attendee identity as event-access data keeps it separate from financial KYC and from aggregate prediction insights.
 **Limitations:** The plan and playbook are specifications until the schema/CLI/UI exist. Deep FIGC/Questura/fan-card integration, wallet passes and seat maps are out of scope. FND-007 and FND-008 remain human gates.
 
-**Links:** issue #156 · [`execution plan`](../exec-plans/153-v3-club-subscriptions.md) · [`ADR-010`](../../architecture/adr/010-nominal-ticketing-and-attendee-identity.md) · [`competitive landscape`](../../product/competitive-landscape.md)
+**Links:** issue #156 · [`execution plan`](exec-plans/153-v3-club-subscriptions.md) · [`ADR-010`](../architecture/adr/010-nominal-ticketing-and-attendee-identity.md) · [`competitive landscape`](../product/competitive-landscape.md)
 
 ---
 
@@ -795,12 +795,12 @@ Secret hygiene re-verified: `release.env` in history contains only `APP_VERSION`
 **Boundary:** Database migrations, RLS/grants, helper functions, club/plan/ticketing RPCs, architecture-guard updates, integration tests, a CI port-cleanup step, OpenSpec task checkboxes and the verification record. No UI, Server Action, auth or CLI migration in this entry.
 **Prior records reviewed:** epic #153, contract #156, execution plan, ADR-007/008/009/010, migrations 20261018–20261130, invariant registry, findings register.
 **Work performed:** `20261201_v3_club_tenancy.sql` (clubs, members, invites, platform admins, plans, entitlements, subscriptions, ticket types/orders/attendees/transfers/fan cards, event ownership, backfill); `20261202_v3_club_rls.sql` (helpers, public views, RLS, grants); `20261203_v3_club_rpcs.sql` (club, membership, plan, event, match, admin); `20261204_v3_ticketing_rpcs.sql` (nominal purchase, transfer, check-in, box office, analytics, rewards, club-aware resolution); `tests/integration/v3-club-tenancy.test.ts`; architecture guard updates.
-**Verification:** CI run [42609325110](https://github.com/match-pulse/match-pulse/actions/runs/42609325110) passed all five jobs. Domain invariants: **41 pass / 0 fail across 10 files**. Delivery/recovery restored 26 tables and 35 policies with the marker intact. Fault injection produced its expected results. E2E/accessibility and build passed. Details: [verification record](../verification/2026-11-157-v3-club-tenancy.md).
+**Verification:** CI run [42609325110](https://github.com/match-pulse/match-pulse/actions/runs/42609325110) passed all five jobs. Domain invariants: **41 pass / 0 fail across 10 files**. Delivery/recovery restored 26 tables and 35 policies with the marker intact. Fault injection produced its expected results. E2E/accessibility and build passed. Details: [verification record](verification/2026-11-157-v3-club-tenancy.md).
 **Corrections during verification:** removed an `extensions.gen_random_bytes` dependency that broke scratch-database restore; restored legacy organizer resolution for markets without a tournament link; qualified an ambiguous `checked_in_at` in check-in; added a CI port cleanup after two port-54322 collisions.
 **Learning:** A tenancy migration must preserve the old authorization path until the application is migrated, and generated defaults can break a restore even when the live database is healthy.
 **Limitations:** The UI/auth/CLI still use the v2 paths. Attendee retention cleanup, real payments, financial KYC, hosted deployment and production recovery are not implemented. FND-007 and FND-008 remain human gates.
 
-**Links:** issue #157 · PR #158 · [`execution plan`](../exec-plans/153-v3-club-subscriptions.md) · [`verification`](../verification/2026-11-157-v3-club-tenancy.md)
+**Links:** issue #157 · PR #158 · [`execution plan`](exec-plans/153-v3-club-subscriptions.md) · [`verification`](verification/2026-11-157-v3-club-tenancy.md)
 
 ---
 
@@ -812,11 +812,11 @@ Secret hygiene re-verified: `release.env` in history contains only `APP_VERSION`
 **Boundary:** `src/lib/domain/`, `src/cli/`, a CLI end-to-end test, the `test:agent` CI step, package metadata and the capability manifest. No web auth or UI migration in this entry.
 **Prior records reviewed:** #153, #157, execution plan, capability manifest, agent playbook, ADR-007/008/009/010, schema verification.
 **Work performed:** typed domain wrappers for auth, clubs, events, tickets, predictions, analytics and admin; CLI parser, profile/session storage with `0600` permissions, JSON output, help, `commands`/`describe`, fan/club/admin/ops commands; `tests/agent/cli.test.ts`; `bun run test:agent`; CI step in the domain-invariants job.
-**Verification:** CI run [42612258666](https://github.com/match-pulse/match-pulse/actions/runs/42612258666) passed all five jobs. The database suite remained **41 pass / 0 fail**; the CLI suite was **2 pass / 0 fail**, covering the match-day journey, cross-club denial and max-four refusal. Details: [verification record](../verification/2026-11-159-cli-and-agent-playbook.md).
+**Verification:** CI run [42612258666](https://github.com/match-pulse/match-pulse/actions/runs/42612258666) passed all five jobs. The database suite remained **41 pass / 0 fail**; the CLI suite was **2 pass / 0 fail**, covering the match-day journey, cross-club denial and max-four refusal. Details: [verification record](verification/2026-11-159-cli-and-agent-playbook.md).
 **Learning:** A CLI is a useful second client because it exposes authorization and state-transition gaps that the UI masks. The database contract, not the CLI, remains the source of truth.
 **Limitations:** The web app still uses anonymous fan auth and v2 roles. OS keychain storage, `ops cleanup` as a CLI command and the full UI migration remain. FND-007 and FND-008 are open human gates.
 
-**Links:** issue #159 · PR #160 · [`execution plan`](../exec-plans/153-v3-club-subscriptions.md) · [`capability manifest`](../../testing/capabilities.md) · [`verification`](../verification/2026-11-159-cli-and-agent-playbook.md)
+**Links:** issue #159 · PR #160 · [`execution plan`](exec-plans/153-v3-club-subscriptions.md) · [`capability manifest`](../testing/capabilities.md) · [`verification`](verification/2026-11-159-cli-and-agent-playbook.md)
 
 ---
 
@@ -828,12 +828,12 @@ Secret hygiene re-verified: `release.env` in history contains only `APP_VERSION`
 **Boundary:** Auth actions/forms, home routing, public events, nominal checkout, my tickets, club dashboard/event management, admin console, the v3 demo fixture and E2E/axe updates. No new billing, payments or KYC.
 **Prior records reviewed:** #153, #157, #159, ADR-009/010, capability manifest, agent playbook, schema and CLI verification records.
 **Work performed:** email/password sign-up/sign-in; routing by admin/club/legacy/fan; `/events`, `/events/[id]`, `/fan/tickets`, `/club/dashboard`, `/club/events/[id]`, `/admin`; v3 server actions and shared domain calls; demo club/event fixture; updated smoke, Playwright and axe tests.
-**Verification:** CI run [42619208713](https://github.com/match-pulse/match-pulse/actions/runs/42619208713) passed all five jobs. The E2E/accessibility job passed 8 tests, including fan sign-up and nominal purchase; the database suite remained 41 pass; the CLI suite remained 2 pass. Details: [verification record](../verification/2026-11-161-v3-auth-ui.md).
+**Verification:** CI run [42619208713](https://github.com/match-pulse/match-pulse/actions/runs/42619208713) passed all five jobs. The E2E/accessibility job passed 8 tests, including fan sign-up and nominal purchase; the database suite remained 41 pass; the CLI suite remained 2 pass. Details: [verification record](verification/2026-11-161-v3-auth-ui.md).
 **Corrections during verification:** server-action redirects were caught by `try/catch`; organizer routing conflicted with the demo club membership; native selects failed contrast; the smoke test and a strict locator were stale.
 **Learning:** Server-action redirects must sit outside the error-catching block, and tenant membership changes the home routing of existing fixture accounts.
 **Limitations:** Club member management, fan-card list, club rewards and prediction insights are only partly in the UI. The ticket is a code, not a QR image/wallet pass. Legacy pages remain. FND-007/FND-008 are open human gates.
 
-**Links:** issue #161 · PR #162 · [`execution plan`](../exec-plans/153-v3-club-subscriptions.md) · [`verification`](../verification/2026-11-161-v3-auth-ui.md)
+**Links:** issue #161 · PR #162 · [`execution plan`](exec-plans/153-v3-club-subscriptions.md) · [`verification`](verification/2026-11-161-v3-auth-ui.md)
 
 ---
 
@@ -845,11 +845,11 @@ Secret hygiene re-verified: `release.env` in history contains only `APP_VERSION`
 **Boundary:** Club dashboard sections, invitation page, fan rewards page, export route, server actions, market-resolution UI/CLI, admin fixture and E2E/axe tests. No real payments, KYC or new schema.
 **Prior records reviewed:** #161, #163, ADR-007/010, capability manifest, auth/UI verification.
 **Work performed:** member invite/role/remove actions and UI; fan-card list; club reward create/list; fan reward redemption; aggregate prediction insights table; ELITE CSV export route; invitation accept page; admin console fixture; market resolution action/CLI/UI; expanded Playwright and axe coverage.
-**Verification:** CI run [42622546311](https://github.com/match-pulse/match-pulse/actions/runs/42622546311) passed all five jobs. E2E/accessibility: **11 passed**, including the club dashboard/event page and admin console axe checks. Database: 41 pass; CLI: 2 pass, including market resolution. Details: [verification record](../verification/2026-11-163-club-members-rewards-insights.md).
+**Verification:** CI run [42622546311](https://github.com/match-pulse/match-pulse/actions/runs/42622546311) passed all five jobs. E2E/accessibility: **11 passed**, including the club dashboard/event page and admin console axe checks. Database: 41 pass; CLI: 2 pass, including market resolution. Details: [verification record](verification/2026-11-163-club-members-rewards-insights.md).
 **Learning:** The full match-day loop needs an explicit resolution step; without it the prediction data remains open and the fan’s payout cannot be demonstrated.
 **Limitations:** Invitations are displayed rather than emailed locally. QR images/wallet passes, retention cleanup and real payments remain. FND-007/FND-008 are open human gates.
 
-**Links:** issue #163 · PR #164 · [`execution plan`](../exec-plans/153-v3-club-subscriptions.md) · [`verification`](../verification/2026-11-163-club-members-rewards-insights.md)
+**Links:** issue #163 · PR #164 · [`execution plan`](exec-plans/153-v3-club-subscriptions.md) · [`verification`](verification/2026-11-163-club-members-rewards-insights.md)
 
 ---
 
@@ -861,11 +861,43 @@ Secret hygiene re-verified: `release.env` in history contains only `APP_VERSION`
 **Boundary:** Migration, maintenance script, package script, integration test, runbook and README known-gap update. No application runtime service-role use.
 **Prior records reviewed:** #156, ADR-010, execution plan task 2.7, privacy rule, CLI/schema verification records.
 **Work performed:** `cleanup_expired_attendee_data(INTERVAL)`; `scripts/cleanup-attendee-data.ts`; `bun run maintenance:cleanup-attendees`; an old/recent ticket test and authenticated denial; runbook section.
-**Verification:** CI run [42626348710](https://github.com/match-pulse/match-pulse/actions/runs/42626348710) passed all five jobs. The database suite was **42 pass / 0 fail**, including the retention test; the CLI suite remained 2 pass; E2E/accessibility passed. Details: [verification record](../verification/2026-11-165-attendee-retention.md).
+**Verification:** CI run [42626348710](https://github.com/match-pulse/match-pulse/actions/runs/42626348710) passed all five jobs. The database suite was **42 pass / 0 fail**, including the retention test; the CLI suite remained 2 pass; E2E/accessibility passed. Details: [verification record](verification/2026-11-165-attendee-retention.md).
 **Learning:** A privacy promise needs an executable cleanup path; keeping the ticket code and order while clearing identity preserves operations and evidence.
 **Limitations:** No scheduled production job, no independent legal/privacy review, and the audit actor is null because the maintenance context is the service role. FND-007/FND-008 remain human gates.
 
-**Links:** issue #165 · PR #166 · [`runbook`](../../operations/runbook.md) · [`verification`](../verification/2026-11-165-attendee-retention.md)
+**Links:** issue #165 · PR #166 · [`runbook`](../operations/runbook.md) · [`verification`](verification/2026-11-165-attendee-retention.md)
+
+---
+
+## Entry 49 — v3.0.0 current-state documentation refresh
+
+**Date:** 2026-11-09
+**Tool:** opencode CLI (`deepseek-v4.1-flash`)
+**Intent:** Bring the current-state documentation and reports in line with the implemented v3.0.0 system before the release.
+**Boundary:** README, kata, domain model, system overview, C4 views, code map, characteristics, test strategy, threat model, failure modes, runbook, SLOs, product scope, checkpoints D/E, ADR updates, report addenda, changelog and package version. No application behavior change in this entry.
+**Prior records reviewed:** all v3 execution/verification records, ADR-007–010, capability manifest, agent playbook, competitive landscape.
+**Work performed:** v3 README and product scope; K16–K20 and the club-first kata; v3 domain model and flows; C4 containers/components for the CLI, club/ticketing and admin; v3 code map; K16–K20 characteristic traceability; tenancy/ticketing/privacy invariants; test strategy, threat model, failure modes, runbook and SLOs; dated report addenda; ADR updates; v3.0.0 changelog and package version.
+**Verification:** `bun run typecheck`, `bun run lint`, `bun run build` and `bun run check:architecture` passed locally; a relative-link check over the changed documents found no missing local targets. CI is the final gate.
+**Learning:** The current-state docs now describe the implemented model rather than the v2 prototype; the dated reports keep the v2 snapshot and add a v3 addendum.
+**Limitations:** The submission PDFs are regenerated after this documentation merge; no release tag is created in this entry. FND-007/FND-008 remain human gates.
+
+**Links:** issue #169 · [`execution plan`](exec-plans/153-v3-club-subscriptions.md) · [`architecture report`](../architecture/reports/2026-11-08.md) · [`methodology report`](reports/2026-11-08.md)
+
+---
+
+## Entry 50 — v3.0.0 release package
+
+**Date:** 2026-11-09
+**Tool:** opencode CLI (`deepseek-v4.1-flash`)
+**Intent:** Prepare the v3.0.0 release package: current-state docs, dated report addenda, submission PDFs, version/changelog and verification record.
+**Boundary:** Documentation, PDFs and release metadata only. No application behavior change in this entry.
+**Prior records reviewed:** all v3 schema/CLI/auth/UI/club/retention/QR verification records, ADR-007–010, execution plan, capability manifest, findings register.
+**Work performed:** updated README/product scope/kata/domain/system/C4/code map/characteristics/test strategy/threat model/failure modes/runbook/SLOs/checkpoints/ADRs; added v3 report addenda; regenerated and committed the four submission PDFs (kata 1 page, characteristics 12, architecture report 13, methodology report 10); updated the submission index; set `package.json` to `3.0.0`; added the v3.0.0 changelog section.
+**Verification:** CI run [42633841431](https://github.com/match-pulse/match-pulse/actions/runs/42633841431) passed all five jobs: 42 database tests, 2 CLI tests, 11 E2E/axe tests, delivery/recovery and fault injection. `pdfinfo` confirmed the page counts; the kata was rendered and inspected. Details: [verification record](verification/2026-11-169-v3-release.md).
+**Learning:** A release package is more than a tag: the current-state docs, dated addenda, PDFs, version and evidence must name the same system and the same limits.
+**Limitations:** The tag and GitHub Release follow after merge and are not claimed in this entry. No real payments, financial KYC, hosted deployment or independent review. FND-007/FND-008 remain human gates.
+
+**Links:** issue #169 · PR #170 · [`execution plan`](exec-plans/153-v3-club-subscriptions.md) · [`submission index`](../submissions/README.md) · [`verification`](verification/2026-11-169-v3-release.md)
 
 ---
 

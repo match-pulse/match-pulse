@@ -19,8 +19,21 @@
 
 ## 3. Retry contract
 
-Every entry/exit carries a client-generated request key. The key is reused on retry and rotated only after success or a payload change. The request row and trade commit or roll back together.
+Every entry/exit carries a client-generated request key. The key is reused on retry and rotated only after success or a payload change. The request row and trade commit or roll back together. Ticket purchases use the same pattern; check-in is idempotent by ticket code.
+
+## 3.1 v3.0.0 failure modes
+
+| Failure | State | Recovery |
+| :--- | :--- | :--- |
+| Ticket purchase retried | One order/tickets per request id | Replay the order; rotate only after success |
+| Ticket check-in retried | First check-in time retained | Return `already_checked_in`; no duplicate attendance |
+| Plan downgraded below usage | Existing events remain; new creation blocked | Upgrade or reduce usage; no destructive migration |
+| Subscription `PAST_DUE`/`CANCELED` | Gated features refused | Restore `ACTIVE` via platform admin |
+| Attendee identity exposed to the wrong club role | RLS/RPC refusal | Investigate audit; rotate/limit access |
+| CLI session lost/expired | No user session | `matchpulse auth login` again; stored profile has no service role |
+| Retention cleanup fails | Identity remains | Run `bun run maintenance:cleanup-attendees` again; check the audit event |
+| Legacy page used after v3 | Legacy path remains; v3 data may not appear | Use the v3 surfaces; legacy pages are compatibility only |
 
 ## 4. Limits
 
-No production failover, multi-instance retry coordination, external alerting or measured RTO/RPO. The recovery drill covers the application-owned `public` schema only.
+No production failover, multi-instance retry coordination, external alerting or measured RTO/RPO. The recovery drill covers the application-owned `public` schema only. No real payments or financial KYC are in scope.

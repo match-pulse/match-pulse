@@ -104,3 +104,18 @@ E is not complete because:
   environment.
 - Confirm the SLO targets or defer them until L17–L20.
 - Confirm whether a production-like recovery drill is in scope.
+
+## 7. v3.0.0 delivery evidence (2026-11-09)
+
+The v3.0.0 increment strengthens the delivery/operations story:
+
+- **Delivery:** five CI jobs (build/security, domain invariants, delivery/recovery, fault injection, E2E/accessibility). The domain job also runs `bun run test:agent`; the E2E job exports the submission PDFs.
+- **Observability:** `/api/health`, JSON stdout logs, smoke test, CI job statuses and the agent evidence. No collector, dashboard or alert.
+- **Recovery:** the delivery job restores the public schema into a scratch database and verifies tables, policies, rows and a marker. No production backup, PITR or RTO/RPO.
+- **Retention:** request-key cleanup (30 days) and attendee identity cleanup (365 days) are service-role-only maintenance commands with integration tests.
+- **Release:** immutable annotated tags, release notes and a milestone. v3.0.0 is the current release candidate.
+- **Limits:** local/CI only; no hosted environment, external monitoring, production recovery, scheduled retention or independent operations review.
+
+Evidence: [schema verification](../verification/2026-11-157-v3-club-tenancy.md), [CLI verification](../verification/2026-11-159-cli-and-agent-playbook.md), [auth/UI verification](../verification/2026-11-161-v3-auth-ui.md), [club UI verification](../verification/2026-11-163-club-members-rewards-insights.md), [retention verification](../verification/2026-11-165-attendee-retention.md), [runbook](../../operations/runbook.md).
+
+The exact L17–L20 questions are still pending; this section is the prepared evidence, not the final answer.

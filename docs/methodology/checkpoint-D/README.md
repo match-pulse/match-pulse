@@ -76,3 +76,19 @@ The architecture baseline is strong: modular monolith, database-enforced invaria
 - Confirm the change scenario: idempotency (recommended) or organizer resolution UI.
 - Confirm whether the architecture guards should stay in CI (they currently run in the build job).
 - Confirm whether to write a proposed ADR-004 now or wait for L13–L16.
+
+## 7. v3.0.0 change evidence (2026-11-09)
+
+The v3.0.0 increment is the realistic architecture change for Checkpoint D:
+
+- **Change:** clubs became the tenant; events are club-owned; plans/entitlements gate features; ticketing became nominal (buyer vs attendee); a shared domain contract and CLI were added.
+- **Ownership:** club `OWNER`/`ADMIN`/`STAFF`/`ANALYST`, platform admin and ops are separate capabilities. The service role is not an application identity.
+- **Boundaries:** the database remains the system of record; `src/lib/domain/` is the shared contract used by Server Actions and the CLI; the CLI never imports Server Actions.
+- **Fitness functions:** `scripts/check-architecture.ts` guards service-role use, direct mutations, mutation-RPC definers and imports; the tenancy suite checks club isolation, role matrix, entitlements, nominal ticketing and retention; the CLI suite checks command parity.
+- **Compatibility/migration:** `20261201`–`20261205` are additive; existing organizers are backfilled into clubs with `OWNER`/`PRO`; anonymous fan sessions are explicitly not migrated; legacy v2 pages remain for compatibility.
+- **Trade-offs:** multi-tenant RLS and entitlement checks add query and test complexity; the modular monolith and database boundary are retained.
+- **Technical debt:** legacy global roles/pages, no real payments/KYC, no seat maps/wallet/turnstile/FIGC integration, local-only retention, no hosted deployment.
+
+Evidence: [execution plan](../exec-plans/153-v3-club-subscriptions.md), ADR-007–010, [schema verification](../verification/2026-11-157-v3-club-tenancy.md), [CLI verification](../verification/2026-11-159-cli-and-agent-playbook.md), [auth/UI verification](../verification/2026-11-161-v3-auth-ui.md), [club UI verification](../verification/2026-11-163-club-members-rewards-insights.md), [retention verification](../verification/2026-11-165-attendee-retention.md).
+
+The exact L13–L16 questions are still pending; this section is the prepared evidence, not the final answer.

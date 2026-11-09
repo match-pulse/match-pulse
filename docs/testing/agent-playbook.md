@@ -1,6 +1,6 @@
 # Agent Playbook
 
-- **Status:** Specification. Commands are being implemented in `v3.0.0`; this document becomes verified when the scenarios in `tests/agent/` pass in CI.
+- **Status:** Verified for the v3.0.0 match-day and refusal paths. See the [CLI verification record](../methodology/verification/2026-11-159-cli-and-agent-playbook.md).
 - **Related:** [Capability manifest](./capabilities.md), [Test strategy](../methodology/test-strategy.md), [CLI contract](../architecture/adr/009-email-password-and-simulated-commerce.md).
 
 ## 1. Purpose
@@ -22,7 +22,7 @@ bunx supabase start
 bunx supabase db reset
 eval "$(bunx supabase status -o env)"
 # write .env.local from the local Supabase values
-bun run auth:admin
+bun run auth:organizer
 bun run test:agent
 ```
 
@@ -59,6 +59,7 @@ Email confirmation is disabled locally. The agent must not assume a confirmation
 | 13 | club-a-owner | `club tickets check-in --code <ticket-code> --json` | checked in |
 | 14 | club-a-owner | `club analytics summary --json` | sales and attendance |
 | 15 | club-a-owner | `club analytics predictions --event <id> --json` | aggregate outcomes, no identities |
+| 15a | club-a-owner | `club predictions resolve --market <id> --winner HOME --json` | holders paid, market terminal |
 | 16 | fan-a | `fan portfolio show --json` | position visible |
 | 17 | fan-a | `fan rewards list --club <id> --json` | club rewards |
 | 18 | fan-a | `fan rewards redeem --reward <id> --request-id <uuid> --json` | discount code |
