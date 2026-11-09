@@ -640,7 +640,7 @@ BEGIN
            SET checked_in_at = NOW(),
                checked_in_by = v_user_id
          WHERE id = v_ticket.id
-        RETURNING checked_in_at INTO v_checked_at;
+        RETURNING tickets.checked_in_at INTO v_checked_at;
 
         INSERT INTO public.audit_events (actor_id, club_id, action, entity_type, entity_id, metadata)
         VALUES (v_user_id, v_club_id, 'ticket.check_in', 'ticket', v_ticket.id,
