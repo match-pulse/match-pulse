@@ -29,6 +29,7 @@ import {
   listClubTicketTypes,
   listPublicEvents,
   publishClubEvent,
+  resolveMarket,
   setPredictionEnabled,
   updateClubEvent,
   updateClubMatch
@@ -99,6 +100,7 @@ const COMMANDS: CommandInfo[] = [
   { command: 'club matches list', group: 'club', description: 'List matches and markets for an event', usage: '--event <id>', mutates: false },
   { command: 'club matches update', group: 'club', description: 'Update a match score and status', usage: '--match <id> --home-score <n> --away-score <n> --status SCHEDULED|LIVE|FINISHED', mutates: true },
   { command: 'club predictions enable', group: 'club', description: 'Enable or disable predictions for a match', usage: '--match <id> [--disable]', mutates: true },
+  { command: 'club predictions resolve', group: 'club', description: 'Resolve a market and settle positions', usage: '--market <id> --winner HOME|DRAW|AWAY', mutates: true },
   { command: 'club ticket-types create', group: 'club', description: 'Create a nominal ticket type', usage: '--event <id> --name <name> [--price-cents] [--allocation] [--max-per-buyer] [--requires-fan-card] [--non-transferable] [--away-sector]', mutates: true },
   { command: 'club ticket-types list', group: 'club', description: 'List ticket types for an event', usage: '--event <id>', mutates: false },
   { command: 'club orders list', group: 'club', description: 'List orders for an event', usage: '--event <id>', mutates: false },
@@ -455,6 +457,14 @@ async function dispatch(
         !getBoolean(flags, 'disable')
       )
       return { done: true }
+    }
+    case 'club predictions resolve': {
+      const client = await getClient(profile)
+      const winner = required(flags, 'winner').toUpperCase()
+      if (winner !== 'HOME' && winner !== 'DRAW' && winner !== 'AWAY') {
+        throw new DomainError('VALIDATION', '--winner must be HOME, DRAW or AWAY.')
+      }
+      return resolveMarket(client, required(flags, 'market'), winner)
     }
     case 'club ticket-types create': {
       const client = await getClient(profile)

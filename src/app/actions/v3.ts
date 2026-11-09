@@ -6,12 +6,13 @@ import { redirect } from 'next/navigation'
 import { getCurrentUser } from '@/lib/session'
 import { createSupabaseServerClient } from '@/lib/supabase/server'
 import { DomainError, fromUnknownError } from '@/lib/domain/errors'
-import { createClub, requestPlanChange } from '@/lib/domain/clubs'
+import { createClub, requestPlanChange, acceptClubInvite, inviteClubMember, removeClubMember, setClubMemberRole } from '@/lib/domain/clubs'
 import {
   createClubEvent,
   createClubMatch,
   createTicketType,
   publishClubEvent,
+  resolveMarket,
   setPredictionEnabled,
   updateClubMatch
 } from '@/lib/domain/events'
@@ -23,6 +24,7 @@ import {
   validateAttendees
 } from '@/lib/domain/tickets'
 import { adminAssignPlan } from '@/lib/domain/admin'
+import { createClubReward, recordClubExport, redeemReward } from '@/lib/domain/analytics'
 import type { AttendeeInput } from '@/lib/domain/types'
 
 type Attempt<T> = { ok: true; data: T } | { ok: false; error: string }
@@ -353,4 +355,143 @@ export async function issueFanCardAction(formData: FormData): Promise<never> {
 
   revalidatePath(path)
   back(path, 'message', 'Fan card issued.')
+}
+
+export async function inviteMemberAction(formData: FormData): Promise<never> {
+  const clubId = requiredText(formData, 'clubId')
+  const path = `/club/dashboard?club=${clubId}`
+  const result = await attempt(async () => {
+    const supabase = await createSupabaseServerClient()
+    return inviteClubMember(
+      supabase,
+      clubId,
+      requiredText(formData, 'email'),
+      requiredText(formData, 'role').toUpperCase()
+    )
+  })
+
+  if (!result.ok) back(path, 'error', result.error)
+
+  revalidatePath(path)
+  back(
+    `${path}&invite=${encodeURIComponent(result.data.token)}`,
+    'message',
+    'Invitation created. Share the accept link with the invitee.'
+  )
+}
+
+export async function acceptInviteAction(formData: FormData): Promise<never> {
+  const token = requiredText(formData, 'token')
+  const result = await attempt(async () => {
+    const supabase = await createSupabaseServerClient()
+    return acceptClubInvite(supabase, token)
+  })
+
+  if (!result.ok) back(`/club/invite/${token}`, 'error', result.error)
+
+  revalidatePath('/club/dashboard')
+  back(`/club/dashboard?club=${result.data}`, 'message', 'Invitation accepted.')
+}
+
+export async function setMemberRoleAction(formData: FormData): Promise<never> {
+  const clubId = requiredText(formData, 'clubId')
+  const path = `/club/dashboard?club=${clubId}`
+  const result = await attempt(async () => {
+    const supabase = await createSupabaseServerClient()
+    await setClubMemberRole(
+      supabase,
+      clubId,
+      requiredText(formData, 'profileId'),
+      requiredText(formData, 'role').toUpperCase()
+    )
+  })
+
+  if (!result.ok) back(path, 'error', result.error)
+
+  revalidatePath(path)
+  back(path, 'message', 'Member role updated.')
+}
+
+export async function removeMemberAction(formData: FormData): Promise<never> {
+  const clubId = requiredText(formData, 'clubId')
+  const path = `/club/dashboard?club=${clubId}`
+  const result = await attempt(async () => {
+    const supabase = await createSupabaseServerClient()
+    await removeClubMember(supabase, clubId, requiredText(formData, 'profileId'))
+  })
+
+  if (!result.ok) back(path, 'error', result.error)
+
+  revalidatePath(path)
+  back(path, 'message', 'Member removed.')
+}
+
+export async function createRewardAction(formData: FormData): Promise<never> {
+  const clubId = requiredText(formData, 'clubId')
+  const path = `/club/dashboard?club=${clubId}`
+  const result = await attempt(async () => {
+    const supabase = await createSupabaseServerClient()
+    await createClubReward(
+      supabase,
+      clubId,
+      requiredText(formData, 'name'),
+      requiredNumber(formData, 'cost'),
+      requiredNumber(formData, 'discount')
+    )
+  })
+
+  if (!result.ok) back(path, 'error', result.error)
+
+  revalidatePath(path)
+  back(path, 'message', 'Reward created.')
+}
+
+export async function redeemRewardAction(formData: FormData): Promise<never> {
+  const result = await attempt(async () => {
+    const supabase = await createSupabaseServerClient()
+    return redeemReward(supabase, requiredText(formData, 'rewardId'))
+  })
+
+  if (!result.ok) back('/fan/rewards', 'error', result.error)
+
+  revalidatePath('/fan/rewards')
+  back('/fan/rewards', 'message', `Reward redeemed. Code: ${result.data.code}`)
+}
+
+export async function recordExportAction(formData: FormData): Promise<never> {
+  const clubId = requiredText(formData, 'clubId')
+  const path = `/club/dashboard?club=${clubId}`
+  const result = await attempt(async () => {
+    const supabase = await createSupabaseServerClient()
+    await recordClubExport(supabase, clubId, requiredText(formData, 'resource'))
+  })
+
+  if (!result.ok) back(path, 'error', result.error)
+
+  revalidatePath(path)
+  back(path, 'message', 'Export recorded.')
+}
+
+export async function resolveMarketAction(formData: FormData): Promise<never> {
+  const eventId = requiredText(formData, 'eventId')
+  const path = `/club/events/${eventId}`
+  const winner = requiredText(formData, 'winner').toUpperCase()
+
+  if (winner !== 'HOME' && winner !== 'DRAW' && winner !== 'AWAY') {
+    back(path, 'error', 'Choose HOME, DRAW or AWAY.')
+  }
+
+  const result = await attempt(async () => {
+    const supabase = await createSupabaseServerClient()
+    return resolveMarket(supabase, requiredText(formData, 'marketId'), winner)
+  })
+
+  if (!result.ok) back(path, 'error', result.error)
+
+  revalidatePath(path)
+  back(
+    path,
+    'message',
+    `Market resolved: ${result.data.holders} holders paid ${result.data.total_points} points.`
+  )
 }

@@ -243,6 +243,15 @@ describe('matchpulse CLI', () => {
         expect(insights.length).toBeGreaterThan(0)
         expect(insights.every((row) => row.suppressed === true)).toBe(true)
 
+        const resolution = dataOf(
+          runCli(
+            ['club', 'predictions', 'resolve', '--profile', 'owner', '--market', marketId, '--winner', 'HOME', '--json'],
+            configDir
+          )
+        )
+        expect(resolution.holders).toBe(1)
+        expect(Number(resolution.total_points)).toBeGreaterThan(0)
+
         const portfolio = dataOf(runCli(['fan', 'portfolio', '--profile', 'fan', '--json'], configDir))
         expect((portfolio.positions as unknown[]).length).toBeGreaterThan(0)
 

@@ -837,6 +837,22 @@ Secret hygiene re-verified: `release.env` in history contains only `APP_VERSION`
 
 ---
 
+## Entry 47 — v3 club members, rewards, insights and market resolution
+
+**Date:** 2026-11-09
+**Tool:** opencode CLI (`deepseek-v4.1-flash`)
+**Intent:** Complete the club-facing v3 UI and close the match-day loop with market resolution.
+**Boundary:** Club dashboard sections, invitation page, fan rewards page, export route, server actions, market-resolution UI/CLI, admin fixture and E2E/axe tests. No real payments, KYC or new schema.
+**Prior records reviewed:** #161, #163, ADR-007/010, capability manifest, auth/UI verification.
+**Work performed:** member invite/role/remove actions and UI; fan-card list; club reward create/list; fan reward redemption; aggregate prediction insights table; ELITE CSV export route; invitation accept page; admin console fixture; market resolution action/CLI/UI; expanded Playwright and axe coverage.
+**Verification:** CI run [42622546311](https://github.com/match-pulse/match-pulse/actions/runs/42622546311) passed all five jobs. E2E/accessibility: **11 passed**, including the club dashboard/event page and admin console axe checks. Database: 41 pass; CLI: 2 pass, including market resolution. Details: [verification record](../verification/2026-11-163-club-members-rewards-insights.md).
+**Learning:** The full match-day loop needs an explicit resolution step; without it the prediction data remains open and the fan’s payout cannot be demonstrated.
+**Limitations:** Invitations are displayed rather than emailed locally. QR images/wallet passes, retention cleanup and real payments remain. FND-007/FND-008 are open human gates.
+
+**Links:** issue #163 · PR #164 · [`execution plan`](../exec-plans/153-v3-club-subscriptions.md) · [`verification`](../verification/2026-11-163-club-members-rewards-insights.md)
+
+---
+
 ## Standing rule
 
 AI may investigate, analyse, draft, implement within an approved scope, and run verification. The human retains every decision that affects business rules, architecture, schema, scope, priority, risk acceptance and merging. Contributions that cannot be verified are recorded as unverified rather than asserted.

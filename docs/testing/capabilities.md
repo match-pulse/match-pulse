@@ -54,6 +54,7 @@ Status values: `planned`, `implemented`, `verified`.
 | Issue fan card | Club OWNER/ADMIN | `club fan-cards issue` | `issue_club_fan_card` | `/club/fan-cards` | `fan-cards` | implemented |
 | List fan cards | Club OWNER/ADMIN | `club fan-cards list` | `list_club_fan_cards` | `/club/fan-cards` | `fan-cards` | implemented |
 | Enable predictions | Club OWNER/ADMIN | `club predictions enable` | `set_prediction_enabled` | `/club/events/[id]` | `predictions` | implemented |
+| Resolve market | Club OWNER/ADMIN/STAFF | `club predictions resolve` | `resolve_market` | `/club/events/[id]` | `predictions` | verified |
 | Sales summary | Club member | `club analytics summary` | `club_sales_summary` | `/club` | `privacy` | verified |
 | Prediction insights | Club OWNER/ADMIN/ANALYST | `club analytics predictions` | `club_prediction_insights` | `/club/analytics` | `privacy` | verified |
 | Export analytics | Club OWNER/ADMIN/ANALYST (ELITE) | `club analytics export` | `record_club_export` + CSV | `/api/club/export` | `entitlements` | implemented |

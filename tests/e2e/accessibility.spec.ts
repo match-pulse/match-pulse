@@ -5,6 +5,8 @@ const ORGANIZER_EMAIL = process.env.ORGANIZER_EMAIL ?? 'organizer@matchpulse.loc
 const ORGANIZER_PASSWORD = process.env.ORGANIZER_PASSWORD ?? 'matchpulse-organizer'
 const CLUB_EMAIL = process.env.CLUB_EMAIL ?? 'club@matchpulse.local'
 const CLUB_PASSWORD = process.env.CLUB_PASSWORD ?? 'matchpulse-club'
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL ?? 'admin@matchpulse.local'
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD ?? 'matchpulse-admin'
 
 async function assertNoCriticalViolations(page: import('@playwright/test').Page) {
   const results = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa']).analyze()
@@ -56,5 +58,33 @@ test('club page has no serious or critical accessibility violations', async ({ p
   await page.getByLabel('Password').fill(CLUB_PASSWORD)
   await page.getByRole('button', { name: 'Sign in as club' }).click()
   await expect(page.getByRole('heading', { name: 'Club analytics' })).toBeVisible()
+  await assertNoCriticalViolations(page)
+})
+
+test('club dashboard and event page have no serious or critical accessibility violations', async ({ page }) => {
+  await page.goto('/login')
+  await page.getByRole('button', { name: 'Organizer' }).click()
+  await page.getByLabel('Organizer email').fill(ORGANIZER_EMAIL)
+  await page.getByLabel('Password').fill(ORGANIZER_PASSWORD)
+  await page.getByRole('button', { name: 'Sign in as organizer' }).click()
+  await expect(page.getByRole('heading', { name: 'Organizer dashboard' })).toBeVisible()
+
+  await page.goto('/club/dashboard')
+  await expect(page.getByRole('heading', { name: 'MatchPulse Demo Club' })).toBeVisible()
+  await assertNoCriticalViolations(page)
+
+  await page.getByRole('link', { name: 'Manage' }).first().click()
+  await expect(page.getByRole('heading', { name: 'Demo Derby' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Ticket types' })).toBeVisible()
+  await assertNoCriticalViolations(page)
+})
+
+test('admin console has no serious or critical accessibility violations', async ({ page }) => {
+  await page.goto('/login')
+  await page.getByRole('button', { name: 'Organizer' }).click()
+  await page.getByLabel('Organizer email').fill(ADMIN_EMAIL)
+  await page.getByLabel('Password').fill(ADMIN_PASSWORD)
+  await page.getByRole('button', { name: 'Sign in as organizer' }).click()
+  await expect(page.getByRole('heading', { name: 'Platform admin' })).toBeVisible()
   await assertNoCriticalViolations(page)
 })

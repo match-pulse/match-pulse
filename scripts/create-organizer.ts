@@ -162,3 +162,48 @@ const { error: marketError } = await admin.from('markets').upsert(
 if (marketError) throw new Error(`Could not create demo market: ${marketError.message}`)
 
 console.log(`Demo v3 club and event ready: ${demoEventId}`)
+
+// Platform-admin fixture for the local/CI admin console.
+const adminEmail = process.env.ADMIN_EMAIL ?? 'admin@matchpulse.local'
+const adminPassword = process.env.ADMIN_PASSWORD ?? 'matchpulse-admin'
+const adminUsername = process.env.ADMIN_USERNAME ?? 'Platform Admin'
+const adminProfile = list.users.find((candidate) => candidate.email === adminEmail)
+
+let platformAdmin = adminProfile
+
+if (!platformAdmin) {
+  const { data, error } = await admin.auth.admin.createUser({
+    email: adminEmail,
+    password: adminPassword,
+    email_confirm: true,
+    user_metadata: { username: adminUsername }
+  })
+
+  if (error || !data.user) {
+    throw new Error(`Could not create platform admin: ${error?.message ?? 'no user returned'}`)
+  }
+
+  platformAdmin = data.user
+  console.log('Created platform admin auth user.')
+} else {
+  console.log('Platform admin auth user already exists.')
+}
+
+const { error: adminProfileError } = await admin
+  .from('profiles')
+  .update({ username: adminUsername, role: 'FAN' })
+  .eq('id', platformAdmin.id)
+
+if (adminProfileError) {
+  throw new Error(`Could not update platform admin profile: ${adminProfileError.message}`)
+}
+
+const { error: adminGrantError } = await admin
+  .from('platform_admins')
+  .upsert({ profile_id: platformAdmin.id, created_by: user.id }, { onConflict: 'profile_id' })
+
+if (adminGrantError) {
+  throw new Error(`Could not grant platform admin: ${adminGrantError.message}`)
+}
+
+console.log(`Platform admin ready: ${adminEmail}`)

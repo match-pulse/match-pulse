@@ -120,6 +120,21 @@ export async function setPredictionEnabled(
   })
 }
 
+export async function resolveMarket(
+  client: SupabaseClient,
+  marketId: string,
+  winner: 'HOME' | 'DRAW' | 'AWAY'
+): Promise<{ holders: number; total_points: number }> {
+  const rows = await callRpc<Array<{ holders: number; total_points: number }>>(
+    client,
+    'resolve_market',
+    { p_market_id: marketId, p_winner: winner }
+  )
+  const result = first(rows)
+  if (!result) throw new Error('Market resolution returned no result.')
+  return result
+}
+
 export async function listClubMatches(
   client: SupabaseClient,
   eventId: string
