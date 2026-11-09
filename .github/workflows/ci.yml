@@ -268,6 +268,12 @@ jobs:
           bunx supabase stop --no-backup || true
           docker ps -aq --filter "name=supabase_" | xargs -r docker rm -f
 
+      - name: Free Supabase ports
+        run: |
+          for port in 54321 54322 54323 54324 54325 54326 54327; do
+            sudo fuser -k "${port}/tcp" || true
+          done
+
       - name: Start local Supabase
         run: bunx supabase start
 
