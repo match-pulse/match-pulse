@@ -1,40 +1,52 @@
 # Test Strategy
 
-- **Scope:** MatchPulse MVP.
-- **Status:** Approved; implementation in progress.
-- **Rule:** use the smallest boundary that can expose the failure; a green check is not proof of correctness.
+- **Status:** Current for v3.0.0 (2026-11-09).
+- **Related:** [Agent playbook](../testing/agent-playbook.md), [capability manifest](../testing/capabilities.md), [invariant registry](checkpoint-A/02-invariants.md), [execution plan](exec-plans/153-v3-club-subscriptions.md).
 
 ## 1. Layers
 
-| Layer | Purpose | Tool / location |
+| Layer | What it proves | Tooling |
 | :--- | :--- | :--- |
-| Static | Types, lint, architecture rules, secret scan, dependency audit | `bun run typecheck`, `lint`, `check:architecture`, `check:secrets`, `bun audit` |
-| Unit | Pure rules and helpers | `tests/unit/` (to add) |
-| Integration/DB | RPCs, RLS, constraints, concurrency, idempotency | `tests/invariants/`, `tests/integration/` |
-| Fault injection | Observed-red evidence for invariants | `scripts/fault-injection.ts`, `tests/fault-injection/` |
-| E2E | Fan, organizer, club journeys | `tests/e2e/` with Playwright |
-| Accessibility | Critical WCAG A/AA violations and manual keyboard/focus checks | Playwright + axe |
-| Performance | 20/50/100 concurrent registration bursts; p50/p95/p99, throughput, errors | `scripts/performance.ts`, `Performance baseline` workflow |
+| Unit | Pure pricing, cooldown, validation and formatting | `bun test` |
+| Database invariants | Capacity, uniqueness, points, market lifecycle, idempotency, resolution | `tests/invariants/`, real PostgreSQL |
+| Tenancy and authorization | Club isolation, role matrix, entitlements, attendee identity, privacy, admin audit | `tests/integration/v3-club-tenancy.test.ts` |
+| Nominal ticketing | Buyer vs attendee, max four, fan card, transfer, check-in, box office, retention | `tests/integration/v3-club-tenancy.test.ts` |
+| CLI contract | Command parity, JSON, exit codes, profiles, match-day and refusal scenarios | `tests/agent/cli.test.ts`, `bun run test:agent` |
+| E2E and accessibility | Fan sign-up/purchase, club dashboard/event page, admin console, organizer and legacy journeys; serious/critical axe | `tests/e2e/`, Playwright + axe |
+| Performance | 20/50/100 concurrent registration bursts; p50/p95/p99, errors | `scripts/performance.ts`, performance workflow |
 | Delivery/recovery | Build, start, health, smoke, backup/restore | `Delivery and recovery` CI job |
-| Regression | Every fixed defect gets a guard | Invariant/integration/E2E suites |
+| Fault injection | Observed-red mutation evidence for the market invariants | `bun run fault:inject` |
+| Retention | Old vs recent attendee identity, audit and authenticated denial | `tests/integration/v3-club-tenancy.test.ts` |
 
 ## 2. Coverage rule
 
-- 100% of critical invariants and role boundaries have executable evidence.
-- Every role journey has at least one E2E test.
+- Every critical invariant, role boundary, club-scoped read and entitlement gate has executable evidence.
+- Every customer capability in the [manifest](../testing/capabilities.md) has a CLI command and, where applicable, an E2E/axe check.
+- Every role journey has at least one browser or CLI scenario.
 - Pure logic targets 80% line/branch coverage where meaningful.
 - Coverage is a map, not a verdict.
 
 ## 3. Gates
 
-- PR: static checks, secret scan, dependency audit, integration tests, E2E, critical accessibility, delivery/recovery, fault injection.
-- Scheduled/manual: performance baseline.
-- Release: all gates green, known limits recorded.
+- **PR:** static checks, secret scan, dependency audit, database invariants, CLI agent scenarios, E2E, serious/critical accessibility, delivery/recovery and fault injection.
+- **Scheduled/manual:** performance baseline.
+- **Release:** all gates green, known limits recorded, tag/Release approved by the human owner.
 
-## 4. Limits
+## 4. Current evidence
 
-- Local/CI, one database instance.
-- No production load, multi-instance, TLS/DNS or external monitoring.
-- Accessibility gate blocks critical violations only; serious violations are reported and reviewed.
-- Performance results are environment-specific.
+| Suite | Observed |
+| :--- | ---: |
+| Database/application | 42 pass / 0 fail |
+| CLI agent scenarios | 2 pass / 0 fail |
+| Playwright/axe | 11 passed |
+| Fault injection | 11 expected results |
+
+## 5. Limits
+
+- Local/CI, one database instance; no production load or multi-instance behaviour.
+- No real payment provider, financial KYC, invoice/refund or settlement.
+- Accessibility gate blocks serious and critical WCAG A/AA violations, not moderate/minor.
+- Some v3 UI paths (invite acceptance, fan rewards, export) are covered by database/CLI tests rather than a dedicated browser journey.
+- No seat maps, wallet passes, turnstile hardware or FIGC/Questura integration.
+- Performance results are environment-specific and not a release gate.
 - FND-007 real-user evidence and FND-008 independent review require human action.

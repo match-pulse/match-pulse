@@ -17,6 +17,60 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versioning: [S
 
 No unreleased changes yet.
 
+## [3.0.0] - 2026-11-09
+
+Club subscriptions, nominal ticketing, cross-club fans, platform admin and a CLI/agent surface.
+
+### Added
+
+- Club tenancy: `clubs`, `club_members` (`OWNER`, `ADMIN`, `STAFF`, `ANALYST`), invitations and club-owned events.
+- `STARTER`/`PRO`/`ELITE` plans, database-enforced entitlements and simulated subscription status.
+- Email/password accounts for fans, club organizers and the platform admin; one fan can buy and predict across clubs.
+- Nominal ticketing: buyer vs attendee, 1–4 tickets, attendee identity, terms acceptance, max-per-buyer, fan-card rules, transfer deadline, digital code/QR, box-office channel and idempotent check-in.
+- Club-scoped rewards and fan cards.
+- Aggregate prediction insights for the club's own events, threshold-5 suppression, no attendee identity, and an ELITE CSV export.
+- Platform-admin console for clubs, plans, subscription status and audit.
+- `matchpulse` CLI with profiles, JSON output, command discovery, fan/club/admin/ops commands and an executable agent playbook.
+- Service-role-only attendee-data retention (`bun run maintenance:cleanup-attendees`).
+- ADR-007 club tenancy/entitlements, ADR-008 platform-admin boundary, ADR-009 email/password and simulated commerce, ADR-010 nominal ticketing, and the competitive landscape.
+
+### Changed
+
+- The home route uses platform admin → legacy organizer/club → club membership → fan.
+- Reward redemption is club-scoped: a club reward requires a ticket for that club.
+- The Playwright/axe suite covers the v3 fan purchase, club dashboard/event page, admin console and legacy journeys.
+- CI runs `bun run test:agent` and frees Supabase ports before every database job.
+
+### Breaking
+
+- Anonymous fan sessions are removed. All users use email/password.
+- The v3 authorization model is club membership + role + entitlement, not the global `ORGANIZER`/`CLUB` role. Legacy pages remain, but existing anonymous sessions cannot be migrated.
+- The legacy one-ticket-per-user claim remains for compatibility; v3 tickets use nominal orders and attendees.
+
+### Migration / upgrade notes
+
+- Apply `20261201_v3_club_tenancy.sql`, `20261202_v3_club_rls.sql`, `20261203_v3_club_rpcs.sql`, `20261204_v3_ticketing_rpcs.sql` and `20261205_v3_attendee_retention.sql`.
+- Existing organizers are backfilled into clubs with `OWNER` and `PRO`; their tournaments are linked.
+- Local reset is acceptable for the course; production migration of anonymous users is out of scope.
+- Run `bun run maintenance:cleanup-attendees` from an authorized maintenance context; the application runtime does not hold the service role.
+
+### Known gaps
+
+- FND-007 real-user evidence and FND-008 independent review remain open.
+- No hosted production deployment, external monitoring, production recovery or RTO/RPO.
+- No real payments, financial KYC, invoices, refunds or settlement; ticket and plan prices are simulated.
+- No seat maps, wallet passes, turnstile hardware or deep FIGC/Questura integration.
+- Club privacy has not had an independent privacy review; data resale is not implemented and personal data is not sold.
+- M-INV2 remains forced-failure verified, not observed-red.
+- Performance is a scheduled local/CI baseline, not a production load claim.
+- Legacy v2 pages coexist with the v3 surfaces.
+
+### Evidence
+
+- Schema #157 / PR #158; CLI #159 / PR #160; auth/UI #161 / PR #162; club completion #163 / PR #164; retention #165 / PR #166; QR #167 / PR #168.
+- Verification records: `2026-11-157-v3-club-tenancy.md`, `2026-11-159-cli-and-agent-playbook.md`, `2026-11-161-v3-auth-ui.md`, `2026-11-163-club-members-rewards-insights.md`, `2026-11-165-attendee-retention.md`.
+- CI runs [42609325110](https://github.com/match-pulse/match-pulse/actions/runs/42609325110), [42612258666](https://github.com/match-pulse/match-pulse/actions/runs/42612258666), [42619208713](https://github.com/match-pulse/match-pulse/actions/runs/42619208713), [42622546311](https://github.com/match-pulse/match-pulse/actions/runs/42622546311) and [42626348710](https://github.com/match-pulse/match-pulse/actions/runs/42626348710): all five jobs passed.
+
 ## [2.0.1] - 2026-11-08
 
 Request-key retention and accessibility hardening.
@@ -395,7 +449,8 @@ This table is the pre-policy execution record. It is kept for traceability and i
 - The first entry after this changelog is established is recorded contemporaneously and links its issue, PR, verification, and AI transparency entry.
 
 
-[Unreleased]: https://github.com/match-pulse/match-pulse/compare/v2.0.1...HEAD
+[Unreleased]: https://github.com/match-pulse/match-pulse/compare/v3.0.0...HEAD
+[3.0.0]: https://github.com/match-pulse/match-pulse/compare/v2.0.1...v3.0.0
 [2.0.1]: https://github.com/match-pulse/match-pulse/compare/v2.0.0...v2.0.1
 [2.0.0]: https://github.com/match-pulse/match-pulse/compare/v1.3.1...v2.0.0
 [1.3.1]: https://github.com/match-pulse/match-pulse/compare/v1.3.0...v1.3.1

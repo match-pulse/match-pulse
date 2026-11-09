@@ -1,37 +1,46 @@
 # ⚽ MatchPulse
 
-MatchPulse is a football tournament web application that engages fans through match predictions, rewards, and data-driven insights for soccer clubs.
+MatchPulse is a club-first football ticketing and fan-engagement platform. Clubs subscribe to plans, sell nominal tickets, check in attendees and see aggregate prediction insights. Fans use one email/password account to buy tickets and predict across clubs. A platform admin operates clubs, plans and audit.
 
-**Users:** Football fans, tournament organizers, and soccer clubs.
+**Users:** Fans, club owners/admins/staff/analysts, and the platform operator.
 
 ## Current status
 
-This is the first MVP. **Fan, organizer and club roles, tournament registration, the live prediction market, tickets, rewards, club analytics, authentication, database-enforced authorization and retry-safe trading are implemented.** The market engine, role boundaries and recovery path are tested; E2E and critical accessibility checks run in CI.
+This is the **v3.0.0** release. Club tenancy, subscription plans and entitlements, email/password accounts, cross-club fans, nominal ticketing, digital QR tickets, check-in, name change, box office, fan cards, rewards, aggregate prediction insights, platform administration, a CLI and an executable agent playbook are implemented.
 
 What exists today:
 
 | Area | State |
 | :--- | :--- |
-| Tournament registration with capacity enforcement | **Implemented and verified** |
-| Live prediction market (LMSR entry, exit, resolution) | **Implemented** — engine verified; authenticated UI; request-key idempotency |
-| Points and rewards | **Implemented** — simulated ticket claim, points, local discount codes |
-| Authentication, roles, RLS and grants | **Implemented and verified** — fan/organizer/club sessions, own-row reads, organizer-only resolution, club aggregate-only access |
-| Club analytics | **Implemented** — aggregate-only dashboard with cohort suppression and CSV export |
+| Club tenancy and subscription plans | **Implemented and verified** — STARTER/PRO/ELITE, database-enforced entitlements, owner/admin/staff/analyst roles |
+| Nominal ticketing | **Implemented and verified** — buyer vs attendee, 1–4 tickets, identity fields, fan-card rules, transfer deadline, box office, check-in |
+| Digital tickets | **Implemented** — unique entry code and QR image; no wallet pass or turnstile integration |
+| Cross-club fans | **Implemented and verified** — one email/password account; clubs see only their own event data |
+| Prediction market | **Implemented and verified** — LMSR entry, exit, cooldown, idempotency and resolution |
+| Aggregate prediction insights | **Implemented and verified** — club-scoped, threshold-5 suppression, no attendee identity, ELITE CSV export |
+| Platform admin | **Implemented and verified** — clubs, plans, subscription status and audit; no impersonation |
+| CLI and agent playbook | **Implemented and verified** — `matchpulse` commands, JSON output, profiles, match-day and refusal scenarios |
+| Attendee retention | **Implemented and verified** — service-role cleanup after 365 days; no scheduled production job |
+| Legacy v2 pages | Present for backward compatibility; the v3 pages are the current surfaces |
 
-The database is the authorization boundary: Supabase Auth supplies identity, RLS restricts private rows to the owner, direct table writes are revoked, and the mutation RPCs check `auth.uid()` and the organizer role. The remaining gaps are listed below.
+The database is the authorization boundary: Supabase Auth supplies email/password identity, RLS restricts private rows, direct table writes are revoked, and the mutation RPCs check identity, club membership, role and entitlement. Commerce is **simulated**: there is no real payment provider, financial KYC, invoice, refund or settlement. Attendee identity is event-access data, not financial KYC, and the platform does not sell personal data.
 
 ## Features
 
-- **Tournament Management:** Organize tournaments, teams, matches, and results. *(partial)*
-- **Live Prediction Market:** Buy and sell HOME/DRAW/AWAY shares while the match is live. Prices follow an LMSR curve; entry is cooled down per user and market; a retry with the same request key returns the original trade; the winning side pays one point per share at resolution. *(implemented, authenticated UI)*
-- **Rewards:** Points are redeemable for future ticket discounts. *(redemption not implemented)*
-- **Crowd-Sentiment Analytics:** Aggregate market activity into insights for soccer clubs. *(not implemented; trades are recorded)*
+- **Club subscriptions:** a club is the tenant; plans gate prediction markets, rewards, export and analytics limits.
+- **Nominal ticketing:** a buyer purchases one to four named tickets; each attendee has identity data, a code and a QR image.
+- **Match-day operations:** ticket types, sales windows, fan-card requirements, box-office sales, name changes and idempotent check-in.
+- **Fan account:** one email/password account can buy and predict across clubs; the fan keeps a cross-club portfolio.
+- **Prediction market:** LMSR HOME/DRAW/AWAY points market with cooldown, idempotency and terminal resolution.
+- **Club insights:** aggregate prediction choices and engagement for the club's own events only; cohorts below 5 are suppressed.
+- **Platform admin:** create/list clubs, assign plans and subscription status, review audit.
+- **CLI and agents:** every capability has a JSON command; the executable playbook covers the match-day journey and refusal cases.
 
 ## Tech Stack
 
 - **Framework:** Next.js 16 (App Router, Server Actions)
 - **Database:** Supabase (PostgreSQL) — migrations, constraints, RLS and transactional functions
-- **Authentication:** Supabase Auth — anonymous fans and email/password organizers
+- **Authentication:** Supabase Auth — email/password for fans, club organizers and the platform admin; no anonymous sessions
 - **Runtime & Package Manager:** Bun
 - **Local Infrastructure:** Docker and Supabase CLI
 - **Continuous Integration:** GitHub Actions
@@ -161,31 +170,59 @@ Open [http://localhost:3000](http://localhost:3000). You will be sent to
 
 ### Demo accounts
 
-- **Fan:** select **Continue as fan**. Supabase anonymous sign-in creates a real
-  auth user and a profile with 200 points.
-- **Organizer:** create the local organizer account, then sign in with the
-  email/password shown by the script:
+- **Fan:** open `/login`, choose **Fan**, then **Create an account** with an email,
+  username and password. The profile starts with 200 points. There is no
+  anonymous fan session.
+- **Club organizer:** create the local organizer, demo club and platform admin
+  fixtures, then sign in with the email/password shown by the script:
 
   ```bash
   bun run auth:organizer
-  # default: organizer@matchpulse.local / matchpulse-organizer
+  # organizer: organizer@matchpulse.local / matchpulse-organizer
+  # platform admin: admin@matchpulse.local / matchpulse-admin
   ```
 
-The organizer role is assigned locally; there is no self-service organizer
-sign-up. The default password is a local fixture, not a production secret.
+  The script creates a PRO demo club with a published event, a ticket type and a
+  prediction market. The organizer signs in through the **Organizer** tab; the
+  platform admin uses the same tab and lands on `/admin`.
+- **Legacy club analyst:** `bun run auth:club` creates the legacy `CLUB` role
+  fixture used by the v2 analytics page.
+
+The default passwords are local fixtures, not production secrets.
+
+### CLI
+
+The CLI is a second client of the same database contract. It stores each
+profile's session in `~/.config/matchpulse/<profile>.json` with `0600`
+permissions.
+
+```bash
+bun run cli -- commands --json
+bun run cli -- auth login --profile fan --email fan@example.test --password ...
+bun run cli -- fan events list --profile fan --json
+bun run cli -- fan tickets buy --profile fan --ticket-type <id> \
+  --attendee '{"first_name":"Mario","last_name":"Rossi","date_of_birth":"1990-01-01","place_of_birth":"Milano","tax_code":"TC123"}' \
+  --accept-terms --json
+```
+
+The CLI is also available as `matchpulse` after `bun link`. The command tree,
+agent playbook and capability manifest are in [docs/testing](docs/testing/README.md).
 
 ---
 
 ## Testing
 
 ```bash
-bun run test          # all suites
+bun run test          # database and application suites
+bun run test:agent    # CLI match-day and refusal scenarios
 bun run lint          # ESLint
 bun run typecheck     # tsc --noEmit
 bun run build         # production build
 bun run check:architecture  # architecture guards
 bun run smoke         # health/login/home against a running app
 bun run fault:inject  # mutation matrix; requires Supabase and Docker
+bun run maintenance:cleanup-attendees  # clear old attendee identity
+bun run docs:pdf      # regenerate the course submission PDFs
 ```
 
 The invariant suites need a running database — complete steps 3 and 4 first. Missing credentials fail immediately with a clear error rather than passing silently.
@@ -258,13 +295,17 @@ Recorded so they are not mistaken for delivered work. Full detail in the [invari
 - **No hosted deployment.** Delivery is local/CI only: health, structured logs, smoke test and a `Delivery and recovery` CI job exist, but there is no cloud environment, TLS, DNS or production availability claim.
 - **No external observability or alerting.** Logs are JSON to stdout; there is no collector, dashboard, trace or alert.
 - **No production recovery drill.** CI restores a public-schema backup into a scratch database and verifies table/policy/row counts; there is still no production backup, retention, RTO/RPO or disaster-recovery evidence.
-- **Authentication and authorization are implemented**, but production session hardening, rate-limit tuning and service-role handling remain operational work.
+- **No real payments, financial KYC, invoices, refunds or settlement.** Ticket prices and subscription plans are simulated; the course prototype does not move money.
+- **No seat maps, wallet passes, turnstile hardware or FIGC/Questura integration.** Tickets have a code and QR image; the club enters the code for check-in.
+- **Authentication and authorization are implemented**, but production session hardening, email confirmation, rate-limit tuning and service-role handling remain operational work.
 - **M-INV2 is verified by forced-failure rollback, not observed-red.** M-INV1, M-INV3, M-INV5, M-INV8 and all M-INV7 details were observed failing under fault injection; M-INV2's trade-insert failure test proves rollback but cannot break PostgreSQL function atomicity without a second connection.
 - **Request-key retention is a local maintenance command.** `bun run maintenance:cleanup` deletes completed requests older than 30 days; there is no scheduled production retention job.
 - **Attendee-data retention is a local maintenance command.** `bun run maintenance:cleanup-attendees` clears identity from past-event tickets older than 365 days; there is no scheduled production job or legal retention review.
+- **Club privacy has not had an independent review.** Aggregate-only insights and the threshold-5 rule are implemented; data resale is not implemented and personal data is not sold.
 - **p95 latency is observed, not asserted.** The capacity burst records p50/p95/max, but the target is not a CI gate yet, and the value is environment-specific.
-- **E2E and accessibility are initial, not exhaustive.** The Playwright suite covers the three happy-path role journeys; edge cases remain in integration tests. The accessibility gate blocks serious and critical violations, not moderate or minor ones.
+- **E2E and accessibility are not exhaustive.** The Playwright suite covers the v3 fan purchase, club dashboard/event page, admin console and legacy journeys; edge cases remain in integration/CLI tests. The accessibility gate blocks serious and critical violations, not moderate or minor ones.
 - **Performance is a scheduled baseline, not a release gate.** The 20/50/100 burst script records p50/p95/p99, but production load and multi-instance behaviour are not measured.
+- **Legacy v2 pages coexist with the v3 surfaces** for backward compatibility; they are not the current product model.
 - **No real-user validation or independent review.** FND-007 and FND-008 remain human gates.
 
 ## Project Roles
@@ -276,4 +317,5 @@ MatchPulse is developed by one person covering the software development lifecycl
 - **Full-Stack Developer:** Implements the application and database logic.
 - **QA Engineer:** Develops automated tests for domain invariants and authorization.
 - **Security & Privacy Reviewer:** Reviews authentication, RLS, grants and trust boundaries.
+- **Platform Operator:** Manages clubs, plans, subscription status, audit and attendee retention through the admin console and maintenance commands.
 - **DevOps / Release & Operations Verifier:** Manages local infrastructure, CI and release readiness.

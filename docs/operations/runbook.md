@@ -159,6 +159,15 @@ bun run maintenance:cleanup-attendees
 
 The function clears attendee name, date/place of birth, tax code/document and fan-card number for tickets whose event is older than the window. It keeps the ticket code, order, points and audit record, and writes an `attendee.retention` audit event. Authenticated users cannot execute it. Production scheduling and legal retention review are out of scope.
 
+### Club, plan and ticketing operations
+
+- **Plan change:** the owner requests a plan from `/club/dashboard`; the platform admin assigns it at `/admin`. Verify with `get_club_context` or `matchpulse club show --club <id>`. A downgrade keeps existing events but blocks new creation above the new limit.
+- **Subscription status:** `PAST_DUE`/`CANCELED` removes gated features without deleting data. Restore `ACTIVE` only after the simulated billing issue is resolved.
+- **Ticket support:** inspect the order and tickets through `list_club_orders`/`list_club_attendees`. Check-in is idempotent; a checked-in ticket cannot be transferred. The box-office channel is for club staff selling to an existing buyer.
+- **Attendee data:** `OWNER`/`ADMIN`/`STAFF` can see attendees for their own club; `ANALYST` sees aggregates only. Do not copy attendee identity into logs or audit metadata.
+- **CLI:** use a separate profile per actor (`--profile`), never the service role in a user profile. `matchpulse auth whoami` shows the profile, clubs and admin flag.
+- **Admin audit:** `/admin` or `matchpulse admin audit list` shows plan, member, ticket, check-in, export, retention and admin events. Do not edit audit rows.
+
 ## 7. Incident steps
 
 1. **Detect** — failed CI, a smoke-test failure, a `503` health response or a

@@ -21,9 +21,26 @@ They are separate from the market invariants below.
 | :--- | :--- | :--- | :--- |
 | **A-INV1** | Anonymous visitors may read only public tournament/match/market/trade data and cannot execute mutations. | RLS public-read policies; grants revoked from `anon` for private tables and mutation RPCs. | **Verified.** Authorization suite; CI run 42397891717. |
 | **A-INV2** | A fan may read only their own profile, registration, positions, trades, payouts and cooldown. | Own-row RLS policies using `auth.uid()`; private table grants only to `authenticated`. | **Verified.** Authorization suite; CI run 42397891717. |
-| **A-INV3** | Only an organizer may resolve a market. | `profiles.role = 'ORGANIZER'` check inside `resolve_market`. | **Verified.** Fan refusal and organizer success in the authorization suite. |
+| **A-INV3** | Only an authorized club member or legacy organizer may resolve a market. | `resolve_market` checks club membership/role for club-owned markets and keeps the legacy organizer rule for non-club markets. | **Verified.** Fan refusal, club success and legacy organizer success in the authorization/v3 suites. |
 | **A-INV4** | Direct table writes are denied; mutations go through authorized RPCs. | `REVOKE ALL` from `anon`/`authenticated`; no insert/update/delete policies; `SECURITY DEFINER` RPCs with explicit checks. | **Verified.** Direct update/insert attempts are denied in the authorization suite. |
 | **A-INV5** | The public trade feed exposes trades without identity or per-user balance. | `market_public_trades` returns only safe columns. | **Verified.** Response contains no `user_id` or `points_after`. |
+
+### v3.0.0 tenancy, ticketing and privacy invariants (implemented 2026-11-09)
+
+These are verified by `tests/integration/v3-club-tenancy.test.ts`, the CLI suite and the E2E/axe suite.
+
+| ID | Invariant | Enforcement | Status |
+| :--- | :--- | :--- | :--- |
+| **T-INV1** | A club member cannot read or mutate another club's events, orders, attendees, tickets, members or insights. | Club-scoped RLS + `is_club_member`/`has_club_role` in RPCs. | **Verified.** Cross-club attendee/order/insight refusals; CLI denial. |
+| **T-INV2** | Club roles are enforced: `OWNER` > `ADMIN` > `STAFF` > `ANALYST`; an `ANALYST` is read-only and cannot read attendee identity. | Role checks in membership/event/ticket/analytics RPCs. | **Verified.** Role matrix tests and attendee denial. |
+| **T-INV3** | Only an `ACTIVE` subscription grants entitlements; plan limits are enforced. | `has_entitlement`/`entitlement_limit`; RPC checks; STARTER/PRO/ELITE tests. | **Verified.** STARTER prediction denial; PRO success; ELITE export. |
+| **T-INV4** | A buyer may buy 1–4 named tickets; each requires identity data and terms acceptance; max per buyer is enforced. | `purchase_ticket` transaction + attendee validation. | **Verified.** Two-attendee purchase, five-ticket refusal, terms refusal. |
+| **T-INV5** | Ticket sales never exceed the event allocation or ticket-type allocation. | Ticket type/event row locks + counts. | **Verified.** Capacity/oversell tests. |
+| **T-INV6** | Purchase and check-in are idempotent; a second check-in does not create duplicate attendance. | Request id + unique order; ticket code check-in guard. | **Verified.** Retry and second-check-in tests; CLI. |
+| **T-INV7** | Fan-card, transferability, transfer-deadline, away-sector and box-office rules are enforced. | Ticket type rules + attendee validation + channel check. | **Verified.** Fan-card refusal/success, transfer, box office. |
+| **T-INV8** | Clubs see aggregate prediction data only; cohorts below 5 are suppressed; no attendee identity is included. | `club_prediction_insights` + privacy rule. | **Verified.** Suppression and no-identity assertions; CSV aggregate. |
+| **T-INV9** | The platform admin is scoped and audited; no impersonation or fan-point override. | Separate `platform_admins`, scoped RPCs, audit rows. | **Verified.** Admin plan assignment/audit; owner denial. |
+| **T-INV10** | Attendee identity is removable after the retention window without losing ticket/order/audit; recent tickets keep identity. | `cleanup_expired_attendee_data`, service-role only. | **Verified.** Old/recent ticket test; authenticated denial. |
 
 ### Market invariants (specified for the live market increment)
 
@@ -216,4 +233,4 @@ It establishes that these scenarios hold, on this machine, against a single data
 
 INV-01 and INV-02 remain verified. INV-03 and INV-04 are withdrawn with the retired fixed-score feature (owner decision, 2026-10-19); M-INV1–M-INV9 replace them. M-INV1, M-INV3, M-INV4, M-INV5, M-INV6, M-INV7 (gate and every detail), M-INV8 and M-INV9 are **Verified** by tests in CI, with observed-red fault injection for the recorded mechanisms. M-INV2 is **Verified by forced-failure rollback**: the trade-insert failure test proves no partial state survives, but it is not an observed-red mutation because PostgreSQL function atomicity cannot be broken without a second connection. That limit is recorded in the verification record.
 
-INV-05 and A-INV1–A-INV5 are **Verified** for the platform boundary by the authorization suite in CI. The separate club-analytics privacy rule remains not implemented. The market page is authenticated and reads only the user's own private rows plus the identity-free public trade feed. The remaining open findings are the M-INV2 observed-red limitation (FND-002, partly fixed), load/p95 (FND-004), delivery/operations (FND-006), real-user evidence (FND-007) and independent review (FND-008). FND-003 is fixed by the idempotency increment.
+INV-05 and A-INV1–A-INV5 are **Verified** for the platform boundary by the authorization suite in CI. The v3 tenancy/ticketing/privacy invariants T-INV1–T-INV10 are **Verified** by the v3 integration, CLI and E2E suites. The club-analytics privacy rule is now implemented as aggregate-only with threshold-5 suppression and no attendee identity. The remaining open findings are the M-INV2 observed-red limitation (FND-002, partly fixed), load/p95 (FND-004), delivery/operations (FND-006), real-user evidence (FND-007) and independent review (FND-008). FND-003 is fixed by the idempotency increment. The current database suite is **42 pass / 0 fail**; the CLI suite is **2 pass / 0 fail**; Playwright/axe is **11 passed**.

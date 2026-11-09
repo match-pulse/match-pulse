@@ -22,8 +22,13 @@ highly available.
 | SLO-2 | Health latency p95 | < 500 ms | Health probe timing in CI/local | Proposed |
 | SLO-3 | Capacity burst p95 | < 1,000 ms for 100 concurrent registrations | `tests/invariants/tournament-capacity.test.ts` | Proposed |
 | SLO-4 | Unhandled transport errors in the burst | 0 | The same burst test | Enforced by the test assertion |
-| SLO-5 | CI delivery smoke | Pass on every pull request and `main` | `Delivery smoke` CI job | Enforced by CI |
+| SLO-5 | CI delivery smoke | Pass on every pull request and `main` | `Delivery and recovery` CI job | Enforced by CI |
 | SLO-6 | Invariant suite duration | < 3 minutes | CI job duration | Measured (~2.5 min) |
+| SLO-7 | Tenancy/entitlement/ticket invariant result | 0 failures | `v3-club-tenancy.test.ts` | Enforced by CI |
+| SLO-8 | CLI agent playbook result | 0 failures | `bun run test:agent` | Enforced by CI |
+| SLO-9 | Serious/critical accessibility violations | 0 on tested pages | Playwright + axe | Enforced by CI |
+| SLO-10 | Attendee retention result | All old tickets cleared; recent tickets retained; authenticated denial | `v3-club-tenancy.test.ts` | Enforced by CI |
+| SLO-11 | Ticket oversell / duplicate check-in | 0 observed | Ticket capacity/check-in tests | Enforced by CI |
 
 ## 3. Measurement method
 

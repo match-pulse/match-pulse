@@ -16,3 +16,7 @@ Club analytics is exposed only through `SECURITY DEFINER` RPCs that return aggre
 - Small cohorts show a suppression state instead of metrics.
 - The export cannot contain user IDs, usernames or individual trades.
 - A formal privacy review and production retention policy remain open.
+
+## Update 2026-11-09 — v3 aggregate insights
+
+The aggregate-only and threshold-5 decisions are implemented for clubs in v3, scoped to the club's own events. Prediction insights exclude attendee identity and are separate from the operational attendee list. The ELITE CSV export is aggregate-only and audited. An independent privacy review and a scheduled production retention policy remain open. See [ADR-010](./010-nominal-ticketing-and-attendee-identity.md).

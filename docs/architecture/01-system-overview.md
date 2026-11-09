@@ -3,132 +3,150 @@
 > **How to read this document.** It describes what the system is, who uses it
 > and how a request travels through it. Entities, relationships and business
 > rules live in the [domain model](./02-domain-model.md); diagrams live in the
-> [C4 views](./05-c4-diagrams.md). Every element carries a state:
-> **Implemented**, **Partial**, **Intended** or **Not implemented**. The
-> authoritative enforcement and evidence record is the
-> [invariants registry](../methodology/checkpoint-A/02-invariants.md).
+> [C4 views](./05-c4-diagrams.md). The authoritative enforcement and evidence
+> record is the [invariants registry](../methodology/checkpoint-A/02-invariants.md).
 
 ## 1. Purpose and scope
 
-MatchPulse is a football tournament web application. Spectators register for a
-tournament, receive prediction points, and trade those points on the outcome of
-a live match. Correct positions pay points that can later be redeemed for ticket
-discounts. Aggregated market activity is intended to become a crowd-sentiment
-product for football clubs.
+MatchPulse is a club-first football ticketing and fan-engagement platform. Clubs
+are the paying tenant: they subscribe to a plan, create events, sell nominal
+tickets, check in attendees and read aggregate prediction insights for their own
+matches. Fans use one email/password account to buy tickets and trade points
+across clubs. A platform admin manages clubs, plans and audit. Commerce is
+simulated; there is no real payment provider, financial KYC or data resale.
 
-The application is a **modular monolith**: one Next.js deployment and one
-PostgreSQL database, with business-critical rules enforced inside database
-transactions.
+The application is a **modular monolith**: one Next.js deployment, one PostgreSQL
+database and one shared domain contract used by the web UI and the CLI. Critical
+rules are enforced inside database transactions.
 
 ## 2. Users and goals
 
 | Actor | Goal | State |
 | :--- | :--- | :--- |
-| **Spectator / fan** | Register for a tournament, trade points during a match, keep winnings for ticket discounts | Registration and trading implemented; redemption not implemented |
-| **Tournament organizer / staff** | Create tournaments, schedule matches, finalise results and resolve markets | Data model, resolution RPC and organizer authorization implemented; management UI not implemented |
-| **Club representative** | Read aggregated crowd sentiment without seeing individuals | Not implemented; the trade log records the raw data |
-| **Developer / operator** | Run the stack locally, replay migrations, verify invariants in CI | Implemented |
+| **Fan** | Buy nominal tickets, predict, keep a cross-club portfolio, redeem club rewards | Implemented and verified |
+| **Attendee** | Enter with their identity and ticket code/QR | Implemented; no account required |
+| **Club owner/admin/staff/analyst** | Create events and ticket types, manage orders/attendees, check in, resolve markets, read aggregate insights | Implemented and verified |
+| **Platform admin** | Manage clubs, plans/subscription status and audit without impersonation | Implemented and verified |
+| **Developer/operator** | Run the stack locally, run the CLI/agent playbook, verify invariants in CI, apply retention | Implemented |
 
 ## 3. Architecture style and boundaries
 
-The system deliberately stays a modular monolith. A single application process
-covers the web UI and the mutation endpoints; PostgreSQL is the source of truth.
+- **Interface (Next.js App Router):** Server Components render the fan, club and
+  admin pages. Client components hold form state; the checkout uses dynamic
+  attendee fields and a request id.
+- **Application layer (Server Actions + shared domain):** `src/lib/domain/`
+  contains typed wrappers over the database contract. Server Actions and the
+  `matchpulse` CLI call the same wrappers. The CLI never imports Server Actions.
+- **Domain layer (PostgreSQL):** tables, constraints, RLS, grants and
+  transaction-scoped functions enforce tenancy, roles, entitlements, ticketing,
+  market, privacy and retention rules.
+- **Infrastructure:** Bun for tooling/tests/CLI, Supabase CLI and Docker locally,
+  GitHub Actions for CI. Deployment is not configured.
 
-- **Interface (Next.js App Router):** React Server Components render pages that
-  read through the database client. Client components hold only form state.
-- **Application layer (Server Actions):** validates input, resolves the caller
-  through `src/lib/session.ts`, calls a database function and refreshes the view.
-- **Domain layer (PostgreSQL):** tables, constraints and transaction-scoped
-  functions (`open_trade`, `close_trade`, `resolve_market`,
-  `register_for_tournament`) enforce the invariants. The application never
-  performs a read-modify-write across requests.
-- **Infrastructure:** Bun for tooling and tests, the Supabase CLI and Docker for
-  local development, GitHub Actions for CI. Deployment is not configured.
+Three boundaries are explicit:
 
-Two boundaries are intentionally explicit today:
-
-1. **The database is an authorization boundary.** Supabase Auth supplies the
-   identity, RLS restricts private rows to their owner, direct table writes are
-   revoked, and the state-changing RPCs run as `SECURITY DEFINER` with explicit
-   `auth.uid()` checks. `resolve_market` additionally requires the organizer
-   role. The public reads are tournaments, matches, markets and the identity-free
-   trade feed.
-2. **The organizer management UI is not implemented.** Market resolution is an
-   authorized RPC and is exercised by the test suite; there is no browser
-   management screen. The fan market page is authenticated and is not a
-   security boundary by itself.
-
-The file-level mapping of these elements is in the
-[code map](./04-code-map.md). The runtime views are in
-[05-c4-diagrams.md](./05-c4-diagrams.md).
+1. **The database is the authorization boundary.** Supabase Auth supplies
+   email/password identity. RLS restricts private rows; direct writes are
+   revoked; RPCs run as `SECURITY DEFINER` and check `auth.uid()`, club
+   membership, role and the active subscription entitlement. The platform admin
+   is a separate capability; the service role is an operator/fixture credential.
+2. **Tenancy is club-scoped.** A club member cannot read another club's events,
+   orders, attendees or analytics. The booking user and the named attendee are
+   different people; attendee identity is visible only to operational club staff.
+3. **Commerce is simulated.** Ticket orders and subscriptions record simulated
+   money; there is no payment provider, financial KYC, invoice, refund or
+   settlement. The platform does not sell personal data.
 
 ## 4. Data flows
 
-### 4.1 Market entry and exit (implemented and verified)
+### 4.1 Sign-in and home routing
 
-1. The spectator selects an outcome and commits an amount of points.
-2. The Server Action validates the request shape and reads the authenticated
-   session. The client supplies a request key for the action; the database RPC
-   resolves the caller independently with `auth.uid()`; identity is never read
-   from the form.
-3. `open_trade` checks that the caller has a real auth identity, claims the
-   request key (or replays/refuses a duplicate), then locks the market row, the
-   profile row and the cooldown row, and checks the market window: the market
-   must be open and the authoritative database time must be at or after
-   `kickoff_time`.
-4. The cooldown gate is checked. A refusal writes nothing.
-5. The share quantity is solved from the committed budget under the LMSR cost
-   curve. The cost is debited (`ceil`) atomically with the position update, the
-   market state update and the trade-log write.
-6. An exit (`close_trade`) is always permitted while the market is open: the
-   requested shares are checked against the holding, the market state is moved
-   back by those shares, and the proceeds (`floor`) are credited atomically with
-   the position update and the trade-log write. No fee is charged.
-7. The Server Action returns the result and Next.js refreshes the view.
+1. Fans, club organizers and the platform admin sign in with email/password.
+   There is no anonymous session.
+2. The server client stores the session in cookies and refreshes it through the
+   Next.js proxy.
+3. The home route chooses platform admin → legacy organizer/club → club
+   membership → fan. The database still enforces authorization from the JWT; UI
+   routing is not the boundary.
 
-### 4.2 Resolution (implemented and verified)
+### 4.2 Club onboarding and plan
 
-1. An authorized organizer finalises the match result and resolves the market
-   with the winning outcome.
-2. `resolve_market` checks `auth.uid()` and the organizer role, locks the market
-   row, refuses if the market is already resolved, marks it resolved terminally,
-   and pays each holder of winning shares exactly one point per share (floor),
-   once, in the same transaction.
-3. No entry or exit is accepted after resolution.
+1. An authenticated user creates a club and becomes `OWNER`.
+2. The club gets a simulated subscription. `STARTER`, `PRO` and `ELITE` rows in
+   `plan_entitlements` gate prediction markets, insights, rewards, export and
+   event/member limits.
+3. The owner requests a plan change; the platform admin assigns the plan/status.
+4. Every gated RPC calls `has_entitlement`/`require_entitlement`; a `PAST_DUE` or
+   `CANCELED` subscription grants nothing.
 
-### 4.3 Registration (implemented and verified)
+### 4.3 Event, ticket type and match setup
 
-1. A spectator requests a place through the interface.
-2. The Server Action validates the request shape and reads the authenticated
-   session; the RPC independently resolves the caller with `auth.uid()`.
-3. `register_for_tournament` checks that the caller has a real auth identity and
-   a profile, locks the tournament row, checks capacity, inserts the
-   registration in a subtransaction (a duplicate is refused without raising),
-   and increments the counter.
-4. The result is translated into a message and the view refreshes.
+1. Club staff create a draft event with capacity and ticket allocation.
+2. They add ticket types with price, allocation, sales window, max per buyer,
+   fan-card, transferability and away-sector rules.
+3. They publish the event (at least one active ticket type is required) and add
+   matches; a match may create a prediction market if the plan allows it.
 
-### 4.4 Sign-in (implemented)
+### 4.4 Nominal purchase
 
-1. A fan selects **Continue as fan**; Supabase Auth creates an anonymous user and
-   a `profiles` row with 200 points and role `FAN`.
-2. An organizer signs in with the local email/password account created by
-   `bun run auth:organizer`; the profile role is `ORGANIZER`.
-3. The server client stores the session in cookies and refreshes it through the
-   Next.js proxy. The database still enforces authorization from the JWT; the UI
-   state is not the boundary.
+1. A fan selects a ticket type and 1–4 attendees, enters each attendee's name,
+   date/place of birth, tax code or document and optional fan card, accepts the
+   club terms and submits a request id.
+2. `purchase_ticket` locks the ticket type and event, checks the sales window,
+   max per buyer, fan-card and allocation, and either replays the existing order
+   or creates one `SIMULATED_PAID` order plus one ticket per attendee.
+3. Each ticket gets a unique code/QR. The event's ticket points are credited to
+   the buyer. No payment instrument is collected.
+4. A buyer may transfer a transferable ticket to a new attendee before the
+   deadline; a checked-in ticket cannot be transferred.
+
+### 4.5 Check-in and box office
+
+1. Club staff enter or scan a ticket code. `check_in_ticket` checks the event's
+   club and the staff role, records the first check-in, and returns the existing
+   time on a second attempt.
+2. Club staff may sell through the `BOX_OFFICE` channel for an existing buyer;
+   the order and audit record the channel.
+
+### 4.6 Market entry and exit
+
+1. The fan selects an outcome and commits points. The client supplies a request
+   key; the RPC resolves the caller independently with `auth.uid()`.
+2. `open_trade` claims/replays the request key, locks the market, profile and
+   cooldown, checks the kickoff window and cooldown, solves the LMSR share
+   quantity, and debits points atomically with the position, market and trade.
+3. An exit is always permitted while the market is open; proceeds are credited
+   atomically. No fee is charged.
+4. A trigger refuses trades when `matches.prediction_enabled` is false.
+
+### 4.7 Resolution
+
+1. Club `OWNER`/`ADMIN`/`STAFF` (or the legacy organizer for a non-club market)
+   finalise the result and resolve the market once.
+2. `resolve_market` locks the market, refuses a second resolution, pays each
+   winning share one point (floor), marks the market resolved and audits it.
+3. No entry or exit is accepted afterwards.
+
+### 4.8 Insights, export and retention
+
+1. A club member reads `club_sales_summary` (all roles) and
+   `club_prediction_insights` (PRO/ELITE). Insights are club-scoped, suppress
+   cohorts below 5 and exclude attendee identity.
+2. An `ELITE` owner/admin/analyst can download the aggregate CSV; the export is
+   audited.
+3. A service-role maintenance command clears attendee identity from past-event
+   tickets after the retention window while keeping ticket, order, points and
+   audit.
 
 ## 5. Quality and evidence
 
-The project selects five architecture characteristics — elasticity,
-deployability, testability, integrity under concurrency, and
-security/authorization — and records their targets and evidence in
+The project selects reliability, elasticity, deployability, testability and
+security/authorization; targets and evidence are in
 [03-architecture-characteristics.md](./03-architecture-characteristics.md).
-Invariant coverage and fault-injection results are recorded in the
-[registry](../methodology/checkpoint-A/02-invariants.md).
+Invariant coverage and fault-injection results are in the [registry](../methodology/checkpoint-A/02-invariants.md).
 
-Authentication and authorization are **implemented and covered by CI**. The
-authorization suite verifies anonymous, fan, cross-user and organizer behavior,
-and direct table writes are denied. The system still does not implement reward
-redemption, club analytics, an organizer management UI or a deployment
-environment; those gaps are listed in the README and in the Checkpoint C
-residual-risk record.
+The v3 evidence includes database-backed tenancy/entitlement/nominal-ticketing
+tests, a CLI match-day scenario, Playwright/axe journeys for the fan, club and
+admin pages, delivery/recovery and fault injection. Real payments, financial
+KYC, hosted deployment, seat maps/wallet passes and deep FIGC/Questura
+integration remain out of scope.
