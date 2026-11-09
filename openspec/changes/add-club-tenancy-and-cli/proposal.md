@@ -12,11 +12,13 @@ The course needs a complete, realistic architecture and methodology story. This 
 - **BREAKING** Remove anonymous fan authentication; all actors use email/password.
 - Add clubs as tenants and link events to a club.
 - Add `STARTER`, `PRO` and `ELITE` plans, subscription status and database-enforced entitlements.
-- Add simulated ticket types, orders, ticket codes and check-in. No real payment, refund or KYC.
+- Add simulated nominal ticketing: buyer vs attendee, attendee identity fields, 1–4 tickets per buyer, ticket types with fan-card/transfer/away-sector rules, digital QR tickets, name change and box-office sales. No real payment, refund or financial KYC.
+- Treat nominal attendee data as event-access data: the club is the controller, the platform the processor, and prediction insights remain aggregate.
 - Allow one fan account to buy tickets and predict for events from any club.
 - Clubs see aggregate prediction choices and engagement for their own events only, with cohorts below 5 suppressed.
 - Add a platform admin for clubs, plans, subscription status and audit.
 - Add a shared domain contract, a `matchpulse` CLI with JSON output and help, and an executable agent playbook.
+- Record the competitive context: TicketOne, Vivaticket and Ticketmaster Italy are official channels; MatchPulse is a club-branded, prediction-enabled shop, not a consumer marketplace.
 - Update the kata, domain model, ADRs, reports, test strategy, threat model, README, changelog and verification records.
 
 ## Capabilities
@@ -36,9 +38,9 @@ None. The OpenSpec spec store is empty; the v2 behavior is recorded in the kata,
 
 ## Impact
 
-- Database: new tenants, memberships, plans, entitlements, orders and ticket tables; new `club_id` ownership; rewritten RLS and grants.
-- Application: email/password auth, shared domain contract, new fan/club/admin UI, updated Server Actions.
-- CLI: new `matchpulse` binary and agent scenarios.
-- Tests: tenancy, entitlements, cross-club isolation, ticket capacity/concurrency, privacy and CLI contract.
-- Documentation: ADR-007/008/009, kata/domain model, reports, checkpoints D/E, verification records.
-- Non-goals: real payments, KYC, hosted deployment, data resale, real-money prediction markets.
+- Database: new tenants, memberships, plans, entitlements, ticket types, nominal orders, attendee tickets, transfers, fan cards and club-scoped events; new `club_id` ownership; rewritten RLS and grants.
+- Application: email/password auth, shared domain contract, club-branded fan checkout, digital tickets, club and platform-admin UI, updated Server Actions.
+- CLI: new `matchpulse` binary, nominal attendee input, box-office and transfer commands, and agent scenarios.
+- Tests: tenancy, entitlements, cross-club isolation, nominal attendee data, max-four enforcement, fan-card/transfer rules, ticket capacity/concurrency, privacy and CLI contract.
+- Documentation: ADR-007/008/009/010, competitive landscape, kata/domain model, reports, checkpoints D/E, verification records.
+- Non-goals: real payments, financial KYC, hosted deployment, data resale, real-money prediction markets, seat maps, wallet passes and deep FIGC/Questura integration.

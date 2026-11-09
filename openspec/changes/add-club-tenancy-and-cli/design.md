@@ -65,6 +65,16 @@ A fan's cross-club history is read from their own orders, tickets and positions.
 
 **Alternative:** keep the old claim-ticket flow. Rejected: it cannot express prices, terms, orders or check-in, which are the core of the club ticketing story.
 
+### D4b — Ticketing is nominative; buyer and attendee are distinct
+
+Italian football tickets are tied to the named attendee. A buyer may purchase one to four tickets per event, each assigned to a different attendee. `ticket_orders` records the buyer, quantity, simulated total, status, request id and terms acceptance. `tickets` records the order, ticket type, attendee identity fields (first name, last name, date of birth, place of birth, tax code/document, optional fan card), unique code and check-in time.
+
+Ticket types carry the rules: sector, price, allocation, sales window, maximum per buyer (default 4), fan-card requirement, transferability and away-sector flag. `transfer_ticket` changes the attendee before the configured deadline when the type allows it; `ticket_transfers` keeps the history. Club staff can sell through a `BOX_OFFICE` channel and check in by code. Digital tickets are a QR page; wallet passes are later.
+
+Attendee identity data is event-access data, not financial KYC. The club is the controller, MatchPulse the processor. `OWNER`, `ADMIN` and `STAFF` can read attendee data for their club; `ANALYST` sees aggregates only. A retention window and cleanup path apply.
+
+**Alternative:** keep one ticket tied to the buyer. Rejected: it cannot model group purchases or Italian nominal ticketing.
+
 ### D5 — Prediction insights are aggregate and club-scoped
 
 Predictions remain points-only. The market engine and cooldown rules are unchanged. A club can enable predictions per match only with the entitlement. Insights are computed from positions/trades for the club's own event and return counts/percentages by outcome. A cohort below 5 returns a suppressed response. No fan id, email, username or individual position is returned.
@@ -102,10 +112,12 @@ Anonymous fan sessions cannot be migrated. Local reset is acceptable for the cou
 | `plans` | code, name, active |
 | `plan_entitlements` | plan_id, feature, limit |
 | `club_subscriptions` | club_id, plan_id, status, period |
-| `ticket_types` | event_id, name, price_cents, allocation, window |
-| `ticket_orders` | fan_id, ticket_type_id, quantity, total, status, terms, request_id |
-| `tickets` | order_id, event_id, fan_id, code, checked_in_at |
-| `tournaments` | + club_id, ticket fields retained |
+| `ticket_types` | event_id, name, sector, price_cents, allocation, sales window, max per buyer, fan-card/transfer/away rules |
+| `ticket_orders` | buyer_id, ticket_type_id, quantity 1–4, total, status, terms, request_id, channel |
+| `tickets` | order_id, ticket_type_id, buyer_id, attendee identity fields, fan card, code, checked_in_at |
+| `ticket_transfers` | ticket_id, previous and new attendee data, actor, created_at |
+| `club_fan_cards` | club_id, card_number, profile_id, status |
+| `tournaments` | + club_id, status, published_at |
 | `matches` | + prediction_enabled |
 | `rewards` | + club_id |
 
@@ -120,6 +132,8 @@ Anonymous fan sessions cannot be migrated. Local reset is acceptable for the cou
 | Create/update event | — | own | own | own | — |
 | Create ticket type | — | own | own | own | — |
 | Check in ticket | — | own | own | own | — |
+| Read attendee identity | — | own | own | own | audited |
+| Box-office sale | — | own | own | own | — |
 | Invite/remove member | — | — | own | own | — |
 | Change member role | — | — | own | own | — |
 | Request plan change | — | — | — | own | — |

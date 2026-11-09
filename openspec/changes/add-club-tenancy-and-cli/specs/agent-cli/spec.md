@@ -7,11 +7,15 @@ Define a CLI client that exposes the same capabilities as the web UI, produces m
 ## ADDED Requirements
 
 ### Requirement: Command parity
-Every customer-visible and platform-admin capability SHALL have a CLI command. The capability manifest SHALL map each command to its database contract, web path, authorization test and agent scenario.
+Every customer-visible and platform-admin capability SHALL have a CLI command. The capability manifest SHALL map each command to its database contract, web path, authorization test and agent scenario. Nominal ticketing commands SHALL accept attendee data as repeated flags or a JSON file.
 
 #### Scenario: Command discovery
 - **WHEN** an agent runs `matchpulse commands --json`
 - **THEN** the command tree and descriptions are returned
+
+#### Scenario: Nominal ticket purchase
+- **WHEN** an agent buys two tickets with two attendee records
+- **THEN** the command succeeds and returns both ticket codes
 
 #### Scenario: Missing command is detected
 - **WHEN** a verified capability has no CLI command

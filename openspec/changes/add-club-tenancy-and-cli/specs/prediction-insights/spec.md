@@ -51,6 +51,21 @@ The system SHALL suppress a prediction cohort with fewer than 5 participants. Th
 - **WHEN** an `ELITE` club exports prediction insights
 - **THEN** the export contains aggregates and no personal data
 
+### Requirement: Prediction data is separate from attendee identity
+Prediction insights SHALL NOT join or expose ticket attendee identity. A club SHALL receive aggregate prediction data and operational attendee data as separate capabilities.
+
+#### Scenario: Insights contain no attendee data
+- **WHEN** a club reads prediction insights
+- **THEN** the response contains no attendee name, document, tax code, email or ticket code
+
+#### Scenario: Attendee list contains no prediction data
+- **WHEN** club staff read the attendee list
+- **THEN** the response contains no individual prediction position
+
+#### Scenario: Cross-club separation
+- **WHEN** a club reads either insights or attendees
+- **THEN** only its own events are included
+
 ### Requirement: Prediction entitlement
 Prediction markets and prediction insights SHALL require the club's active plan to include the relevant entitlement.
 

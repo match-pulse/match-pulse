@@ -12,11 +12,12 @@
 
 - [ ] 2.1 Add `clubs`, `club_members`, `club_invites` and `platform_admins`; verify membership uniqueness and role checks.
 - [ ] 2.2 Add `plans`, `plan_entitlements` and `club_subscriptions`; seed STARTER/PRO/ELITE and their limits/features.
-- [ ] 2.3 Add `ticket_types`, `ticket_orders`, ticket columns (`order_id`, `ticket_code`, `checked_in_at`) and `rewards.club_id`; verify constraints.
-- [ ] 2.4 Add `tournaments.club_id` and `matches.prediction_enabled`; backfill a club and `OWNER` membership per existing organizer and link their tournaments.
+- [ ] 2.3 Add `ticket_types`, `ticket_orders`, attendee fields on `tickets` (`order_id`, `buyer_id`, attendee identity, fan card, `ticket_code`, `checked_in_at`), `ticket_transfers`, `club_fan_cards` and `rewards.club_id`; verify constraints and the max-four rule.
+- [ ] 2.4 Add `tournaments.club_id`, `tournaments.status` and `matches.prediction_enabled`; backfill a club and `OWNER` membership per existing organizer and link their tournaments.
 - [ ] 2.5 Create a `PRO` subscription for migrated clubs; verify existing events remain readable.
-- [ ] 2.6 Add indexes and uniqueness for slugs, membership, invites, request ids and ticket codes; verify query plans for club-scoped reads.
-- [ ] 2.7 Write the migration rollback/backup note; verify a clean local reset and a second migration run.
+- [ ] 2.6 Add indexes and uniqueness for slugs, membership, invites, request ids, ticket codes and attendee lookups; verify query plans for club-scoped reads.
+- [ ] 2.7 Add the attendee retention window and a cleanup path; verify it removes identity data without deleting the audit record.
+- [ ] 2.8 Write the migration rollback/backup note; verify a clean local reset and a second migration run.
 
 ## 3. Authorization and RLS
 
@@ -32,10 +33,11 @@
 - [ ] 4.1 Add club onboarding: `create_club`, `update_club`, `request_plan_change`, `get_club_context`.
 - [ ] 4.2 Add membership: `invite_club_member`, `accept_club_invite`, `list_club_members`, `set_club_member_role`, `remove_club_member`; enforce limits and owner protection.
 - [ ] 4.3 Add event management: `create_event`, `update_event`, `publish_event`, `set_prediction_enabled`; enforce club scope, role and entitlement.
-- [ ] 4.4 Add ticketing: `create_ticket_type`, `purchase_ticket`, `list_club_orders`, `check_in_ticket`; enforce capacity, terms, request id and idempotent check-in.
-- [ ] 4.5 Add analytics: `club_analytics_summary`, `club_prediction_insights`, `club_analytics_timeseries`, `record_club_export`; enforce club scope, entitlement and threshold 5.
-- [ ] 4.6 Add platform admin: `admin_list_clubs`, `admin_assign_plan`, `admin_set_subscription_status`, `admin_list_audit`; audit every action.
-- [ ] 4.7 Add audit events for plan, member, event, ticket, check-in, export and admin actions without logging secrets or unnecessary personal data.
+- [ ] 4.4 Add nominal ticketing: `create_ticket_type`, `purchase_ticket` with 1–4 attendees, `transfer_ticket`, `list_club_orders`, `list_club_attendees`, `check_in_ticket` and `box_office_sell`; enforce capacity, terms, request id, fan-card, max-four, transfer deadline and idempotent check-in.
+- [ ] 4.5 Add fan cards: `issue_club_fan_card`, `list_club_fan_cards` and validation in the purchase path.
+- [ ] 4.6 Add analytics: `club_sales_summary`, `club_prediction_insights`, `club_analytics_timeseries`, `record_club_export`; enforce club scope, entitlement and threshold 5.
+- [ ] 4.7 Add platform admin: `admin_list_clubs`, `admin_assign_plan`, `admin_set_subscription_status`, `admin_list_audit`; audit every action.
+- [ ] 4.8 Add audit events for plan, member, event, nominal order, transfer, check-in, box office, export and admin actions without logging secrets or unnecessary attendee data.
 
 ## 5. Identity and shared contract
 
@@ -49,8 +51,8 @@
 
 - [ ] 6.1 Add the `matchpulse` entry point, command registry, `--help`, `commands --json` and `describe`.
 - [ ] 6.2 Add auth profiles with email/password login, session storage (`0600`), logout and `whoami`; refuse the service role in user profiles.
-- [ ] 6.3 Add fan commands: events, tickets, predictions, portfolio and rewards.
-- [ ] 6.4 Add club commands: create, switch, members, events, ticket types, orders, check-in, predictions, analytics and plan.
+- [ ] 6.3 Add fan commands: events, nominal ticket purchase with attendee JSON, ticket list/show, transfer, predictions, portfolio and rewards.
+- [ ] 6.4 Add club commands: create, switch, members, events, matches, ticket types, orders, attendees, check-in, box office, fan cards, predictions, analytics and plan.
 - [ ] 6.5 Add admin and ops commands with audit and a separate service-role context.
 - [ ] 6.6 Add JSON output, exit codes 0/1/2 and `--request-id` for mutations.
 - [ ] 6.7 Add CLI contract tests and the capability parity gate.
@@ -59,21 +61,22 @@
 
 - [ ] 7.1 Add fan sign-up/sign-in and the context switcher; remove the anonymous fan button.
 - [ ] 7.2 Add public event discovery and event detail across clubs.
-- [ ] 7.3 Add simulated checkout with terms acceptance, ticket confirmation and ticket codes.
+- [ ] 7.3 Add simulated checkout with attendee forms (1–4), terms acceptance, ticket confirmation, digital QR and name change.
 - [ ] 7.4 Add fan tickets, predictions, portfolio and club rewards.
 - [ ] 7.5 Add club onboarding: create club, choose simulated plan, invite members.
-- [ ] 7.6 Add club dashboard: plan, entitlements, events, ticket types, orders, check-in and analytics.
+- [ ] 7.6 Add club dashboard: plan, entitlements, events, ticket types, orders, attendee list, box office, check-in and analytics.
 - [ ] 7.7 Add platform-admin console: clubs, plans, subscription status and audit.
 - [ ] 7.8 Add accessibility checks for every new page.
 
 ## 8. Agent playbook and evidence
 
 - [ ] 8.1 Add `tests/agent/` runner, fixtures, assertions and JSON evidence output.
-- [ ] 8.2 Implement the match-day scenario, including cross-club tickets and predictions.
+- [ ] 8.2 Implement the match-day scenario, including nominal tickets for multiple attendees, cross-club tickets and predictions.
 - [ ] 8.3 Implement entitlement, authorization, capacity/concurrency and privacy scenarios.
-- [ ] 8.4 Add `bun run test:agent` and a CI job with the `agent-evidence` artifact.
-- [ ] 8.5 Update the playbook from specification to verified with observed evidence.
-- [ ] 8.6 Verify the refusal scenarios leave committed state unchanged.
+- [ ] 8.4 Implement nominal ticketing scenarios: max four, missing attendee data, fan-card requirement, transfer before/after deadline, box-office sale and digital check-in.
+- [ ] 8.5 Add `bun run test:agent` and a CI job with the `agent-evidence` artifact.
+- [ ] 8.6 Update the playbook from specification to verified with observed evidence.
+- [ ] 8.7 Verify the refusal scenarios leave committed state unchanged.
 
 ## 9. Course and release
 

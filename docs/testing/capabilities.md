@@ -20,8 +20,10 @@ Status values: `planned`, `implemented`, `verified`.
 | Current identity | All | `auth whoami` | `profiles`, `club_members`, `platform_admins` | context switcher | `auth` | planned |
 | List public events | Public/Fan | `fan events list` | `public_events` view | `/events` | `match-day` | planned |
 | Show event | Public/Fan | `fan events show` | `public_event` view | `/events/[id]` | `match-day` | planned |
-| Buy ticket | Fan | `fan tickets buy` | `purchase_ticket` | `/events/[id]/checkout` | `match-day` | planned |
+| Buy nominal tickets | Fan | `fan tickets buy` | `purchase_ticket` | `/events/[id]/checkout` | `match-day` | planned |
 | List my tickets | Fan | `fan tickets list` | `my_tickets` view | `/fan/tickets` | `match-day` | planned |
+| Show my ticket / QR | Fan | `fan tickets show` | `my_ticket` view | `/fan/tickets/[id]` | `match-day` | planned |
+| Transfer ticket | Fan | `fan tickets transfer` | `transfer_ticket` | `/fan/tickets/[id]/transfer` | `transfers` | planned |
 | Enter prediction | Fan | `fan predictions enter` | `open_trade` | `/market/[id]` | `predictions` | planned |
 | Exit prediction | Fan | `fan predictions exit` | `close_trade` | `/market/[id]` | `predictions` | planned |
 | Portfolio | Fan | `fan portfolio show` | `my_portfolio` view | `/fan/portfolio` | `predictions` | planned |
@@ -39,7 +41,11 @@ Status values: `planned`, `implemented`, `verified`.
 | Publish event | Club OWNER/ADMIN/STAFF | `club events publish` | `publish_event` | `/club/events/[id]` | `match-day` | planned |
 | Create ticket type | Club OWNER/ADMIN/STAFF | `club ticket-types create` | `create_ticket_type` | `/club/events/[id]` | `match-day` | planned |
 | List orders | Club OWNER/ADMIN/STAFF | `club orders list` | `club_orders` read | `/club/orders` | `match-day` | planned |
+| List attendees | Club OWNER/ADMIN/STAFF | `club attendees list` | `club_attendees` read | `/club/attendees` | `nominal-ticketing` | planned |
 | Check in ticket | Club OWNER/ADMIN/STAFF | `club tickets check-in` | `check_in_ticket` | `/club/check-in` | `match-day` | planned |
+| Box-office sale | Club OWNER/ADMIN/STAFF | `club box-office sell` | `box_office_sell` | `/club/box-office` | `box-office` | planned |
+| Issue fan card | Club OWNER/ADMIN | `club fan-cards issue` | `issue_club_fan_card` | `/club/fan-cards` | `fan-cards` | planned |
+| List fan cards | Club OWNER/ADMIN | `club fan-cards list` | `club_fan_cards` read | `/club/fan-cards` | `fan-cards` | planned |
 | Enable predictions | Club OWNER/ADMIN | `club predictions enable` | `set_prediction_enabled` | `/club/events/[id]` | `predictions` | planned |
 | Sales summary | Club member | `club analytics summary` | `club_analytics_summary` | `/club` | `privacy` | planned |
 | Prediction insights | Club OWNER/ADMIN/ANALYST | `club analytics predictions` | `club_prediction_insights` | `/club/analytics` | `privacy` | planned |
@@ -52,6 +58,14 @@ Status values: `planned`, `implemented`, `verified`.
 | View audit | Platform admin | `admin audit list` | `audit_events` read | `/admin/audit` | `admin` | planned |
 | Health | Ops | `ops health` | `/api/health` | n/a | `ops` | planned |
 | Retention cleanup | Ops | `ops cleanup` | `cleanup_completed_trade_requests` | n/a | `ops` | planned |
+
+## Ticket rules
+
+- A ticket is nominative: `ticket_orders` records the buyer; each `tickets` row records the attendee.
+- A buyer may purchase at most four tickets per event by default.
+- Ticket types may require a fan card, restrict transferability or mark an away sector.
+- Digital tickets use a unique code and QR page; check-in is idempotent.
+- Attendee identity is event-access data, not financial KYC. It is separate from prediction data.
 
 ## Parity gate
 

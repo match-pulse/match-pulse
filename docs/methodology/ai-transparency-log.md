@@ -771,6 +771,22 @@ Secret hygiene re-verified: `release.env` in history contains only `APP_VERSION`
 
 ---
 
+## Entry 43 — Nominal ticketing contract
+
+**Date:** 2026-11-09
+**Tool:** opencode CLI (`deepseek-v4.1-flash`)
+**Intent:** Fold Italian nominal ticketing into the approved v3.0.0 contract: buyer vs attendee, identity fields, max four, digital QR, name change, fan cards, box office and away-sector rules.
+**Boundary:** Contract and documentation only. AI updated the execution plan, ADR-010, the competitive landscape, OpenSpec specs/design/tasks, the capability manifest, the agent playbook and documentation links. No code, schema, auth or test behavior changed.
+**Prior records reviewed:** epic #153, Phase 0 #154, PR #155, ADR-007/008/009, Inter ticket conditions, Juventus ticketing, Torino FAQ, Roma ticketing, and the earlier v3.0.0 plan.
+**Work performed:** ADR-010 nominal ticketing and attendee identity; competitive landscape for TicketOne, Vivaticket, Ticketmaster Italy, club in-house systems and secondary marketplaces; nominal ticketing requirements in the OpenSpec ticketing spec; attendee/privacy separation in the prediction spec; CLI/playbook updates; revised execution plan.
+**Verification:** `openspec validate add-club-tenancy-and-cli --type change --strict` passed after the edits; relative links in the new and changed documents were checked; `git diff --check` passed. Implementation evidence is not claimed.
+**Learning:** Italian ticketing is nominative; the buyer and the attendee are different people. Treating attendee identity as event-access data keeps it separate from financial KYC and from aggregate prediction insights.
+**Limitations:** The plan and playbook are specifications until the schema/CLI/UI exist. Deep FIGC/Questura/fan-card integration, wallet passes and seat maps are out of scope. FND-007 and FND-008 remain human gates.
+
+**Links:** issue #156 · [`execution plan`](../exec-plans/153-v3-club-subscriptions.md) · [`ADR-010`](../../architecture/adr/010-nominal-ticketing-and-attendee-identity.md) · [`competitive landscape`](../../product/competitive-landscape.md)
+
+---
+
 ## Standing rule
 
 AI may investigate, analyse, draft, implement within an approved scope, and run verification. The human retains every decision that affects business rules, architecture, schema, scope, priority, risk acceptance and merging. Contributions that cannot be verified are recorded as unverified rather than asserted.

@@ -49,7 +49,7 @@ Read the architecture documents in this order:
 4. [C4 Diagrams](docs/architecture/05-c4-diagrams.md) — context, containers and market components
 5. [Architecture Characteristics](docs/architecture/03-architecture-characteristics.md) — priorities and measurements
 6. [Code Map](docs/architecture/04-code-map.md) — documents and rules mapped to files and tests
-7. [Architecture Decision Records](docs/architecture/adr/) — the decisions behind the structure, including [ADR-003: authorization and RLS](docs/architecture/adr/003-authorization-rls.md), [ADR-007: club tenancy and entitlements](docs/architecture/adr/007-club-tenancy-and-entitlements.md), [ADR-008: platform admin boundary](docs/architecture/adr/008-platform-admin-and-operator-boundary.md) and [ADR-009: email/password and simulated commerce](docs/architecture/adr/009-email-password-and-simulated-commerce.md)
+7. [Architecture Decision Records](docs/architecture/adr/) — the decisions behind the structure, including [ADR-003: authorization and RLS](docs/architecture/adr/003-authorization-rls.md), [ADR-007: club tenancy and entitlements](docs/architecture/adr/007-club-tenancy-and-entitlements.md), [ADR-008: platform admin boundary](docs/architecture/adr/008-platform-admin-and-operator-boundary.md), [ADR-009: email/password and simulated commerce](docs/architecture/adr/009-email-password-and-simulated-commerce.md) and [ADR-010: nominal ticketing](docs/architecture/adr/010-nominal-ticketing-and-attendee-identity.md)
 8. [Architecture Report — 2026-11-08](docs/architecture/reports/2026-11-08.md) — dated synthesis of the kata, characteristics, style, decisions and evidence
 9. [Course Submission Package](docs/submissions/README.md) — dated PDFs for Task 1, Task 2, the architecture description and the methodology report
 
@@ -63,6 +63,7 @@ Read the architecture documents in this order:
 - [Checkpoint E — Delivery, Observability and Recovery (Pre-read)](docs/methodology/checkpoint-E/README.md)
 - [Methodology Report — 2026-11-08](docs/methodology/reports/2026-11-08.md) — dated synthesis of the claim, lifecycle, checkpoints, evidence and residual risk
 - [MVP Scope](docs/product/mvp-scope.md)
+- [Competitive Landscape — Italian Football Ticketing](docs/product/competitive-landscape.md)
 - [Test Strategy](docs/methodology/test-strategy.md)
 - [Threat Model](docs/security/threat-model.md)
 - [Failure Modes and Recovery](docs/operations/failure-modes.md)
