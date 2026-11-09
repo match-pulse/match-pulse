@@ -820,6 +820,23 @@ Secret hygiene re-verified: `release.env` in history contains only `APP_VERSION`
 
 ---
 
+## Entry 46 — v3 email/password auth and member UI
+
+**Date:** 2026-11-09
+**Tool:** opencode CLI (`deepseek-v4.1-flash`)
+**Intent:** Replace anonymous fan auth with email/password and add the core v3 fan, club and platform-admin web surfaces.
+**Boundary:** Auth actions/forms, home routing, public events, nominal checkout, my tickets, club dashboard/event management, admin console, the v3 demo fixture and E2E/axe updates. No new billing, payments or KYC.
+**Prior records reviewed:** #153, #157, #159, ADR-009/010, capability manifest, agent playbook, schema and CLI verification records.
+**Work performed:** email/password sign-up/sign-in; routing by admin/club/legacy/fan; `/events`, `/events/[id]`, `/fan/tickets`, `/club/dashboard`, `/club/events/[id]`, `/admin`; v3 server actions and shared domain calls; demo club/event fixture; updated smoke, Playwright and axe tests.
+**Verification:** CI run [42619208713](https://github.com/match-pulse/match-pulse/actions/runs/42619208713) passed all five jobs. The E2E/accessibility job passed 8 tests, including fan sign-up and nominal purchase; the database suite remained 41 pass; the CLI suite remained 2 pass. Details: [verification record](../verification/2026-11-161-v3-auth-ui.md).
+**Corrections during verification:** server-action redirects were caught by `try/catch`; organizer routing conflicted with the demo club membership; native selects failed contrast; the smoke test and a strict locator were stale.
+**Learning:** Server-action redirects must sit outside the error-catching block, and tenant membership changes the home routing of existing fixture accounts.
+**Limitations:** Club member management, fan-card list, club rewards and prediction insights are only partly in the UI. The ticket is a code, not a QR image/wallet pass. Legacy pages remain. FND-007/FND-008 are open human gates.
+
+**Links:** issue #161 · PR #162 · [`execution plan`](../exec-plans/153-v3-club-subscriptions.md) · [`verification`](../verification/2026-11-161-v3-auth-ui.md)
+
+---
+
 ## Standing rule
 
 AI may investigate, analyse, draft, implement within an approved scope, and run verification. The human retains every decision that affects business rules, architecture, schema, scope, priority, risk acceptance and merging. Contributions that cannot be verified are recorded as unverified rather than asserted.
