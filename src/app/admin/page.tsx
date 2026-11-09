@@ -63,7 +63,7 @@ export default async function AdminPage({ searchParams }: PageProps) {
                 <tr key={club.club_id} className="border-t border-slate-800">
                   <td className="px-3 py-2">
                     <p className="font-semibold">{club.name}</p>
-                    <p className="text-xs text-slate-500">{club.slug}</p>
+                    <p className="text-xs text-slate-400">{club.slug}</p>
                   </td>
                   <td className="px-3 py-2">{club.plan_code ?? '—'}</td>
                   <td className="px-3 py-2">{club.subscription_status ?? '—'}</td>
@@ -73,7 +73,7 @@ export default async function AdminPage({ searchParams }: PageProps) {
                       <select
                         name="plan"
                         defaultValue={club.plan_code ?? 'STARTER'}
-                        className="rounded p-1 text-black"
+                        className="rounded bg-white p-1 text-black"
                         aria-label={`Plan for ${club.name}`}
                       >
                         {plans.map((plan) => (
@@ -85,7 +85,7 @@ export default async function AdminPage({ searchParams }: PageProps) {
                       <select
                         name="status"
                         defaultValue={club.subscription_status ?? 'ACTIVE'}
-                        className="rounded p-1 text-black"
+                        className="rounded bg-white p-1 text-black"
                         aria-label={`Status for ${club.name}`}
                       >
                         <option value="ACTIVE">ACTIVE</option>

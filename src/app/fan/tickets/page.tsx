@@ -73,7 +73,7 @@ export default async function MyTicketsPage({ searchParams }: PageProps) {
             </div>
 
             <div className="mt-4 rounded bg-slate-950 p-3">
-              <p className="text-xs uppercase tracking-wide text-slate-500">Entry code</p>
+              <p className="text-xs uppercase tracking-wide text-slate-400">Entry code</p>
               <p className="mt-1 font-mono text-lg font-bold text-slate-100">{ticket.ticket_code}</p>
             </div>
 
@@ -92,7 +92,7 @@ export default async function MyTicketsPage({ searchParams }: PageProps) {
                       id={`${ticket.ticket_id}-first`}
                       name="attendee-0-first_name"
                       required
-                      className="w-full rounded p-2 font-semibold text-black"
+                      className="w-full rounded p-2 bg-white font-semibold text-black"
                     />
                   </div>
                   <div>
@@ -103,7 +103,7 @@ export default async function MyTicketsPage({ searchParams }: PageProps) {
                       id={`${ticket.ticket_id}-last`}
                       name="attendee-0-last_name"
                       required
-                      className="w-full rounded p-2 font-semibold text-black"
+                      className="w-full rounded p-2 bg-white font-semibold text-black"
                     />
                   </div>
                   <div>
@@ -115,7 +115,7 @@ export default async function MyTicketsPage({ searchParams }: PageProps) {
                       name="attendee-0-date_of_birth"
                       type="date"
                       required
-                      className="w-full rounded p-2 font-semibold text-black"
+                      className="w-full rounded p-2 bg-white font-semibold text-black"
                     />
                   </div>
                   <div>
@@ -126,7 +126,7 @@ export default async function MyTicketsPage({ searchParams }: PageProps) {
                       id={`${ticket.ticket_id}-place`}
                       name="attendee-0-place_of_birth"
                       required
-                      className="w-full rounded p-2 font-semibold text-black"
+                      className="w-full rounded p-2 bg-white font-semibold text-black"
                     />
                   </div>
                   <div>
@@ -137,7 +137,7 @@ export default async function MyTicketsPage({ searchParams }: PageProps) {
                       id={`${ticket.ticket_id}-tax`}
                       name="attendee-0-tax_code"
                       required
-                      className="w-full rounded p-2 font-semibold text-black"
+                      className="w-full rounded p-2 bg-white font-semibold text-black"
                     />
                   </div>
                   <div className="flex items-end">

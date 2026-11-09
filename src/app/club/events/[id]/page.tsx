@@ -141,7 +141,7 @@ export default async function ClubEventPage({ params, searchParams }: PageProps)
               <label htmlFor="type-name" className="mb-1 block text-sm text-slate-400">
                 Name
               </label>
-              <input id="type-name" name="name" required className="w-full rounded p-2 font-semibold text-black" />
+              <input id="type-name" name="name" required className="w-full rounded p-2 bg-white font-semibold text-black" />
             </div>
             <div className="grid gap-3 md:grid-cols-3">
               <div>
@@ -154,7 +154,7 @@ export default async function ClubEventPage({ params, searchParams }: PageProps)
                   type="number"
                   min="0"
                   defaultValue="1500"
-                  className="w-full rounded p-2 font-semibold text-black"
+                  className="w-full rounded p-2 bg-white font-semibold text-black"
                 />
               </div>
               <div>
@@ -167,7 +167,7 @@ export default async function ClubEventPage({ params, searchParams }: PageProps)
                   type="number"
                   min="0"
                   defaultValue="100"
-                  className="w-full rounded p-2 font-semibold text-black"
+                  className="w-full rounded p-2 bg-white font-semibold text-black"
                 />
               </div>
               <div>
@@ -181,7 +181,7 @@ export default async function ClubEventPage({ params, searchParams }: PageProps)
                   min="1"
                   max="4"
                   defaultValue="4"
-                  className="w-full rounded p-2 font-semibold text-black"
+                  className="w-full rounded p-2 bg-white font-semibold text-black"
                 />
               </div>
             </div>
@@ -193,7 +193,7 @@ export default async function ClubEventPage({ params, searchParams }: PageProps)
                 id="type-deadline"
                 name="transferDeadline"
                 type="datetime-local"
-                className="w-full rounded p-2 font-semibold text-black"
+                className="w-full rounded p-2 bg-white font-semibold text-black"
               />
             </div>
             <div className="flex flex-wrap gap-4 text-sm text-slate-300">
@@ -225,13 +225,13 @@ export default async function ClubEventPage({ params, searchParams }: PageProps)
                 <label htmlFor="home-team" className="mb-1 block text-sm text-slate-400">
                   Home team
                 </label>
-                <input id="home-team" name="homeTeam" required className="w-full rounded p-2 font-semibold text-black" />
+                <input id="home-team" name="homeTeam" required className="w-full rounded p-2 bg-white font-semibold text-black" />
               </div>
               <div>
                 <label htmlFor="away-team" className="mb-1 block text-sm text-slate-400">
                   Away team
                 </label>
-                <input id="away-team" name="awayTeam" required className="w-full rounded p-2 font-semibold text-black" />
+                <input id="away-team" name="awayTeam" required className="w-full rounded p-2 bg-white font-semibold text-black" />
               </div>
             </div>
             <div>
@@ -243,7 +243,7 @@ export default async function ClubEventPage({ params, searchParams }: PageProps)
                 name="kickoff"
                 type="datetime-local"
                 required
-                className="w-full rounded p-2 font-semibold text-black"
+                className="w-full rounded p-2 bg-white font-semibold text-black"
               />
             </div>
             <label className="flex items-center gap-2 text-sm text-slate-300">
@@ -291,7 +291,7 @@ export default async function ClubEventPage({ params, searchParams }: PageProps)
                     type="number"
                     min="0"
                     defaultValue={match.home_score}
-                    className="w-20 rounded p-2 font-semibold text-black"
+                    className="w-20 rounded p-2 bg-white font-semibold text-black"
                   />
                 </div>
                 <div>
@@ -304,7 +304,7 @@ export default async function ClubEventPage({ params, searchParams }: PageProps)
                     type="number"
                     min="0"
                     defaultValue={match.away_score}
-                    className="w-20 rounded p-2 font-semibold text-black"
+                    className="w-20 rounded p-2 bg-white font-semibold text-black"
                   />
                 </div>
                 <div>
@@ -315,7 +315,7 @@ export default async function ClubEventPage({ params, searchParams }: PageProps)
                     id={`status-${match.match_id}`}
                     name="status"
                     defaultValue={match.status}
-                    className="rounded p-2 font-semibold text-black"
+                    className="rounded p-2 bg-white font-semibold text-black"
                   >
                     <option value="SCHEDULED">SCHEDULED</option>
                     <option value="LIVE">LIVE</option>
@@ -364,7 +364,7 @@ export default async function ClubEventPage({ params, searchParams }: PageProps)
                 <label htmlFor="ticket-code" className="mb-1 block text-sm text-slate-400">
                   Check in by code
                 </label>
-                <input id="ticket-code" name="code" required className="rounded p-2 font-mono font-semibold text-black" />
+                <input id="ticket-code" name="code" required className="rounded p-2 font-mono bg-white font-semibold text-black" />
               </div>
               <button
                 type="submit"

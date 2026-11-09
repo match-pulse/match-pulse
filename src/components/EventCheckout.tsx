@@ -45,7 +45,7 @@ export default function EventCheckout({
               setTicketTypeId(event.target.value)
               setQuantity(1)
             }}
-            className="w-full rounded p-2 font-semibold text-black"
+            className="w-full rounded p-2 bg-white font-semibold text-black"
           >
             {ticketTypes.map((type) => (
               <option key={type.id} value={type.id}>
@@ -65,7 +65,7 @@ export default function EventCheckout({
             name="quantity"
             value={quantity}
             onChange={(event) => setQuantity(Number(event.target.value))}
-            className="w-full rounded p-2 font-semibold text-black"
+            className="w-full rounded p-2 bg-white font-semibold text-black"
           >
             {Array.from({ length: maxQuantity }, (_, index) => index + 1).map((value) => (
               <option key={value} value={value}>
@@ -94,7 +94,7 @@ export default function EventCheckout({
                 id={`attendee-${index}-first_name`}
                 name={`attendee-${index}-first_name`}
                 required
-                className="w-full rounded p-2 font-semibold text-black"
+                className="w-full rounded p-2 bg-white font-semibold text-black"
               />
             </div>
             <div>
@@ -105,7 +105,7 @@ export default function EventCheckout({
                 id={`attendee-${index}-last_name`}
                 name={`attendee-${index}-last_name`}
                 required
-                className="w-full rounded p-2 font-semibold text-black"
+                className="w-full rounded p-2 bg-white font-semibold text-black"
               />
             </div>
             <div>
@@ -117,7 +117,7 @@ export default function EventCheckout({
                 name={`attendee-${index}-date_of_birth`}
                 type="date"
                 required
-                className="w-full rounded p-2 font-semibold text-black"
+                className="w-full rounded p-2 bg-white font-semibold text-black"
               />
             </div>
             <div>
@@ -128,7 +128,7 @@ export default function EventCheckout({
                 id={`attendee-${index}-place_of_birth`}
                 name={`attendee-${index}-place_of_birth`}
                 required
-                className="w-full rounded p-2 font-semibold text-black"
+                className="w-full rounded p-2 bg-white font-semibold text-black"
               />
             </div>
             <div>
@@ -139,7 +139,7 @@ export default function EventCheckout({
                 id={`attendee-${index}-tax_code`}
                 name={`attendee-${index}-tax_code`}
                 required
-                className="w-full rounded p-2 font-semibold text-black"
+                className="w-full rounded p-2 bg-white font-semibold text-black"
               />
             </div>
             <div>
@@ -150,7 +150,7 @@ export default function EventCheckout({
                 id={`attendee-${index}-fan_card_number`}
                 name={`attendee-${index}-fan_card_number`}
                 required={selected?.requires_fan_card}
-                className="w-full rounded p-2 font-semibold text-black"
+                className="w-full rounded p-2 bg-white font-semibold text-black"
               />
             </div>
           </div>

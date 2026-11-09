@@ -33,16 +33,16 @@ export default async function Home() {
     redirect('/admin')
   }
 
-  if (membership) {
-    redirect('/club/dashboard')
-  }
-
   if (profile?.role === 'ORGANIZER') {
     redirect('/organizer')
   }
 
   if (profile?.role === 'CLUB') {
     redirect('/club')
+  }
+
+  if (membership) {
+    redirect('/club/dashboard')
   }
 
   redirect('/events')

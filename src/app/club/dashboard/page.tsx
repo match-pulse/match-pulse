@@ -51,7 +51,7 @@ export default async function ClubDashboardPage({ searchParams }: PageProps) {
               id="club-name"
               name="name"
               required
-              className="rounded p-2 font-semibold text-black"
+              className="rounded p-2 bg-white font-semibold text-black"
             />
             <label htmlFor="club-plan" className="text-sm text-slate-400">
               Plan
@@ -60,7 +60,7 @@ export default async function ClubDashboardPage({ searchParams }: PageProps) {
               id="club-plan"
               name="plan"
               defaultValue="STARTER"
-              className="rounded p-2 font-semibold text-black"
+              className="rounded p-2 bg-white font-semibold text-black"
             >
               <option value="STARTER">STARTER — ticketing and basic analytics</option>
               <option value="PRO">PRO — predictions, insights and rewards</option>
@@ -73,7 +73,7 @@ export default async function ClubDashboardPage({ searchParams }: PageProps) {
               id="club-slug"
               name="slug"
               pattern="[a-z0-9]+(-[a-z0-9]+)*"
-              className="rounded p-2 font-semibold text-black"
+              className="rounded p-2 bg-white font-semibold text-black"
             />
             <button
               type="submit"
@@ -158,7 +158,7 @@ export default async function ClubDashboardPage({ searchParams }: PageProps) {
                 id="request-plan"
                 name="plan"
                 defaultValue={context.plan ?? 'STARTER'}
-                className="rounded p-2 font-semibold text-black"
+                className="rounded p-2 bg-white font-semibold text-black"
               >
                 <option value="STARTER">STARTER</option>
                 <option value="PRO">PRO</option>
@@ -182,7 +182,7 @@ export default async function ClubDashboardPage({ searchParams }: PageProps) {
               <label htmlFor="event-name" className="mb-1 block text-sm text-slate-400">
                 Name
               </label>
-              <input id="event-name" name="name" required className="w-full rounded p-2 font-semibold text-black" />
+              <input id="event-name" name="name" required className="w-full rounded p-2 bg-white font-semibold text-black" />
             </div>
             <div className="grid gap-3 md:grid-cols-3">
               <div>
@@ -195,7 +195,7 @@ export default async function ClubDashboardPage({ searchParams }: PageProps) {
                   type="number"
                   min="1"
                   required
-                  className="w-full rounded p-2 font-semibold text-black"
+                  className="w-full rounded p-2 bg-white font-semibold text-black"
                 />
               </div>
               <div>
@@ -208,7 +208,7 @@ export default async function ClubDashboardPage({ searchParams }: PageProps) {
                   type="number"
                   min="0"
                   defaultValue="100"
-                  className="w-full rounded p-2 font-semibold text-black"
+                  className="w-full rounded p-2 bg-white font-semibold text-black"
                 />
               </div>
               <div>
@@ -221,7 +221,7 @@ export default async function ClubDashboardPage({ searchParams }: PageProps) {
                   type="number"
                   min="0"
                   defaultValue="0"
-                  className="w-full rounded p-2 font-semibold text-black"
+                  className="w-full rounded p-2 bg-white font-semibold text-black"
                 />
               </div>
             </div>
@@ -330,7 +330,7 @@ export default async function ClubDashboardPage({ searchParams }: PageProps) {
                 id="fan-card"
                 name="cardNumber"
                 required
-                className="rounded p-2 font-semibold text-black"
+                className="rounded p-2 bg-white font-semibold text-black"
               />
             </div>
             <button

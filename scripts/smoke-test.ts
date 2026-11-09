@@ -50,7 +50,7 @@ const checks: Check[] = [
         throw new Error(`expected 200, received ${response.status}`)
       }
       const body = await response.text()
-      if (!body.includes('Continue as fan')) {
+      if (!body.includes('Fan email')) {
         throw new Error('login page did not include the fan sign-in control')
       }
     }

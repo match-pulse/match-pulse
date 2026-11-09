@@ -25,6 +25,8 @@ import {
 import { adminAssignPlan } from '@/lib/domain/admin'
 import type { AttendeeInput } from '@/lib/domain/types'
 
+type Attempt<T> = { ok: true; data: T } | { ok: false; error: string }
+
 function text(formData: FormData, key: string): string | null {
   const value = formData.get(key)
   return typeof value === 'string' && value.trim().length > 0 ? value.trim() : null
@@ -64,6 +66,14 @@ function messageFor(error: unknown): string {
   return fromUnknownError(error).message
 }
 
+async function attempt<T>(operation: () => Promise<T>): Promise<Attempt<T>> {
+  try {
+    return { ok: true, data: await operation() }
+  } catch (error) {
+    return { ok: false, error: messageFor(error) }
+  }
+}
+
 function attendeeFrom(formData: FormData, index: number): AttendeeInput {
   return {
     first_name: text(formData, `attendee-${index}-first_name`) ?? '',
@@ -78,43 +88,42 @@ function attendeeFrom(formData: FormData, index: number): AttendeeInput {
 
 export async function createClubAction(formData: FormData): Promise<never> {
   const path = '/club/dashboard'
-
-  try {
+  const result = await attempt(async () => {
     const supabase = await createSupabaseServerClient()
-    const clubId = await createClub(
+    return createClub(
       supabase,
       requiredText(formData, 'name'),
       (text(formData, 'plan') ?? 'STARTER').toUpperCase(),
       text(formData, 'slug') ?? undefined
     )
-    revalidatePath(path)
-    back(`${path}?club=${clubId}`, 'message', 'Club created.')
-  } catch (error) {
-    back(path, 'error', messageFor(error))
-  }
+  })
+
+  if (!result.ok) back(path, 'error', result.error)
+
+  revalidatePath(path)
+  back(`/club/dashboard?club=${result.data}`, 'message', 'Club created.')
 }
 
 export async function requestPlanAction(formData: FormData): Promise<never> {
   const clubId = requiredText(formData, 'clubId')
   const path = `/club/dashboard?club=${clubId}`
-
-  try {
+  const result = await attempt(async () => {
     const supabase = await createSupabaseServerClient()
     await requestPlanChange(supabase, clubId, requiredText(formData, 'plan').toUpperCase())
-    revalidatePath(path)
-    back(path, 'message', 'Plan change requested.')
-  } catch (error) {
-    back(path, 'error', messageFor(error))
-  }
+  })
+
+  if (!result.ok) back(path, 'error', result.error)
+
+  revalidatePath(path)
+  back(path, 'message', 'Plan change requested.')
 }
 
 export async function createEventAction(formData: FormData): Promise<never> {
   const clubId = requiredText(formData, 'clubId')
   const path = `/club/dashboard?club=${clubId}`
-
-  try {
+  const result = await attempt(async () => {
     const supabase = await createSupabaseServerClient()
-    const eventId = await createClubEvent(
+    return createClubEvent(
       supabase,
       clubId,
       requiredText(formData, 'name'),
@@ -122,19 +131,19 @@ export async function createEventAction(formData: FormData): Promise<never> {
       optionalNumber(formData, 'allocation') ?? 100,
       optionalNumber(formData, 'points') ?? 0
     )
-    revalidatePath(path)
-    revalidatePath(`/club/events/${eventId}`)
-    back(`/club/events/${eventId}`, 'message', 'Event created.')
-  } catch (error) {
-    back(path, 'error', messageFor(error))
-  }
+  })
+
+  if (!result.ok) back(path, 'error', result.error)
+
+  revalidatePath(path)
+  revalidatePath(`/club/events/${result.data}`)
+  back(`/club/events/${result.data}`, 'message', 'Event created.')
 }
 
 export async function createTicketTypeAction(formData: FormData): Promise<never> {
   const eventId = requiredText(formData, 'eventId')
   const path = `/club/events/${eventId}`
-
-  try {
+  const result = await attempt(async () => {
     const supabase = await createSupabaseServerClient()
     await createTicketType(supabase, {
       eventId,
@@ -147,33 +156,33 @@ export async function createTicketTypeAction(formData: FormData): Promise<never>
       transferable: !checked(formData, 'nonTransferable'),
       awaySector: checked(formData, 'awaySector')
     })
-    revalidatePath(path)
-    back(path, 'message', 'Ticket type created.')
-  } catch (error) {
-    back(path, 'error', messageFor(error))
-  }
+  })
+
+  if (!result.ok) back(path, 'error', result.error)
+
+  revalidatePath(path)
+  back(path, 'message', 'Ticket type created.')
 }
 
 export async function publishEventAction(formData: FormData): Promise<never> {
   const eventId = requiredText(formData, 'eventId')
   const path = `/club/events/${eventId}`
-
-  try {
+  const result = await attempt(async () => {
     const supabase = await createSupabaseServerClient()
     await publishClubEvent(supabase, eventId)
-    revalidatePath(path)
-    revalidatePath('/events')
-    back(path, 'message', 'Event published.')
-  } catch (error) {
-    back(path, 'error', messageFor(error))
-  }
+  })
+
+  if (!result.ok) back(path, 'error', result.error)
+
+  revalidatePath(path)
+  revalidatePath('/events')
+  back(path, 'message', 'Event published.')
 }
 
 export async function createMatchAction(formData: FormData): Promise<never> {
   const eventId = requiredText(formData, 'eventId')
   const path = `/club/events/${eventId}`
-
-  try {
+  const result = await attempt(async () => {
     const supabase = await createSupabaseServerClient()
     await createClubMatch(
       supabase,
@@ -183,11 +192,12 @@ export async function createMatchAction(formData: FormData): Promise<never> {
       requiredText(formData, 'kickoff'),
       checked(formData, 'predictions')
     )
-    revalidatePath(path)
-    back(path, 'message', 'Match created.')
-  } catch (error) {
-    back(path, 'error', messageFor(error))
-  }
+  })
+
+  if (!result.ok) back(path, 'error', result.error)
+
+  revalidatePath(path)
+  back(path, 'message', 'Match created.')
 }
 
 export async function updateMatchAction(formData: FormData): Promise<never> {
@@ -199,7 +209,7 @@ export async function updateMatchAction(formData: FormData): Promise<never> {
     back(path, 'error', 'Invalid match status.')
   }
 
-  try {
+  const result = await attempt(async () => {
     const supabase = await createSupabaseServerClient()
     await updateClubMatch(
       supabase,
@@ -208,29 +218,30 @@ export async function updateMatchAction(formData: FormData): Promise<never> {
       requiredNumber(formData, 'awayScore'),
       status
     )
-    revalidatePath(path)
-    back(path, 'message', 'Match updated.')
-  } catch (error) {
-    back(path, 'error', messageFor(error))
-  }
+  })
+
+  if (!result.ok) back(path, 'error', result.error)
+
+  revalidatePath(path)
+  back(path, 'message', 'Match updated.')
 }
 
 export async function setPredictionAction(formData: FormData): Promise<never> {
   const eventId = requiredText(formData, 'eventId')
   const path = `/club/events/${eventId}`
-
-  try {
+  const result = await attempt(async () => {
     const supabase = await createSupabaseServerClient()
     await setPredictionEnabled(
       supabase,
       requiredText(formData, 'matchId'),
       checked(formData, 'enabled')
     )
-    revalidatePath(path)
-    back(path, 'message', 'Prediction setting updated.')
-  } catch (error) {
-    back(path, 'error', messageFor(error))
-  }
+  })
+
+  if (!result.ok) back(path, 'error', result.error)
+
+  revalidatePath(path)
+  back(path, 'message', 'Prediction setting updated.')
 }
 
 export async function purchaseTicketAction(formData: FormData): Promise<never> {
@@ -247,7 +258,7 @@ export async function purchaseTicketAction(formData: FormData): Promise<never> {
     back(path, 'error', 'Choose between one and four tickets.')
   }
 
-  try {
+  const result = await attempt(async () => {
     const attendees = Array.from({ length: quantity }, (_, index) =>
       attendeeFrom(formData, index)
     )
@@ -261,75 +272,74 @@ export async function purchaseTicketAction(formData: FormData): Promise<never> {
       text(formData, 'requestId') ?? randomUUID(),
       { acceptTerms: checked(formData, 'acceptTerms') }
     )
+  })
 
-    revalidatePath('/fan/tickets')
-    back('/fan/tickets', 'message', 'Tickets purchased.')
-  } catch (error) {
-    back(path, 'error', messageFor(error))
-  }
+  if (!result.ok) back(path, 'error', result.error)
+
+  revalidatePath('/fan/tickets')
+  back('/fan/tickets', 'message', 'Tickets purchased.')
 }
 
 export async function transferTicketAction(formData: FormData): Promise<never> {
   const path = '/fan/tickets'
-
-  try {
+  const result = await attempt(async () => {
     const supabase = await createSupabaseServerClient()
     await transferTicket(supabase, requiredText(formData, 'ticketId'), attendeeFrom(formData, 0))
-    revalidatePath(path)
-    back(path, 'message', 'Ticket transferred.')
-  } catch (error) {
-    back(path, 'error', messageFor(error))
-  }
+  })
+
+  if (!result.ok) back(path, 'error', result.error)
+
+  revalidatePath(path)
+  back(path, 'message', 'Ticket transferred.')
 }
 
 export async function checkInAction(formData: FormData): Promise<never> {
   const eventId = requiredText(formData, 'eventId')
   const path = `/club/events/${eventId}`
-
-  try {
+  const result = await attempt(async () => {
     const supabase = await createSupabaseServerClient()
-    const result = await checkInTicket(supabase, requiredText(formData, 'code'))
-    revalidatePath(path)
-    back(
-      path,
-      'message',
-      result.already_checked_in
-        ? `Already checked in at ${result.checked_in_at}.`
-        : `Checked in ${result.attendee_name}.`
-    )
-  } catch (error) {
-    back(path, 'error', messageFor(error))
-  }
+    return checkInTicket(supabase, requiredText(formData, 'code'))
+  })
+
+  if (!result.ok) back(path, 'error', result.error)
+
+  revalidatePath(path)
+  back(
+    path,
+    'message',
+    result.data.already_checked_in
+      ? `Already checked in at ${result.data.checked_in_at}.`
+      : `Checked in ${result.data.attendee_name}.`
+  )
 }
 
 export async function assignPlanAction(formData: FormData): Promise<never> {
   const path = '/admin'
+  const status = (text(formData, 'status') ?? 'ACTIVE').toUpperCase()
+  if (status !== 'ACTIVE' && status !== 'PAST_DUE' && status !== 'CANCELED') {
+    back(path, 'error', 'Invalid subscription status.')
+  }
 
-  try {
+  const result = await attempt(async () => {
     const supabase = await createSupabaseServerClient()
-    const status = (text(formData, 'status') ?? 'ACTIVE').toUpperCase()
-    if (status !== 'ACTIVE' && status !== 'PAST_DUE' && status !== 'CANCELED') {
-      back(path, 'error', 'Invalid subscription status.')
-    }
-
     await adminAssignPlan(
       supabase,
       requiredText(formData, 'clubId'),
       requiredText(formData, 'plan').toUpperCase(),
       status
     )
-    revalidatePath(path)
-    back(path, 'message', 'Plan assigned.')
-  } catch (error) {
-    back(path, 'error', messageFor(error))
-  }
+  })
+
+  if (!result.ok) back(path, 'error', result.error)
+
+  revalidatePath(path)
+  back(path, 'message', 'Plan assigned.')
 }
 
 export async function issueFanCardAction(formData: FormData): Promise<never> {
   const clubId = requiredText(formData, 'clubId')
   const path = `/club/dashboard?club=${clubId}`
-
-  try {
+  const result = await attempt(async () => {
     const supabase = await createSupabaseServerClient()
     await issueFanCard(
       supabase,
@@ -337,9 +347,10 @@ export async function issueFanCardAction(formData: FormData): Promise<never> {
       requiredText(formData, 'cardNumber'),
       text(formData, 'profileId') ?? undefined
     )
-    revalidatePath(path)
-    back(path, 'message', 'Fan card issued.')
-  } catch (error) {
-    back(path, 'error', messageFor(error))
-  }
+  })
+
+  if (!result.ok) back(path, 'error', result.error)
+
+  revalidatePath(path)
+  back(path, 'message', 'Fan card issued.')
 }
