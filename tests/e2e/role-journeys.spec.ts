@@ -32,8 +32,9 @@ test('fan can sign up, buy a nominal ticket and view the ticket', async ({ page 
   await page.getByRole('button', { name: 'Buy tickets' }).click()
 
   await expect(page.getByRole('heading', { name: 'My tickets' })).toBeVisible()
-  await expect(page.getByText('E2E Fan')).toBeVisible()
-  await expect(page.getByText(/MP-/)).toBeVisible()
+  const ticketCard = page.locator('article').filter({ hasText: 'E2E Fan' }).first()
+  await expect(ticketCard).toBeVisible()
+  await expect(ticketCard.getByText(/MP-/)).toBeVisible()
 })
 
 test('organizer can create a tournament, create a match, update it and resolve the market', async ({ page }) => {
