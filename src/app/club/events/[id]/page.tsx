@@ -7,6 +7,7 @@ import {
   createMatchAction,
   createTicketTypeAction,
   publishEventAction,
+  resolveMarketAction,
   setPredictionAction,
   updateMatchAction
 } from '@/app/actions/v3'
@@ -348,6 +349,37 @@ export default async function ClubEventPage({ params, searchParams }: PageProps)
                   Update
                 </button>
               </form>
+
+              {match.market_id && match.market_status === 'OPEN' && (
+                <form action={resolveMarketAction} className="mt-3 flex flex-wrap items-end gap-2 text-sm text-slate-300">
+                  <input type="hidden" name="eventId" value={id} />
+                  <input type="hidden" name="marketId" value={match.market_id} />
+                  <div>
+                    <label htmlFor={`winner-${match.match_id}`} className="mb-1 block text-slate-400">
+                      Winning outcome
+                    </label>
+                    <select
+                      id={`winner-${match.match_id}`}
+                      name="winner"
+                      className="rounded bg-white p-2 font-semibold text-black"
+                    >
+                      <option value="HOME">HOME</option>
+                      <option value="DRAW">DRAW</option>
+                      <option value="AWAY">AWAY</option>
+                    </select>
+                  </div>
+                  <button
+                    type="submit"
+                    className="rounded bg-emerald-700 px-3 py-2 text-sm font-semibold text-white hover:bg-emerald-800"
+                  >
+                    Resolve market
+                  </button>
+                </form>
+              )}
+
+              {match.market_status === 'RESOLVED' && (
+                <p className="mt-3 text-sm text-emerald-300">Market resolved.</p>
+              )}
             </article>
           ))}
           {matches.length === 0 && <p className="text-slate-400">No matches yet.</p>}

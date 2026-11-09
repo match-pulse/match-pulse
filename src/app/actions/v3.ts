@@ -12,6 +12,7 @@ import {
   createClubMatch,
   createTicketType,
   publishClubEvent,
+  resolveMarket,
   setPredictionEnabled,
   updateClubMatch
 } from '@/lib/domain/events'
@@ -469,4 +470,28 @@ export async function recordExportAction(formData: FormData): Promise<never> {
 
   revalidatePath(path)
   back(path, 'message', 'Export recorded.')
+}
+
+export async function resolveMarketAction(formData: FormData): Promise<never> {
+  const eventId = requiredText(formData, 'eventId')
+  const path = `/club/events/${eventId}`
+  const winner = requiredText(formData, 'winner').toUpperCase()
+
+  if (winner !== 'HOME' && winner !== 'DRAW' && winner !== 'AWAY') {
+    back(path, 'error', 'Choose HOME, DRAW or AWAY.')
+  }
+
+  const result = await attempt(async () => {
+    const supabase = await createSupabaseServerClient()
+    return resolveMarket(supabase, requiredText(formData, 'marketId'), winner)
+  })
+
+  if (!result.ok) back(path, 'error', result.error)
+
+  revalidatePath(path)
+  back(
+    path,
+    'message',
+    `Market resolved: ${result.data.holders} holders paid ${result.data.total_points} points.`
+  )
 }
