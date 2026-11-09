@@ -37,6 +37,7 @@ test('fan can sign up, buy a nominal ticket and view the ticket', async ({ page 
   const ticketCard = page.locator('article').filter({ hasText: 'E2E Fan' }).first()
   await expect(ticketCard).toBeVisible()
   await expect(ticketCard.getByText(/MP-/)).toBeVisible()
+  await expect(ticketCard.getByRole('img', { name: /QR code/ })).toBeVisible()
 })
 
 test('organizer can create a tournament, create a match, update it and resolve the market', async ({ page }) => {

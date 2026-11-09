@@ -1,5 +1,7 @@
 import Link from 'next/link'
+import Image from 'next/image'
 import { redirect } from 'next/navigation'
+import QRCode from 'qrcode'
 import Notice from '@/components/Notice'
 import V3Shell from '@/components/V3Shell'
 import { transferTicketAction } from '@/app/actions/v3'
@@ -23,6 +25,15 @@ export default async function MyTicketsPage({ searchParams }: PageProps) {
 
   const supabase = await createSupabaseServerClient()
   const tickets = await listMyTickets(supabase)
+  const qrCodes = new Map<string, string>()
+  await Promise.all(
+    tickets.map(async (ticket) => {
+      qrCodes.set(
+        ticket.ticket_id,
+        await QRCode.toDataURL(ticket.ticket_code, { margin: 1, width: 180 })
+      )
+    })
+  )
 
   return (
     <V3Shell
@@ -72,9 +83,19 @@ export default async function MyTicketsPage({ searchParams }: PageProps) {
               </span>
             </div>
 
-            <div className="mt-4 rounded bg-slate-950 p-3">
-              <p className="text-xs uppercase tracking-wide text-slate-400">Entry code</p>
-              <p className="mt-1 font-mono text-lg font-bold text-slate-100">{ticket.ticket_code}</p>
+            <div className="mt-4 flex flex-wrap items-center gap-4 rounded bg-slate-950 p-3">
+              <Image
+                src={qrCodes.get(ticket.ticket_id) ?? ''}
+                alt={`QR code for ticket ${ticket.ticket_code}`}
+                width={160}
+                height={160}
+                unoptimized
+                className="rounded bg-white p-2"
+              />
+              <div>
+                <p className="text-xs uppercase tracking-wide text-slate-400">Entry code</p>
+                <p className="mt-1 font-mono text-lg font-bold text-slate-100">{ticket.ticket_code}</p>
+              </div>
             </div>
 
             {!ticket.checked_in_at && (
