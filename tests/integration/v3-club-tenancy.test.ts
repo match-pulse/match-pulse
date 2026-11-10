@@ -877,3 +877,80 @@ describe('v3 prediction cohort privacy', () => {
     TEST_TIMEOUT_MS
   )
 })
+
+describe('v3 subscription limits', () => {
+  test(
+    'an inactive subscription cannot create events or invite members',
+    async () => {
+      const owner = await createUser()
+      let clubId: string | null = null
+
+      try {
+        clubId = await createClub(owner, 'Inactive Plan Club', 'PRO')
+        await admin
+          .from('club_subscriptions')
+          .update({ status: 'CANCELED' })
+          .eq('club_id', clubId)
+
+        const event = await owner.client.rpc('create_club_event', {
+          p_club_id: clubId,
+          p_name: 'Blocked Event',
+          p_max_capacity: 10,
+          p_ticket_allocation: 10,
+          p_ticket_points: 0
+        })
+        expect(event.error?.message).toContain('plan entitlement required: max_active_events')
+
+        const invite = await owner.client.rpc('invite_club_member', {
+          p_club_id: clubId,
+          p_email: `blocked-${randomUUID()}@matchpulse.local`,
+          p_role: 'STAFF'
+        })
+        expect(invite.error?.message).toContain('plan entitlement required: max_members')
+      } finally {
+        await cleanupClub(clubId)
+        await deleteUsers([owner])
+      }
+    },
+    TEST_TIMEOUT_MS
+  )
+
+  test(
+    'concurrent event creation cannot exceed the active-event limit',
+    async () => {
+      const owner = await createUser()
+      let clubId: string | null = null
+
+      try {
+        clubId = await createClub(owner, 'Concurrent Plan Club', 'STARTER')
+
+        const results = await Promise.allSettled(
+          Array.from({ length: 4 }, (_, index) =>
+            owner.client.rpc('create_club_event', {
+              p_club_id: clubId,
+              p_name: `Concurrent ${index}`,
+              p_max_capacity: 10,
+              p_ticket_allocation: 10,
+              p_ticket_points: 0
+            })
+          )
+        )
+
+        const successes = results.filter(
+          (result) => result.status === 'fulfilled' && result.value.error === null
+        ).length
+        expect(successes).toBe(3)
+        const { data: events } = await admin
+          .from('tournaments')
+          .select('id')
+          .eq('club_id', clubId)
+          .in('status', ['DRAFT', 'PUBLISHED'])
+        expect(events?.length).toBe(3)
+      } finally {
+        await cleanupClub(clubId)
+        await deleteUsers([owner])
+      }
+    },
+    TEST_TIMEOUT_MS
+  )
+})

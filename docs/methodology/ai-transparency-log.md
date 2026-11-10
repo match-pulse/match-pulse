@@ -982,6 +982,22 @@ Secret hygiene re-verified: `release.env` in history contains only `APP_VERSION`
 
 ---
 
+## Entry 56 — Subscription limits and concurrency
+
+**Date:** 2026-11-10
+**Tool:** opencode CLI (`deepseek-v4.1-flash`)
+**Intent:** Close FND-019 and FND-028 by refusing inactive subscriptions and serialising plan-limit checks.
+**Boundary:** One migration replacing invite, accept and event-create RPCs; v3 integration tests; invariant registry, findings register and verification record.
+**Prior records reviewed:** audit AUD-011/AUD-020; FND-019/FND-028; T-INV3; failure modes; execution plan #173.
+**Work performed:** required an active subscription entitlement before reading the plan limit; locked the subscription row before member/event count-and-insert with a documented lock order; added a canceled-subscription test and a four-request concurrent STARTER event test.
+**Verification:** targeted v3 tests 9 pass; full database 50 pass, CLI 2 pass, E2E 11 passed, build passed after rebasing and resetting the local database. Details: [`verification/2026-11-177-subscription-limits.md`](verification/2026-11-177-subscription-limits.md).
+**Learning:** `NULL` limits mean unlimited only for an active, entitled plan. Without an active-subscription check, a canceled club is treated as unlimited, which is the opposite of the intended control.
+**Limitations:** Fault injection and independent verification pending. The concurrency test is a four-request boundary check, not a load benchmark. Local Kong/Docker DNS workaround remains.
+
+**Links:** issue #177 · [`verification`](verification/2026-11-177-subscription-limits.md) · [`findings register`](findings-register.md) · [`execution plan`](exec-plans/173-audit-remediation.md)
+
+---
+
 ## Entry 57 — Privacy retention and outcome-level cohort suppression
 
 **Date:** 2026-11-10
