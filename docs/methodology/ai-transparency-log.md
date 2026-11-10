@@ -1078,15 +1078,31 @@ Secret hygiene re-verified: `release.env` in history contains only `APP_VERSION`
 
 ---
 
-## Entry 62 — Frontend audit and improvement workflow
+## Entry 62 — Project-scoped frontend-design skill (issue #204, PR #205)
+
+**Date:** 2026-11-10
+**Tool:** opencode CLI (`deepseek-v4.1-flash`)
+**Intent:** Install Anthropic's official `frontend-design` skill at project scope so future frontend work has a shared design authority.
+**Boundary:** AI installed the skill, added its recorded files and `skills-lock.json`, and wrote this entry. AI did not change application code, configuration, or any user-facing view, and did not edit the skill's `SKILL.md`, frontmatter, or license. The human authorized the installation, commit, push, and pull request.
+**Prior records reviewed:** findings register (no related finding); GitHub issue search (no existing skill-installation issue); `AGENTS.md` workflow and tooling rules, including the Frontend Audit & Improvement workflow.
+**Work performed:** ran `npx skills add anthropics/skills --skill frontend-design -a opencode -y`; confirmed project scope and OpenCode discovery with `npx skills list --json`; verified the installed files against the upstream Git blob hashes; loaded the skill by ID `frontend-design`.
+**Verification:** `SKILL.md` and `LICENSE.txt` are byte-identical to upstream (`a533345…` and `f433b1a…`); `npx skills list --json` reports `scope: project` and agent `OpenCode`; the `skill` tool returned the full body from `.agents/skills/frontend-design`. No application checks were run because no application source changed.
+**Learning:** OpenCode already discovers `.agents/skills`, so no configuration change was needed. Committing the installed files plus `skills-lock.json` records the exact upstream version; leaving them untracked would make the installation local-only. The working tree on `fix/188` retains identical untracked copies, which must be removed before checking out this branch in that worktree.
+**Limitations:** No independent verifier; the skill's guidance has not yet been applied to a UI task. The issue was not added to the project board at creation time.
+
+**Links:** issue #204 · PR [#205](https://github.com/match-pulse/match-pulse/pull/205)
+
+---
+
+## Entry 63 — Frontend audit and improvement workflow
 
 **Date:** 2026-11-10
 **Tool:** opencode CLI (`deepseek-v4.1-flash`)
 **Intent:** Add a reusable workflow contract for a design-led frontend audit and improvement campaign, using the installed `frontend-design` skill as design authority, and register it with the repository's workflow governance.
 **Boundary:** `docs/workflows/frontend-audit-improvement-workflow.md`, `docs/workflows/README.md`, `AGENTS.md`, and the issue, branch, commit, push and pull request. No application code, UI, schema, authentication, authorization, migration, configuration, skill files or runtime behavior changes.
 **Prior records reviewed:** `docs/workflows/README.md`, `AGENTS.md` workflow and human-gate rules, `docs/methodology/findings-register.md` (no matching frontend workflow entry), `.agents/skills/frontend-design/SKILL.md`, and the existing requirements/design, software audit and software refactoring workflow contracts.
-**Work performed:** created issue #207; added the six-phase workflow covering discovery, audit and plan, sequential view improvement, consistency review, validation and final reporting; registered it in the workflow index and `AGENTS.md`; committed as `1cc331e`, pushed branch `docs/207-frontend-audit-workflow` and opened PR #208.
-**Verification:** `git diff --check` passed; `git show --stat` confirmed the commit contains only the workflow file and the two registration edits; `git ls-remote` confirmed the remote branch at `1cc331e`. No runtime checks were run because no application code changed. The workflow itself has not been executed.
+**Work performed:** created issue #207; added the six-phase workflow covering discovery, audit and plan, sequential view improvement, consistency review, validation and final reporting; registered it in the workflow index and `AGENTS.md`; committed as `1cc331e`, pushed branch `docs/207-frontend-audit-workflow`, opened PR #208, and merged `origin/main` to resolve the Entry 62 numbering conflict.
+**Verification:** `git diff --check` passed; `git show --stat` confirmed the original commit contains only the workflow file and the two registration edits; `git ls-remote` confirmed the initial remote branch at `1cc331e`. No runtime checks were run because no application code changed. The workflow itself has not been executed.
 **Learning:** The workflow needs an explicit approved-campaign gate before view-by-view work so autonomous visual decisions do not conflict with the repository's human decision authority. Design-specific defect findings must still route through the Software Audit Workflow rather than being silently fixed as styling.
 **Limitations:** Documentation-only change; no application rendering or browser verification. No independent review yet. The workflow has not been run against the current frontend, so its inventory and sequencing assumptions remain unverified.
 
