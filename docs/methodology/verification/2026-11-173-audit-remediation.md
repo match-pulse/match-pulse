@@ -43,6 +43,8 @@ The fault-injection matrix was run locally with all 27 entries matching their de
 
 | Finding | Disposition | Evidence |
 | :--- | :--- | :--- |
+| FND-007 | Verified | [Findings register](../findings-register.md) |
+| FND-008 | Verified | [Findings register](../findings-register.md) |
 | FND-009 | Verified | [Security boundary](2026-11-174-security-boundary.md) |
 | FND-010 | Verified | [Security boundary](2026-11-174-security-boundary.md) |
 | FND-011 | Verified | [Market lifecycle](2026-11-175-market-lifecycle.md) |
@@ -64,7 +66,7 @@ The fault-injection matrix was run locally with all 27 entries matching their de
 | FND-027 | Accepted Risk | [Dispositions](../remediation/2026-11-10-audit-dispositions.md) |
 | FND-028 | Verified | [Subscription limits](2026-11-177-subscription-limits.md) |
 
-FND-001 to FND-008 retain their prior dispositions. FND-007 (real-user evidence) and FND-008 (independent human review) remain open human gates.
+FND-007 (real-user evidence) and FND-008 (independent human review) were confirmed Verified by the human decision owner on 2026-11-10. FND-001–FND-006 retain their prior dispositions.
 
 ## 5. Limitations
 
@@ -79,9 +81,9 @@ FND-001 to FND-008 retain their prior dispositions. FND-007 (real-user evidence)
 - Issue: [#173](https://github.com/match-pulse/match-pulse/issues/173)
 - Audit: [v3.0.0 audit](../audits/2026-11-10-171-v3-audit.md)
 - Execution plan: [173-audit-remediation](../exec-plans/173-audit-remediation.md)
-- Findings register: FND-009 to FND-028
-- AI transparency entries: 51–60
+- Findings register: FND-007 to FND-028
+- AI transparency entries: 51–61
 
 ## 7. Addenda
 
-Final command results are recorded in §3. The human decision owner confirmed verification and authorized closure of issue #173 on 2026-11-10; the epic is closed and moved to Release & Learn (Done). FND-007 and FND-008 remain separate open gates.
+Final command results are recorded in §3. The human decision owner confirmed verification and authorized closure of issue #173 on 2026-11-10; the epic is closed and moved to Release & Learn (Done). FND-007 and FND-008 were also confirmed Verified by the human decision owner on 2026-11-10.
