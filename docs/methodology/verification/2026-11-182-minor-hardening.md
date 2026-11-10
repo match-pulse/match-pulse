@@ -32,7 +32,7 @@ bun test --env-file=.env.local tests/integration/v3-club-tenancy.test.ts
 10 pass / 0 fail, 95 expect() calls
 
 bun run test
-53 pass / 0 fail, 426 expect() calls
+57 pass / 0 fail, 469 expect() calls
 
 bun run test:agent
 2 pass / 0 fail, 29 expect() calls
@@ -87,4 +87,4 @@ Observed behaviour:
 
 ## 7. Addenda
 
-Pending PR link and independent verification.
+2026-11-10: PR opened after merging the security, market, ticketing, reward, entitlement and privacy fixes into the branch. The final database suite is 57 pass / 0 fail (469 expect calls), CLI 2 pass, E2E 11 passed from a clean reset. Independent verification remains pending.

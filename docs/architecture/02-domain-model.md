@@ -87,8 +87,8 @@ erDiagram
 6. **Prediction:** once the market opens, a fan enters a points position, may exit part or all, and is subject to the entry cooldown. New entries stop when the match is `FINISHED`; exits remain available while the market is open. Retries are idempotent.
 7. **Resolution:** club staff resolve the market once after the match is `FINISHED`, using the score-derived winner; winning shares pay one point each and losing shares pay nothing.
 8. **Rewards:** a fan redeems points for a club reward if they have a ticket for that club; the code is local and simulated. Redemption is retry-safe with a request key.
-9. **Insights:** club staff/analysts read aggregate prediction choices and engagement for their own events; cohorts below 5 are suppressed and no attendee identity is included. `ELITE` can export CSV.
-10. **Admin and retention:** the platform admin manages clubs/plans and reviews audit. A service-role cleanup removes attendee identity from past-event tickets after the retention window.
+9. **Insights:** club staff/analysts read aggregate prediction choices and engagement for their own events; each outcome/time-bucket cohort below 5 is suppressed and no attendee identity is included. `ELITE` can export CSV.
+10. **Admin and retention:** the platform admin manages clubs/plans and reviews audit. A service-role cleanup removes attendee identity from past-event tickets, transfer history, old fan-card audit metadata and invitation emails after the retention window.
 
 ## 5. Business invariants
 
@@ -116,6 +116,6 @@ This is a summary. The [registry](../methodology/checkpoint-A/02-invariants.md) 
 | Ticket sales never exceed capacity or allocation | Ticket type/event locks, capacity triggers and configuration guard | **Enforced, unverified by independent verification** (T-INV5; targeted tests pass) |
 | Ticket purchase replays only the same payload; check-in is idempotent | Request id + stored payload hash + ticket code guard | **Enforced, unverified by independent verification** (T-INV13; targeted tests pass) |
 | Fan-card, transferability and transfer-deadline rules are enforced | Ticket type rules + attendee validation | **Verified** (v3 integration) |
-| Clubs see aggregate prediction data only; cohorts below 5 are suppressed; no attendee identity | `club_prediction_insights` + privacy rule | **Verified** (v3 integration) |
-| Attendee identity is removable after the retention window without losing the ticket/audit | `cleanup_expired_attendee_data` | **Verified** (v3 integration) |
+| Clubs see aggregate prediction data only; each outcome/time-bucket cohort below 5 is suppressed; no attendee identity | `club_prediction_insights`/`club_prediction_timeseries` + privacy rule | **Enforced, unverified by independent verification** (T-INV8; skewed-cohort test passes) |
+| Attendee identity is removable after the retention window without losing the ticket/order/audit | `cleanup_expired_attendee_data` + transfer/audit/invite redaction | **Enforced, unverified by independent verification** (T-INV10; retention tests pass) |
 | The platform admin cannot impersonate or change fan points | Scoped admin RPCs + audit | **Verified** (v3 integration) |

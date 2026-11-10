@@ -998,6 +998,22 @@ Secret hygiene re-verified: `release.env` in history contains only `APP_VERSION`
 
 ---
 
+## Entry 57 — Privacy retention and outcome-level cohort suppression
+
+**Date:** 2026-11-10
+**Tool:** opencode CLI (`deepseek-v4.1-flash`)
+**Intent:** Close FND-015 and FND-016.
+**Boundary:** Retention migration and fan-card audit write, insights/time-series RPCs, v3 integration tests, domain model, invariant registry and verification record.
+**Prior records reviewed:** audit AUD-007/AUD-008; FND-015/FND-016; ADR-010; T-INV8/T-INV10; retention tests; domain model; execution plan #173.
+**Work performed:** extended `cleanup_expired_attendee_data` to redact transfer previous/new identity, remove old fan-card `card_number` metadata and delete accepted/expired invitation emails; stopped storing card numbers in new fan-card audit events; changed insights/time-series to count distinct predictors per outcome and per bucket and suppress each cohort below five.
+**Verification:** targeted v3 tests 8 pass; full database 49 pass, CLI 2 pass, E2E 11 passed, build passed after rebasing and resetting the local database. The skewed 5-total cohort test shows every outcome suppressed, then HOME shown at exactly five predictors while DRAW/AWAY remain suppressed. Details: [`verification/2026-11-179-privacy-retention.md`](verification/2026-11-179-privacy-retention.md).
+**Learning:** Threshold suppression at market level does not protect a one-person outcome inside a larger market; the cohort must be counted and suppressed per outcome and time bucket. Retention must follow derived identity, not only the current ticket row.
+**Limitations:** Fault injection and independent verification pending. The 365-day window remains the existing product default. Time-series suppression is not separately E2E-tested. Local Kong/Docker DNS workaround remains.
+
+**Links:** issue #179 · PR [#190](https://github.com/match-pulse/match-pulse/pull/190) · [`verification`](verification/2026-11-179-privacy-retention.md) · [`findings register`](findings-register.md) · [`execution plan`](exec-plans/173-audit-remediation.md)
+
+---
+
 ## Entry 58 — Minor hardening and residual dispositions
 
 **Date:** 2026-11-10
@@ -1006,7 +1022,7 @@ Secret hygiene re-verified: `release.env` in history contains only `APP_VERSION`
 **Boundary:** CSV encoder and two export routes, organizer seed assignment, ticket payload hash migration and checkout key rotation, unit/integration/E2E coverage, disposition and verification records, README known gaps.
 **Prior records reviewed:** audit AUD-012/AUD-013/AUD-015/AUD-016/AUD-017/AUD-018/AUD-019; FND-020/FND-021/FND-023/FND-024/FND-025/FND-026/FND-027; execution plan #173; agent playbook; seed data; export routes.
 **Work performed:** added `src/lib/csv.ts` and used it in both export routes; added unit tests; assigned the seeded tournament to the organizer fixture; added `20261212_ticket_payload_hash.sql` with payload-aware replay; rotated the checkout request key on ticket-type/quantity changes; documented the CLI `--request-id`; recorded the four residual dispositions and opened issue #188 for the deferred legacy CLUB retirement.
-**Verification:** unit 2 pass; v3 integration 10 pass; full database 53 pass; CLI 2 pass; E2E 11 passed from a clean reset; build passed; seed `update_match` + `resolve_market` smoke returned a payout row. Details: [`verification/2026-11-182-minor-hardening.md`](verification/2026-11-182-minor-hardening.md).
+**Verification:** unit 2 pass; v3 integration 10 pass; full database 57 pass; CLI 2 pass; E2E 11 passed from a clean reset; build passed; seed `update_match` + `resolve_market` smoke returned a payout row. Details: [`verification/2026-11-182-minor-hardening.md`](verification/2026-11-182-minor-hardening.md).
 **Learning:** Quoting a CSV cell does not stop a spreadsheet formula; the encoder must neutralise the leading character before quoting. Payload-aware idempotency needs the payload fingerprint stored on the first request, not only compared at request time.
 **Limitations:** FND-020 remains partly fixed pending fault-injection mutations and independent verification in #181. FND-023 is deferred to #188. FND-026/FND-027 are accepted risks. No finding is marked Verified by the implementer. Local Kong/Docker DNS workaround remains.
 

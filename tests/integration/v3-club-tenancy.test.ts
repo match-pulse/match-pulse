@@ -7,7 +7,7 @@
 import { describe, expect, test } from 'bun:test'
 import { randomUUID } from 'crypto'
 import { admin, createUser, deleteUsers, type TestUser } from '../support/auth'
-import { createTournament, deleteTournament } from '../support/fixtures'
+import { createTournament, deleteTournament, setPoints } from '../support/fixtures'
 
 const TEST_TIMEOUT_MS = 60_000
 
@@ -456,6 +456,39 @@ describe('v3 attendee retention', () => {
         const oldType = await createTicketType(owner, oldEvent, { allocation: 10 })
         await publishEvent(owner, oldEvent)
         const oldOrder = await buy(fan, oldType, [attendee('Old', 'Attendee')])
+        const oldTicketId = (oldOrder?.ticket_ids as string[])[0]
+        const transfer = await fan.client.rpc('transfer_ticket', {
+          p_ticket_id: oldTicketId,
+          p_new_attendee: attendee('New', 'Attendee')
+        })
+        expect(transfer.error).toBeNull()
+
+        const cardNumber = `RET-${randomUUID()}`
+        const card = await owner.client.rpc('issue_club_fan_card', {
+          p_club_id: clubId,
+          p_card_number: cardNumber
+        })
+        expect(card.error).toBeNull()
+        const cardId = String(card.data)
+
+        const invite = await owner.client.rpc('invite_club_member', {
+          p_club_id: clubId,
+          p_email: `retention-${randomUUID()}@matchpulse.local`,
+          p_role: 'STAFF'
+        })
+        expect(invite.error).toBeNull()
+        const inviteId = String(first(invite.data)?.invite_id)
+
+        const oldCreatedAt = new Date(Date.now() - 400 * 86_400_000).toISOString()
+        await admin
+          .from('audit_events')
+          .update({ created_at: oldCreatedAt, metadata: { card_number: cardNumber } })
+          .eq('action', 'club.fan_card.issue')
+          .eq('entity_id', cardId)
+        await admin
+          .from('club_invites')
+          .update({ expires_at: oldCreatedAt })
+          .eq('id', inviteId)
 
         const recentEvent = await createEvent(owner, clubId)
         const recentType = await createTicketType(owner, recentEvent, { allocation: 10 })
@@ -483,6 +516,32 @@ describe('v3 attendee retention', () => {
         expect(oldTicket?.attendee_tax_code).toBeNull()
         expect(oldTicket?.ticket_code).toBeTruthy()
         expect(oldTicket?.order_id).toBe(oldOrder?.order_id)
+
+        const { data: transferRows } = await admin
+          .from('ticket_transfers')
+          .select('previous_first_name, previous_last_name, previous_tax_code, new_first_name, new_last_name, new_tax_code')
+          .eq('ticket_id', oldTicketId)
+        expect(transferRows?.length).toBe(1)
+        expect(transferRows?.[0]?.previous_first_name).toBeNull()
+        expect(transferRows?.[0]?.previous_last_name).toBeNull()
+        expect(transferRows?.[0]?.previous_tax_code).toBeNull()
+        expect(transferRows?.[0]?.new_first_name).toBeNull()
+        expect(transferRows?.[0]?.new_last_name).toBeNull()
+        expect(transferRows?.[0]?.new_tax_code).toBeNull()
+
+        const { data: cardAudit } = await admin
+          .from('audit_events')
+          .select('metadata')
+          .eq('action', 'club.fan_card.issue')
+          .eq('entity_id', cardId)
+          .single()
+        expect(cardAudit?.metadata).not.toHaveProperty('card_number')
+
+        const { data: invitesAfter } = await admin
+          .from('club_invites')
+          .select('id')
+          .eq('id', inviteId)
+        expect(invitesAfter).toEqual([])
 
         const { data: recentTicket } = await admin
           .from('tickets')
@@ -784,6 +843,81 @@ describe('v3 ticket payload idempotency', () => {
       } finally {
         await cleanupClub(clubId)
         await deleteUsers([owner, buyer])
+      }
+    },
+    TEST_TIMEOUT_MS
+  )
+})
+
+describe('v3 prediction cohort privacy', () => {
+  test(
+    'suppresses each outcome cohort below five even when the market has five traders',
+    async () => {
+      const owner = await createUser()
+      const fans = await Promise.all(Array.from({ length: 9 }, () => createUser('FAN')))
+      let clubId: string | null = null
+
+      try {
+        clubId = await createClub(owner, 'Cohort Privacy Club', 'PRO')
+        const eventId = await createEvent(owner, clubId, 20)
+        const match = await owner.client.rpc('create_club_match', {
+          p_event_id: eventId,
+          p_home_team: 'Cohort Home',
+          p_away_team: 'Cohort Away',
+          p_kickoff: new Date(Date.now() - 3_600_000).toISOString(),
+          p_prediction_enabled: true
+        })
+        expect(match.error).toBeNull()
+        const marketId = String(first(match.data)?.market_id)
+
+        await Promise.all(fans.map((fan) => setPoints(fan.id, 200)))
+
+        const outcomes = ['HOME', 'DRAW', 'DRAW', 'AWAY', 'AWAY']
+        for (let index = 0; index < outcomes.length; index += 1) {
+          const trade = await fans[index].client.rpc('open_trade', {
+            p_market_id: marketId,
+            p_outcome: outcomes[index],
+            p_budget: 10,
+            p_request_id: randomUUID()
+          })
+          expect(trade.error).toBeNull()
+        }
+
+        const firstInsights = await owner.client.rpc('club_prediction_insights', {
+          p_club_id: clubId,
+          p_event_id: eventId
+        })
+        expect(firstInsights.error).toBeNull()
+        const firstRows = firstInsights.data as Row[]
+        expect(firstRows.every((row) => row.suppressed === true)).toBe(true)
+
+        for (let index = 5; index < 9; index += 1) {
+          const trade = await fans[index].client.rpc('open_trade', {
+            p_market_id: marketId,
+            p_outcome: 'HOME',
+            p_budget: 10,
+            p_request_id: randomUUID()
+          })
+          expect(trade.error).toBeNull()
+        }
+
+        const secondInsights = await owner.client.rpc('club_prediction_insights', {
+          p_club_id: clubId,
+          p_event_id: eventId
+        })
+        expect(secondInsights.error).toBeNull()
+        const secondRows = secondInsights.data as Row[]
+        const home = secondRows.find((row) => row.outcome === 'HOME')
+        expect(home?.suppressed).toBe(false)
+        expect(Number(home?.unique_predictors)).toBe(5)
+        expect(
+          secondRows
+            .filter((row) => row.outcome !== 'HOME')
+            .every((row) => row.suppressed === true)
+        ).toBe(true)
+      } finally {
+        await cleanupClub(clubId)
+        await deleteUsers([owner, ...fans])
       }
     },
     TEST_TIMEOUT_MS
