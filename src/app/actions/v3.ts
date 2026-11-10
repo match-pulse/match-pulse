@@ -450,7 +450,11 @@ export async function createRewardAction(formData: FormData): Promise<never> {
 export async function redeemRewardAction(formData: FormData): Promise<never> {
   const result = await attempt(async () => {
     const supabase = await createSupabaseServerClient()
-    return redeemReward(supabase, requiredText(formData, 'rewardId'))
+    return redeemReward(
+      supabase,
+      requiredText(formData, 'rewardId'),
+      requiredText(formData, 'requestId')
+    )
   })
 
   if (!result.ok) back('/fan/rewards', 'error', result.error)

@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation'
 import Notice from '@/components/Notice'
+import RewardRedeemForm from '@/components/RewardRedeemForm'
 import V3Shell from '@/components/V3Shell'
-import { redeemRewardAction } from '@/app/actions/v3'
 import { listFanRewards } from '@/lib/domain/analytics'
 import { createSupabaseServerClient } from '@/lib/supabase/server'
 import { getViewer } from '@/lib/viewer'
@@ -52,15 +52,7 @@ export default async function FanRewardsPage({ searchParams }: PageProps) {
             <p className="mt-2 text-sm text-slate-400">
               {reward.cost_points} points · {reward.discount_percent}% discount
             </p>
-            <form action={redeemRewardAction} className="mt-4">
-              <input type="hidden" name="rewardId" value={reward.id} />
-              <button
-                type="submit"
-                className="rounded bg-emerald-700 px-3 py-2 text-sm font-semibold text-white hover:bg-emerald-800"
-              >
-                Redeem for {reward.cost_points} pts
-              </button>
-            </form>
+            <RewardRedeemForm rewardId={reward.id} cost={reward.cost_points} />
           </article>
         ))}
         {rewards.length === 0 && (

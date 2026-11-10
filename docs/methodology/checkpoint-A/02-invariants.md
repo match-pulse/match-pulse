@@ -42,6 +42,7 @@ These are verified by `tests/integration/v3-club-tenancy.test.ts`, the CLI suite
 | **T-INV9** | The platform admin is scoped and audited; no impersonation or fan-point override. | Separate `platform_admins`, scoped RPCs, audit rows. | **Verified.** Admin plan assignment/audit; owner denial. |
 | **T-INV10** | Attendee identity is removable after the retention window without losing ticket/order/audit; recent tickets keep identity. | `cleanup_expired_attendee_data`, service-role only. | **Verified.** Old/recent ticket test; authenticated denial. |
 | **T-INV11** | Legacy claim and registration paths are available only for tournaments with no club; v3 club events use nominal ticketing. | `claim_ticket`/`register_for_tournament` club guard; legacy fan pages filter to `club_id IS NULL`. | **Enforced, unverified by independent verification.** V3 claim refusal and registration refusal tests pass; legacy path covered by the MVP backend suite; full-suite evidence pending. |
+| **T-INV12** | Reward redemption requires a request key; the same key and payload replays the recorded code without a second debit, and a different payload is refused. | `reward_redemptions` request key/index; `redeem_reward` reward → profile → replay → eligibility → debit lock order. | **Enforced, unverified by independent verification.** Replay, payload-mismatch and concurrent-duplicate tests pass; full-suite evidence pending. |
 
 ### Market invariants (specified for the live market increment)
 

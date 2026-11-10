@@ -152,6 +152,17 @@ describe('matchpulse CLI', () => {
           )
         )
 
+        const reward = dataOf(
+          runCli(
+            [
+              'club', 'rewards', 'create', '--profile', 'owner', '--club', clubId,
+              '--name', 'CLI Reward', '--cost', '50', '--discount', '10', '--json'
+            ],
+            configDir
+          )
+        )
+        const rewardId = String(reward.rewardId)
+
         const event = runCli(
           ['club', 'events', 'create', '--profile', 'owner', '--club', clubId, '--name', 'CLI Derby', '--capacity', '20', '--allocation', '20', '--points', '10', '--json'],
           configDir
@@ -264,6 +275,21 @@ describe('matchpulse CLI', () => {
 
         const portfolio = dataOf(runCli(['fan', 'portfolio', '--profile', 'fan', '--json'], configDir))
         expect((portfolio.positions as unknown[]).length).toBeGreaterThan(0)
+
+        const redeemKey = randomUUID()
+        const redeemed = dataOf(
+          runCli(
+            ['fan', 'rewards', 'redeem', '--profile', 'fan', '--reward', rewardId, '--request-id', redeemKey, '--json'],
+            configDir
+          )
+        )
+        const replayed = dataOf(
+          runCli(
+            ['fan', 'rewards', 'redeem', '--profile', 'fan', '--reward', rewardId, '--request-id', redeemKey, '--json'],
+            configDir
+          )
+        )
+        expect(replayed.code).toBe(redeemed.code)
 
         const audit = arrayOf(
           runCli(['admin', 'audit', 'list', '--profile', 'admin', '--limit', '50', '--json'], configDir)
