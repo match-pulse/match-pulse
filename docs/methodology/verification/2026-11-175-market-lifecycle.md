@@ -29,12 +29,25 @@ bun test --env-file=.env.local tests/integration/mvp-backend.test.ts
 8 pass / 0 fail, 47 expect() calls
 ```
 
+Full suite after rebasing onto the merged security boundary and resetting the local database:
+
+```text
+bun run test
+48 pass / 0 fail, 408 expect() calls
+
+bun run test:agent
+2 pass / 0 fail, 29 expect() calls
+
+bun run test:e2e
+11 passed
+```
+
 Static checks:
 
 ```text
 bun run typecheck   passed
 bun run lint        passed
-bun run build       passed
+bun run build       passed (local .env.local)
 bun run check:architecture passed
 ```
 
@@ -49,17 +62,16 @@ Observed behaviour:
 
 ## 4. Result
 
-- Targeted database tests pass.
-- Static checks and build pass.
-- The full database suite and E2E were not run on this branch because the security-boundary PR #184 is not merged yet; the branch will be rebased and the full suite run before review.
+- Targeted and full database tests pass (48 total), CLI tests pass, E2E tests pass (11), and static checks/build pass.
 - FND-011 and FND-014 are implementation-complete and eligible for independent verification after merge.
+- Fault injection for the new triggers is not yet added; that is part of the evidence workstream (FND-020).
 
 ## 5. Limitations
 
 - The tests use synthetic matches/markets and a disposable local database.
 - The new guards are trigger-based; fault-injection mutations for them are not added yet (FND-020 evidence work).
-- The UI change is compiled but not exercised end-to-end in this branch.
 - The local Kong/Docker DNS workaround from the security verification remains an environment limitation.
+- The E2E run emitted pre-existing Next.js `Date.now()` prerender warnings but all 11 tests passed; those warnings are outside this change.
 
 ## 6. Links
 

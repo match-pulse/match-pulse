@@ -87,6 +87,8 @@ Migrations in `supabase/migrations/`, replayed in filename order:
 | `20261203_v3_club_rpcs.sql` | — | club/plan/member/event/match/admin RPCs |
 | `20261204_v3_ticketing_rpcs.sql` | — | nominal purchase, transfer, check-in, attendees, orders, analytics, rewards, fan cards, club-aware `resolve_market` |
 | `20261205_v3_attendee_retention.sql` | — | `cleanup_expired_attendee_data` |
+| `20261206_security_boundary.sql` | — (RLS policy corrections) | — |
+| `20261207_market_result_binding.sql` | — (trigger-based market guards) | `enforce_prediction_enabled`, `enforce_market_window`, `enforce_market_resolution`, `enforce_match_result_integrity` |
 
 `supabase/seed.sql` seeds one legacy LIVE match, its `b = 100` market and one capacity-limited tournament. It does **not** seed a profile: profiles are created by the auth trigger. `scripts/create-organizer.ts` creates the v3 demo club, event, ticket type, match and market for local/E2E use.
 
@@ -98,7 +100,7 @@ The state-changing functions are `SECURITY DEFINER` with `search_path = public, 
 | :--- | :--- | :--- |
 | INV-01 tournament capacity | `register_for_tournament` + CHECK constraints (`20261019`, `20261020`); authenticated caller | `tests/invariants/tournament-capacity.test.ts` |
 | INV-02 registration uniqueness | `registrations_tournament_user_unique` + exception handling (`20261019`) | `tests/invariants/registration-uniqueness.test.ts` |
-| M-INV1 – M-INV8 market invariants | `20261021_market_core.sql`, `20261022_market_resolution.sql`, `20261110_rpc_auth.sql` | `tests/invariants/market-pricing.test.ts`, `market-lifecycle.test.ts`, `market-concurrency.test.ts` |
+| M-INV1 – M-INV8 market invariants | `20261021_market_core.sql`, `20261022_market_resolution.sql`, `20261110_rpc_auth.sql`, `20261207_market_result_binding.sql` | `tests/invariants/market-pricing.test.ts`, `market-lifecycle.test.ts`, `market-concurrency.test.ts` |
 | INV-05 / A-INV1 – A-INV5 authorization | `20261108_auth_profiles.sql`, `20261109_rls_grants.sql`, `20261110_rpc_auth.sql` | `tests/invariants/authorization.test.ts` |
 | M-INV9 request-key idempotency | `20261111_trade_requests.sql`, `20261112_idempotent_rpcs.sql` | `tests/invariants/idempotency.test.ts` |
 | Three-role MVP backend | `20261120_mvp_schema.sql`, `20261121_mvp_rls.sql`, `20261122_mvp_rpcs.sql` | `tests/integration/mvp-backend.test.ts` |
