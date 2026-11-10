@@ -1,7 +1,7 @@
 # Verification Record — Reward Idempotency
 
 - **Issue:** [#180](https://github.com/match-pulse/match-pulse/issues/180)
-- **PR:** Pending
+- **PR:** [#187](https://github.com/match-pulse/match-pulse/pull/187)
 - **Date:** 2026-11-10
 - **Environment:** Local Fedora 44; Node 22.23.1; Bun 1.4.2; Docker CE 29.9.3; local Supabase PostgreSQL 17.11
 - **Status:** Partially verified — targeted implementer evidence; full suite and independent verification pending
@@ -64,7 +64,7 @@ passed
 ## 6. Links
 
 - Issue: [#180](https://github.com/match-pulse/match-pulse/issues/180)
-- PR: Pending
+- PR: [#187](https://github.com/match-pulse/match-pulse/pull/187)
 - Execution plan / audit: [v3 audit](../audits/2026-11-10-171-v3-audit.md), [execution plan](../exec-plans/173-audit-remediation.md)
 - Findings register: FND-013
 - AI transparency entry: Entry 55
@@ -72,4 +72,4 @@ passed
 
 ## 7. Addenda
 
-Pending PR link, full-suite evidence and independent verification.
+2026-11-10: PR [#187](https://github.com/match-pulse/match-pulse/pull/187) opened; full-suite evidence recorded; independent verification pending.

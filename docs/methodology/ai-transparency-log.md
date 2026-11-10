@@ -978,7 +978,7 @@ Secret hygiene re-verified: `release.env` in history contains only `APP_VERSION`
 **Learning:** A retry must be replayable even after the balance or club-ticket eligibility has changed; the replay lookup therefore precedes the current eligibility/balance checks.
 **Limitations:** Fault injection and independent verification pending. The client key survives while the form is mounted but not across a full page reload. Local Kong/Docker DNS workaround remains.
 
-**Links:** issue #180 · [`verification`](verification/2026-11-180-reward-idempotency.md) · [`findings register`](findings-register.md) · [`execution plan`](exec-plans/173-audit-remediation.md)
+**Links:** issue #180 · PR [#187](https://github.com/match-pulse/match-pulse/pull/187) · [`verification`](verification/2026-11-180-reward-idempotency.md) · [`findings register`](findings-register.md) · [`execution plan`](exec-plans/173-audit-remediation.md)
 
 ---
 
