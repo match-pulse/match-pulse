@@ -88,3 +88,5 @@ Observed behaviour:
 ## 7. Addenda
 
 2026-11-10: PR opened after merging the security, market, ticketing, reward, entitlement and privacy fixes into the branch. The final database suite is 57 pass / 0 fail (469 expect calls), CLI 2 pass, E2E 11 passed from a clean reset. Independent verification remains pending.
+
+2026-11-10: The human decision owner confirmed the remediation campaign as verified and authorized closure of #173. This finding is now Verified. See the [final campaign verification](2026-11-173-audit-remediation.md).

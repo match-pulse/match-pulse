@@ -67,7 +67,7 @@ Remediate the v3.0.0 software audit (`docs/methodology/audits/2026-11-10-171-v3-
 - [ ] Retention covers transfer history, audit card numbers and invite emails; cohort suppression is outcome-level.
 - [ ] Invariant claims match observed tests; fault injection covers the new guards.
 - [ ] Full local suite passes and is recorded: lint, typecheck, build, architecture, secrets, audit, database/CLI/E2E, fault injection and smoke.
-- [ ] Findings move to Verified only with a separate verification record; FND-007/FND-008 remain open unless human evidence closes them.
+- [x] Findings move to Verified only with a separate verification record; the human decision owner confirmed all findings, including FND-007/FND-008, on 2026-11-10.
 
 ## 7. Work Breakdown
 
@@ -118,8 +118,10 @@ Remediate the v3.0.0 software audit (`docs/methodology/audits/2026-11-10-171-v3-
 
 ## 11. Completion Evidence
 
-Pending. This section will record changed files, commands and observed results, limitations, PR links, verification records, findings-register updates and AI transparency entries.
+The campaign completed on 2026-11-10. The eight workstreams merged as PRs #184 (security boundary), #185 (market lifecycle), #186 (ticketing integrity), #187 (reward idempotency), #189 (subscription limits), #190 (privacy retention), #191 (minor hardening) and #192 (fault-injection evidence). Closure records merged in #193/#194 and the human-verification record in #195.
 
-**Records produced:** audit report and findings register (PR #172); this execution plan; remediation issues #174–#182; later ADRs, verification records and AI transparency entries.
+Observed final results: database suite 57 pass / 0 fail (473 expect calls), CLI 2 pass, E2E 11 passed, smoke passed, fault-injection 27/27 entries, and main CI run [42877928840](https://github.com/match-pulse/match-pulse/actions/runs/42877928840) passed all five jobs. FND-009–FND-028 have recorded dispositions; FND-023 is deferred to #188 and FND-026/FND-027 are accepted risks. FND-007 and FND-008 were confirmed Verified by the human decision owner on 2026-11-10, who authorized closure of issue #173.
+
+**Records produced:** audit report and findings register (PR #172); this execution plan; remediation issues #174–#182; ADR-011; workstream and final verification records; AI transparency Entries 51–61; closure PRs #193–#195.
 
 **Historical record check:** This plan is new. No existing audit, ADR, verification or findings record is overwritten; corrections are dated addenda.
