@@ -89,7 +89,7 @@ test('club can view aggregate analytics and export CSV', async ({ page }) => {
   const response = await page.request.get('/api/club/export')
   expect(response.status()).toBe(200)
   expect(response.headers()['content-type']).toContain('text/csv')
-  expect(await response.text()).toContain('match_id,home_team,away_team')
+  expect(await response.text()).toContain('"match_id","home_team","away_team"')
 })
 
 test('club owner can open the v3 dashboard and create a reward', async ({ page }) => {

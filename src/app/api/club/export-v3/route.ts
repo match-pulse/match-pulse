@@ -2,12 +2,8 @@ import { NextResponse } from 'next/server'
 import { getClubContext } from '@/lib/domain/clubs'
 import { predictionInsights, recordClubExport, salesSummary } from '@/lib/domain/analytics'
 import { createSupabaseServerClient } from '@/lib/supabase/server'
+import { csvValue } from '@/lib/csv'
 import { getViewer } from '@/lib/viewer'
-
-function csvValue(value: unknown): string {
-  const text = value === null || value === undefined ? '' : String(value)
-  return `"${text.replaceAll('"', '""')}"`
-}
 
 export async function GET(request: Request) {
   const clubId = new URL(request.url).searchParams.get('club')

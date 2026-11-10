@@ -743,3 +743,49 @@ describe('v3 ticket integrity', () => {
     TEST_TIMEOUT_MS
   )
 })
+
+describe('v3 ticket payload idempotency', () => {
+  test(
+    'replays an identical payload and refuses changed attendee data',
+    async () => {
+      const owner = await createUser()
+      const buyer = await createUser()
+      let clubId: string | null = null
+
+      try {
+        clubId = await createClub(owner, 'Payload Idempotency Club', 'PRO')
+        const eventId = await createEvent(owner, clubId, 10)
+        const typeId = await createTicketType(owner, eventId, { allocation: 10 })
+        await publishEvent(owner, eventId)
+
+        const requestId = randomUUID()
+        const attendeeData = attendee('Same', 'Person')
+        const first = await buy(buyer, typeId, [attendeeData], requestId)
+        expect(first?.order_id).toBeTruthy()
+
+        const replay = await buy(buyer, typeId, [attendeeData], requestId)
+        expect(replay?.order_id).toBe(first?.order_id)
+
+        const changed = await buy(
+          buyer,
+          typeId,
+          [attendee('Changed', 'Person')],
+          requestId
+        ).catch((error: Error) => error)
+        expect(changed instanceof Error ? changed.message : '').toContain(
+          'request id reused with a different payload'
+        )
+
+        const { data: orders } = await admin
+          .from('ticket_orders')
+          .select('id')
+          .eq('buyer_id', buyer.id)
+        expect(orders?.length).toBe(1)
+      } finally {
+        await cleanupClub(clubId)
+        await deleteUsers([owner, buyer])
+      }
+    },
+    TEST_TIMEOUT_MS
+  )
+})

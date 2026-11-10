@@ -966,6 +966,22 @@ Secret hygiene re-verified: `release.env` in history contains only `APP_VERSION`
 
 ---
 
+## Entry 58 — Minor hardening and residual dispositions
+
+**Date:** 2026-11-10
+**Tool:** opencode CLI (`deepseek-v4.1-flash`)
+**Intent:** Close FND-021 and FND-024, close FND-025, and record the approved dispositions for FND-020, FND-023, FND-026 and FND-027.
+**Boundary:** CSV encoder and two export routes, organizer seed assignment, ticket payload hash migration and checkout key rotation, unit/integration/E2E coverage, disposition and verification records, README known gaps.
+**Prior records reviewed:** audit AUD-012/AUD-013/AUD-015/AUD-016/AUD-017/AUD-018/AUD-019; FND-020/FND-021/FND-023/FND-024/FND-025/FND-026/FND-027; execution plan #173; agent playbook; seed data; export routes.
+**Work performed:** added `src/lib/csv.ts` and used it in both export routes; added unit tests; assigned the seeded tournament to the organizer fixture; added `20261212_ticket_payload_hash.sql` with payload-aware replay; rotated the checkout request key on ticket-type/quantity changes; documented the CLI `--request-id`; recorded the four residual dispositions and opened issue #188 for the deferred legacy CLUB retirement.
+**Verification:** unit 2 pass; v3 integration 10 pass; full database 53 pass; CLI 2 pass; E2E 11 passed from a clean reset; build passed; seed `update_match` + `resolve_market` smoke returned a payout row. Details: [`verification/2026-11-182-minor-hardening.md`](verification/2026-11-182-minor-hardening.md).
+**Learning:** Quoting a CSV cell does not stop a spreadsheet formula; the encoder must neutralise the leading character before quoting. Payload-aware idempotency needs the payload fingerprint stored on the first request, not only compared at request time.
+**Limitations:** FND-020 remains partly fixed pending fault-injection mutations and independent verification in #181. FND-023 is deferred to #188. FND-026/FND-027 are accepted risks. No finding is marked Verified by the implementer. Local Kong/Docker DNS workaround remains.
+
+**Links:** issue #182 · [`dispositions`](remediation/2026-11-10-audit-dispositions.md) · [`verification`](verification/2026-11-182-minor-hardening.md) · [`findings register`](findings-register.md) · [`execution plan`](exec-plans/173-audit-remediation.md)
+
+---
+
 ## Standing rule
 
 AI may investigate, analyse, draft, implement within an approved scope, and run verification. The human retains every decision that affects business rules, architecture, schema, scope, priority, risk acceptance and merging. Contributions that cannot be verified are recorded as unverified rather than asserted.
