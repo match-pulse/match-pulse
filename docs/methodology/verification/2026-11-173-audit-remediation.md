@@ -30,7 +30,7 @@ bun run build                        passed (local .env.local)
 bun run check:architecture           passed
 bun run check:secrets                passed (312 tracked files)
 bun audit --audit-level=high         no vulnerabilities found
-bun run test                         57 pass / 0 fail, 469 expect() calls
+bun run test                         57 pass / 0 fail, 473 expect() calls
 bun run test:agent                   2 pass / 0 fail, 30 expect() calls
 bun run test:e2e                     11 passed
 bun run smoke                        passed (health, login, home)

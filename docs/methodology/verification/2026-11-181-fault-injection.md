@@ -61,7 +61,7 @@ Restored suite and supporting checks after the final reset:
 
 ```text
 bun run test
-57 pass / 0 fail, 469 expect() calls
+57 pass / 0 fail, 473 expect() calls
 
 bun run test:agent
 2 pass / 0 fail, 30 expect() calls
