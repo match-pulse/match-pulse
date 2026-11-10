@@ -49,3 +49,5 @@ Any future change to these dispositions requires a new dated decision or a new i
 2026-11-10: The human decision owner confirmed the remediation campaign as verified and authorized closure of #173. The implemented findings are now Verified; FND-023 remains Deferred to #188, FND-026/FND-027 remain Accepted Risks, and FND-007/FND-008 were also confirmed Verified by the human decision owner on 2026-11-10. See the [final campaign verification](../verification/2026-11-173-audit-remediation.md).
 
 2026-11-10: FND-026 was implemented in #200. Club ticket points are capped at 500 per ticket and 10,000 per event by RPC checks and table constraints; legacy club-less tournaments are exempt. FND-026 is now Verified. See the [ticket-point cap verification](../verification/2026-11-200-ticket-points-cap.md).
+
+2026-11-10: FND-023 was implemented in #188. The legacy `/club` page, `/api/club/export`, `CLUB` role, legacy analytics/export RPCs and fixture were removed; existing `CLUB` profiles are converted to `FAN`. FND-023 is now Verified. See the [legacy CLUB retirement verification](../verification/2026-11-188-legacy-club-retirement.md).

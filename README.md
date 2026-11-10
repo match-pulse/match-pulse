@@ -186,8 +186,6 @@ Open [http://localhost:3000](http://localhost:3000). You will be sent to
   The script creates a PRO demo club with a published event, a ticket type and a
   prediction market. The organizer signs in through the **Organizer** tab; the
   platform admin uses the same tab and lands on `/admin`.
-- **Legacy club analyst:** `bun run auth:club` creates the legacy `CLUB` role
-  fixture used by the v2 analytics page.
 
 The default passwords are local fixtures, not production secrets.
 
@@ -303,7 +301,6 @@ Recorded so they are not mistaken for delivered work. Full detail in the [invari
 - **The sales-path capacity trigger and subscription-lock race are not separately mutated.** The former is defence in depth behind the allocation rule; the latter is timing-dependent and covered by the concurrent STARTER test.
 - **Request-key retention is a local maintenance command.** `bun run maintenance:cleanup` deletes completed requests older than 30 days; there is no scheduled production retention job.
 - **Attendee-data retention is a local maintenance command.** `bun run maintenance:cleanup-attendees` clears identity from past-event tickets, transfer history, old fan-card audit metadata and expired invitation emails older than 365 days; there is no scheduled production job or legal retention review.
-- **Legacy CLUB analytics still exists for local fixtures.** The v2 `/club` page, `/api/club/export`, `CLUB` role and legacy analytics RPCs are deferred to #188; the v3 club dashboard/export are club-scoped.
 - **Ticket points are a simulated capped economy.** Clubs configure `ticket_points` within 500 per ticket and 10,000 per event; the caps are enforced by database constraints and RPC checks.
 - **Subscription period end is informational.** There is no billing provider or renewal scheduler; plan status is managed manually by the platform admin.
 - **Club privacy has not had an independent review.** Aggregate-only insights and the threshold-5 rule are implemented; data resale is not implemented and personal data is not sold.

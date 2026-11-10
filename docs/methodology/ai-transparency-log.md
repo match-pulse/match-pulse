@@ -622,8 +622,6 @@ Secret hygiene re-verified: `release.env` in history contains only `APP_VERSION`
 
 ---
 
----
-
 ## Entry 35 — Three-role MVP backend foundation
 
 **Date:** 2026-11-08
@@ -645,8 +643,6 @@ Secret hygiene re-verified: `release.env` in history contains only `APP_VERSION`
 **Limitations:** No UI yet. Club privacy still needs a formal privacy review. No real-user or independent review. The organizer/club/fan front ends are separate issues.
 
 **Links:** issue #128 · PR #136 · [verification record](verification/2026-11-128-mvp-backend.md) · [code map](../architecture/04-code-map.md)
-
----
 
 ---
 
@@ -1078,6 +1074,21 @@ Secret hygiene re-verified: `release.env` in history contains only `APP_VERSION`
 
 ---
 
+## Entry 63 — Legacy CLUB retirement (FND-023 / #188)
+
+**Date:** 2026-11-10
+**Tool:** opencode CLI (`deepseek-v4.1-flash`)
+**Intent:** Retire the legacy v2 CLUB analytics surface and close FND-023.
+**Boundary:** Removed legacy page/export/role/fixture, added a corrective migration, updated tests and docs.
+**Prior records reviewed:** FND-023; AUD-015; issue #188; v3 club dashboard/export; auth/routing tests.
+**Work performed:** deleted `/club`, `/api/club/export` and `auth:club`; removed `CLUB` from the profile role union, login UI, home routing, shell, test auth and fixtures; added `20261213_retire_legacy_club.sql` to convert legacy profiles to `FAN`, tighten the role constraint and drop the legacy analytics/export RPCs; removed legacy integration/E2E tests.
+**Verification:** database 55 pass / 0 fail, CLI 2 pass, E2E 9 passed, build/typecheck/lint/architecture passed. Details: [`verification/2026-11-188-legacy-club-retirement.md`](verification/2026-11-188-legacy-club-retirement.md).
+**Learning:** Retiring a role is not only deleting a page; the profile constraint, login UI, routing, fixtures, RPC grants and tests must move together.
+**Limitations:** Local/CI evidence only; production deployment is the final post-MVP step.
+
+**Links:** issue #188 · [`verification`](verification/2026-11-188-legacy-club-retirement.md) · [`findings register`](findings-register.md) · [`audit`](audits/2026-11-10-171-v3-audit.md)
+
+---
 ## Entry 64 — Post-merge cleanup completion rule
 
 **Date:** 2026-11-10
@@ -1155,10 +1166,6 @@ Secret hygiene re-verified: `release.env` in history contains only `APP_VERSION`
 **Limitations:** Local/CI evidence only; production deployment is the final post-MVP step.
 
 **Links:** issue #200 · [`verification`](verification/2026-11-200-ticket-points-cap.md) · [`findings register`](findings-register.md) · [`audit`](audits/2026-11-10-171-v3-audit.md)
-
----
-
----
 
 ---
 
