@@ -99,6 +99,7 @@ Use the workflow contracts in `docs/workflows/`:
 - Testing & Verification — establish and collect evidence that behavior and invariants meet the approved criteria.
 - Software Audit — identify and document defects, inconsistencies, risks, and remediation recommendations; audit is read-only.
 - Software Refactoring — improve structure without changing observable behavior.
+- Frontend Audit & Improvement — audit every user-facing view and improve it one at a time under a shared design system, using the `frontend-design` skill as design authority.
 - Operations & Incident Management — verify releases, monitor operations, respond to incidents, and feed learning back into the backlog.
 - Recordkeeping & Traceability — preserve permanent records, track findings, detect duplicates and recurrence, and prevent repeated or conflicting change.
 
