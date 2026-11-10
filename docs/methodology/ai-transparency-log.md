@@ -1110,6 +1110,22 @@ Secret hygiene re-verified: `release.env` in history contains only `APP_VERSION`
 
 ---
 
+## Entry 64 — Post-merge cleanup completion rule
+
+**Date:** 2026-11-10
+**Tool:** opencode CLI (`deepseek-v4.1-flash`)
+**Intent:** Make cleanup explicit before a `**No action**` response and define cleanup as removing a temporary worktree only after the branch is merged into remote `main` and required checks are green.
+**Boundary:** `AGENTS.md` §11 and §13, issue #212, branch `docs/212-post-merge-cleanup`, commit, push and PR #213. No application code, schema, configuration, historical record, deployment or runtime changes.
+**Prior records reviewed:** `AGENTS.md` §11/§13; issue #207 and PR #208 (merged at `d65ad27`, all five checks green); `git worktree list` (no temporary worktree remains); AI Entries 62–63.
+**Work performed:** added cleanup as completion step 7 and renumbered the next-action step to 8; updated the `**No action**` rule to require confirmed remote merge, green checks and temporary-worktree removal; verified the existing PR #208 cleanup state before making the change.
+**Verification:** `git diff --check` passed; `git show --stat` confirmed the first commit changes only `AGENTS.md`; PR #208 was confirmed merged with all five checks successful; `git worktree list` confirmed no temporary worktree remains. No runtime checks were run because no application code changed. PR #213 checks are pending at the time of this entry.
+**Learning:** Cleanup must be a verified post-merge action, not an assumption. Removing temporary worktrees keeps the checkout tidy without touching the primary worktree, unmerged work, or unrelated changes. A `**No action**` response is a claim that this cleanup has already been completed or is not applicable.
+**Limitations:** Documentation-only change; no independent review yet. The new rule is not exercised by an application test; its first use is the cleanup of PR #213 itself.
+
+**Links:** issue #212 · PR [#213](https://github.com/match-pulse/match-pulse/pull/213) · [`AGENTS.md`](../../AGENTS.md)
+
+---
+
 ## Standing rule
 
 AI may investigate, analyse, draft, implement within an approved scope, and run verification. The human retains every decision that affects business rules, architecture, schema, scope, priority, risk acceptance and merging. Contributions that cannot be verified are recorded as unverified rather than asserted.
