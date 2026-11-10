@@ -1126,6 +1126,22 @@ Secret hygiene re-verified: `release.env` in history contains only `APP_VERSION`
 
 ---
 
+## Entry 69 — Legacy finding verification (FND-001/003/005)
+
+**Date:** 2026-11-10
+**Tool:** opencode CLI (`deepseek-v4.1-flash`)
+**Intent:** Verify the remaining Fixed findings without code changes.
+**Boundary:** Targeted test runs, verification record, findings register and this entry.
+**Prior records reviewed:** FND-001/003/005; authorization, idempotency, capacity and uniqueness records.
+**Work performed:** re-ran the authorization + v3 tenancy suites (20 pass), the idempotency suite (6 pass) and the capacity + uniqueness suites (3 pass); recorded the observed results and marked the findings Verified.
+**Verification:** `bun test --env-file=.env.local` on the named files; capacity burst p95 755.77 ms. Details: [`verification/2026-11-197-legacy-findings-verification.md`](verification/2026-11-197-legacy-findings-verification.md).
+**Learning:** The existing fixes were already covered by tests; the gap was the final verification record, not missing code.
+**Limitations:** Local/CI evidence only; no hosted production evidence.
+
+**Links:** issue #197 · [`verification`](verification/2026-11-197-legacy-findings-verification.md) · [`findings register`](findings-register.md)
+
+---
+
 ## Standing rule
 
 AI may investigate, analyse, draft, implement within an approved scope, and run verification. The human retains every decision that affects business rules, architecture, schema, scope, priority, risk acceptance and merging. Contributions that cannot be verified are recorded as unverified rather than asserted.
