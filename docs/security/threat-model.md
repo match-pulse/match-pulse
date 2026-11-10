@@ -26,11 +26,12 @@
 
 | Threat | Control | Residual |
 | :--- | :--- | :--- |
-| Anonymous private read/mutation | RLS, revoked grants, authenticated-only RPCs | None observed in CI |
+| Anonymous private read/mutation | Anonymous sign-ins disabled; RLS, revoked grants, authenticated-only RPCs | No anonymous identity path; refusal test in the authorization suite |
 | Fan reads another fan's rows | Own-row RLS policies; authorization suite | None observed |
 | Fan calls organizer/club RPCs | Role checks inside RPCs | None observed |
 | Organizer manages another organizer's data | `organizer_id` ownership checks in RPCs | Legacy unlinked markets remain organizer-resolvable |
-| Club sees identities | Aggregate-only RPCs; cohort threshold 5; no private table reads | Formal privacy review still required |
+| Club sees identities | Current club-role RLS; aggregate-only RPCs; cohort threshold 5 | Formal privacy review still required |
+| Platform admin reads invitation or fan-card data | No direct table policy; audited scoped RPC required if support access is added | Support access is not implemented |
 | Duplicate charge/payout on retry | Request-key idempotency and unique constraints | Legacy null-key path documented |
 | Direct table writes bypass rules | Writes revoked; `SECURITY DEFINER` RPCs | Review discipline remains required |
 | Service-role key leaks to browser | Architecture guard; runtime uses anon key | Local fixture key must not be deployed |

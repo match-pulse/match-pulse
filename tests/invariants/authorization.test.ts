@@ -11,7 +11,6 @@ import { randomUUID } from 'crypto'
 import {
   admin,
   anonClient,
-  createAnonymousUser,
   createUser,
   deleteUsers,
   type TestUser
@@ -302,36 +301,13 @@ describe('authorization boundary', () => {
   )
 
   test(
-    'an anonymous fan is a real auth user and can trade on their own profile',
+    'anonymous sign-in is disabled',
     async () => {
-      const fan = await createAnonymousUser()
-      const marketId = await createMarket()
+      const anon = anonClient()
+      const { data, error } = await anon.auth.signInAnonymously()
 
-      try {
-        const { data: profile, error: profileError } = await admin
-          .from('profiles')
-          .select('id, points, role')
-          .eq('id', fan.id)
-          .single()
-
-        if (profileError || !profile) {
-          throw new Error(`Failed to read anonymous profile: ${profileError?.message ?? 'no row'}`)
-        }
-
-        expect(profile.points).toBe(200)
-        expect(profile.role).toBe('FAN')
-
-        expect((await openTrade(fan, marketId, 'HOME', 10)).error).toBeNull()
-
-        const refused = await fan.client.rpc('resolve_market', {
-          p_market_id: marketId,
-          p_winner: 'HOME'
-        })
-        expect(refused.error?.message).toContain('organizer authorization required')
-      } finally {
-        await deleteUsers([fan])
-        await deleteMarket(marketId)
-      }
+      expect(error).not.toBeNull()
+      expect(data.session).toBeNull()
     },
     TEST_TIMEOUT_MS
   )

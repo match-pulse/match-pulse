@@ -81,20 +81,6 @@ export async function createUser(role: 'FAN' | 'ORGANIZER' | 'CLUB' = 'FAN'): Pr
   return { id: data.user.id, email, password: PASSWORD, client }
 }
 
-export async function createAnonymousUser(): Promise<TestUser> {
-  const client = createClient(URL, ANON_KEY, {
-    auth: { autoRefreshToken: false, persistSession: false }
-  })
-
-  const { data, error } = await client.auth.signInAnonymously()
-
-  if (error || !data.user) {
-    throw new Error(`Failed to create anonymous user: ${error?.message ?? 'no user returned'}`)
-  }
-
-  return { id: data.user.id, email: '', password: '', client }
-}
-
 export async function createUsers(
   count: number,
   role: 'FAN' | 'ORGANIZER' | 'CLUB' = 'FAN'
