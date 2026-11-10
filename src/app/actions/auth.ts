@@ -46,10 +46,6 @@ export async function signInOrganizer(formData: FormData): Promise<AuthFailure> 
   return passwordSignIn(formData)
 }
 
-export async function signInClub(formData: FormData): Promise<AuthFailure> {
-  return passwordSignIn(formData)
-}
-
 export async function signUpFan(formData: FormData): Promise<AuthFailure> {
   const email = formData.get('email')
   const password = formData.get('password')

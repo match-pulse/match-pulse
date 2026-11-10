@@ -3,8 +3,6 @@ import { expect, test } from '@playwright/test'
 
 const ORGANIZER_EMAIL = process.env.ORGANIZER_EMAIL ?? 'organizer@matchpulse.local'
 const ORGANIZER_PASSWORD = process.env.ORGANIZER_PASSWORD ?? 'matchpulse-organizer'
-const CLUB_EMAIL = process.env.CLUB_EMAIL ?? 'club@matchpulse.local'
-const CLUB_PASSWORD = process.env.CLUB_PASSWORD ?? 'matchpulse-club'
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL ?? 'admin@matchpulse.local'
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD ?? 'matchpulse-admin'
 
@@ -48,16 +46,6 @@ test('organizer page has no serious or critical accessibility violations', async
   await page.getByLabel('Password').fill(ORGANIZER_PASSWORD)
   await page.getByRole('button', { name: 'Sign in as organizer' }).click()
   await expect(page.getByRole('heading', { name: 'Organizer dashboard' })).toBeVisible()
-  await assertNoCriticalViolations(page)
-})
-
-test('club page has no serious or critical accessibility violations', async ({ page }) => {
-  await page.goto('/login')
-  await page.getByRole('button', { name: 'Club' }).click()
-  await page.getByLabel('Club email').fill(CLUB_EMAIL)
-  await page.getByLabel('Password').fill(CLUB_PASSWORD)
-  await page.getByRole('button', { name: 'Sign in as club' }).click()
-  await expect(page.getByRole('heading', { name: 'Club analytics' })).toBeVisible()
   await assertNoCriticalViolations(page)
 })
 

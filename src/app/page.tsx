@@ -37,10 +37,6 @@ export default async function Home() {
     redirect('/organizer')
   }
 
-  if (profile?.role === 'CLUB') {
-    redirect('/club')
-  }
-
   if (membership) {
     redirect('/club/dashboard')
   }

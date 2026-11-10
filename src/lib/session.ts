@@ -36,7 +36,7 @@ export type Profile = {
   id: string
   username: string
   points: number
-  role: 'FAN' | 'ORGANIZER' | 'CLUB'
+  role: 'FAN' | 'ORGANIZER'
 }
 
 export async function getProfile(): Promise<Profile | null> {

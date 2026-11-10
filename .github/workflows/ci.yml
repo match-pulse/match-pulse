@@ -355,7 +355,6 @@ jobs:
       - name: Create organizer and club fixtures
         run: |
           bun run auth:organizer
-          bun run auth:club
 
       - name: Install Playwright browser
         run: bunx playwright install --with-deps chromium
