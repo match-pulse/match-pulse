@@ -1030,6 +1030,22 @@ Secret hygiene re-verified: `release.env` in history contains only `APP_VERSION`
 
 ---
 
+## Entry 60 — v3.1.0 audit-remediation campaign closure
+
+**Date:** 2026-11-10
+**Tool:** opencode CLI (`deepseek-v4.1-flash`)
+**Intent:** Close the remediation campaign for FND-009 to FND-028 and record the final dispositions, evidence and remaining gates.
+**Boundary:** Campaign verification record, audit triage/closure, findings register, README known gaps, changelog and OpenSpec tasks. No new application behaviour.
+**Prior records reviewed:** audit report; findings register; execution plan #173; all workstream verification records; invariant registry; ADR-011; AI Entries 51–59.
+**Work performed:** consolidated the eight remediation PRs, updated the audit triage table to the human-approved scope, corrected the closure-log PR links, added the final campaign verification record, recorded the Unreleased changelog section and closed the completed OpenSpec tasks.
+**Verification:** final local/CI results are recorded in [`verification/2026-11-173-audit-remediation.md`](verification/2026-11-173-audit-remediation.md). All implemented findings are **Fixed**, not **Verified**.
+**Learning:** The campaign needed separate workstreams for security, market integrity, ticketing, rewards, entitlements, privacy and evidence; combining them would have made review and rollback unsafe. The fault-injection matrix caught a weak cohort assertion that ordinary tests missed.
+**Limitations:** FND-007 (real-user evidence) and FND-008 (independent human review) remain open. FND-023 is deferred to #188. FND-026/FND-027 are accepted risks. The local Kong/Docker workaround remains. No independent verifier has confirmed the findings.
+
+**Links:** issue #173 · [`verification`](verification/2026-11-173-audit-remediation.md) · [`findings register`](findings-register.md) · [`execution plan`](exec-plans/173-audit-remediation.md) · [`changelog`](../../CHANGELOG.md)
+
+---
+
 ## Standing rule
 
 AI may investigate, analyse, draft, implement within an approved scope, and run verification. The human retains every decision that affects business rules, architecture, schema, scope, priority, risk acceptance and merging. Contributions that cannot be verified are recorded as unverified rather than asserted.

@@ -15,7 +15,38 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versioning: [S
 
 ## [Unreleased]
 
-No unreleased changes yet.
+Security, market-integrity and privacy remediation of the v3.0.0 audit.
+
+### Security
+
+- Anonymous sign-ins are disabled; every session requires email/password.
+- Legacy organizer attendee/registration RLS policies are removed, so only current club membership reads attendee data.
+- Platform admins no longer read invitation emails or fan-card numbers through direct table policies.
+- CSV exports neutralise spreadsheet formula prefixes.
+
+### Changed
+
+- Prediction entries stop when the match is `FINISHED`; exits remain available until resolution. Resolution requires a `FINISHED` match and the score-derived winner (ADR-011).
+- Ticket purchases enforce the buyer cap cumulatively per event and bound sales by venue capacity; legacy claim/registration are limited to club-less events.
+- Reward redemption requires a request key and replays/refuses duplicate requests.
+- Inactive subscriptions no longer grant unlimited limits; plan limit checks are serialised.
+- Retention redacts transfer history, old fan-card audit numbers and invitation emails; prediction insights suppress each outcome/time-bucket cohort below five.
+- Ticket request keys replay only the same attendee payload, channel and buyer.
+
+### Fixed
+
+- Seed tournament resolution, CSV formula safety, ticket payload replay and the invariant/fault-injection evidence (FND-020–FND-025).
+
+### Breaking
+
+- `redeem_reward` now requires a request ID.
+- Market resolution now requires a finished match and the score-derived winner.
+
+### Migration / upgrade notes
+
+- Apply `20261206_security_boundary.sql` through `20261212_ticket_payload_hash.sql`.
+- Set `enable_anonymous_sign_ins = false` in hosted Supabase.
+- Existing anonymous profiles are not migrated; FND-007/FND-008 remain open human gates.
 
 ## [3.0.0] - 2026-11-09
 
