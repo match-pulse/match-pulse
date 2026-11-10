@@ -982,6 +982,38 @@ Secret hygiene re-verified: `release.env` in history contains only `APP_VERSION`
 
 ---
 
+## Entry 56 — Subscription limits and concurrency
+
+**Date:** 2026-11-10
+**Tool:** opencode CLI (`deepseek-v4.1-flash`)
+**Intent:** Close FND-019 and FND-028 by refusing inactive subscriptions and serialising plan-limit checks.
+**Boundary:** One migration replacing invite, accept and event-create RPCs; v3 integration tests; invariant registry, findings register and verification record.
+**Prior records reviewed:** audit AUD-011/AUD-020; FND-019/FND-028; T-INV3; failure modes; execution plan #173.
+**Work performed:** required an active subscription entitlement before reading the plan limit; locked the subscription row before member/event count-and-insert with a documented lock order; added a canceled-subscription test and a four-request concurrent STARTER event test.
+**Verification:** targeted v3 tests 9 pass; full database 50 pass, CLI 2 pass, E2E 11 passed, build passed after rebasing and resetting the local database. Details: [`verification/2026-11-177-subscription-limits.md`](verification/2026-11-177-subscription-limits.md).
+**Learning:** `NULL` limits mean unlimited only for an active, entitled plan. Without an active-subscription check, a canceled club is treated as unlimited, which is the opposite of the intended control.
+**Limitations:** Fault injection and independent verification pending. The concurrency test is a four-request boundary check, not a load benchmark. Local Kong/Docker DNS workaround remains.
+
+**Links:** issue #177 · [`verification`](verification/2026-11-177-subscription-limits.md) · [`findings register`](findings-register.md) · [`execution plan`](exec-plans/173-audit-remediation.md)
+
+---
+
+## Entry 57 — Privacy retention and outcome-level cohort suppression
+
+**Date:** 2026-11-10
+**Tool:** opencode CLI (`deepseek-v4.1-flash`)
+**Intent:** Close FND-015 and FND-016.
+**Boundary:** Retention migration and fan-card audit write, insights/time-series RPCs, v3 integration tests, domain model, invariant registry and verification record.
+**Prior records reviewed:** audit AUD-007/AUD-008; FND-015/FND-016; ADR-010; T-INV8/T-INV10; retention tests; domain model; execution plan #173.
+**Work performed:** extended `cleanup_expired_attendee_data` to redact transfer previous/new identity, remove old fan-card `card_number` metadata and delete accepted/expired invitation emails; stopped storing card numbers in new fan-card audit events; changed insights/time-series to count distinct predictors per outcome and per bucket and suppress each cohort below five.
+**Verification:** targeted v3 tests 8 pass; full database 49 pass, CLI 2 pass, E2E 11 passed, build passed after rebasing and resetting the local database. The skewed 5-total cohort test shows every outcome suppressed, then HOME shown at exactly five predictors while DRAW/AWAY remain suppressed. Details: [`verification/2026-11-179-privacy-retention.md`](verification/2026-11-179-privacy-retention.md).
+**Learning:** Threshold suppression at market level does not protect a one-person outcome inside a larger market; the cohort must be counted and suppressed per outcome and time bucket. Retention must follow derived identity, not only the current ticket row.
+**Limitations:** Fault injection and independent verification pending. The 365-day window remains the existing product default. Time-series suppression is not separately E2E-tested. Local Kong/Docker DNS workaround remains.
+
+**Links:** issue #179 · PR [#190](https://github.com/match-pulse/match-pulse/pull/190) · [`verification`](verification/2026-11-179-privacy-retention.md) · [`findings register`](findings-register.md) · [`execution plan`](exec-plans/173-audit-remediation.md)
+
+---
+
 ## Standing rule
 
 AI may investigate, analyse, draft, implement within an approved scope, and run verification. The human retains every decision that affects business rules, architecture, schema, scope, priority, risk acceptance and merging. Contributions that cannot be verified are recorded as unverified rather than asserted.
