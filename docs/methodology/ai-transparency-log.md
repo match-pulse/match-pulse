@@ -901,6 +901,23 @@ Secret hygiene re-verified: `release.env` in history contains only `APP_VERSION`
 
 ---
 
+## Entry 51 — Software audit of MatchPulse v3.0.0
+
+**Date:** 2026-11-10
+**Tool:** opencode CLI (`deepseek-v4.1-flash`)
+**Intent:** Run the first formal, read-only software audit of the v3.0.0 baseline and record evidence-backed findings for human triage.
+**Boundary:** Read-only for application code, tests, migrations, CI and historical records. Issue [#171](https://github.com/match-pulse/match-pulse/issues/171) was created with human authorization before inspection. The audit report, findings-register rows FND-009–FND-028 and this entry are new records; the methodology record index gained one link. No existing historical record was overwritten.
+**Prior records reviewed:** findings register FND-001–008; README status and known gaps; invariant registry; authorization, idempotency, delivery, recovery, v3 tenancy, CLI, auth UI, club features, retention and release verification records; ADR-003/007/008/009/010; threat model; failure-modes; CI configuration; agent playbook; capability manifest. No prior audit report exists.
+**Work performed:** inspected the full v3.0.0 application and database surface at `bbc4a43`; traced club tenancy, plans/entitlements, nominal ticketing, transfers, check-in, retention, rewards, insights/export, platform admin, CLI and the legacy compatibility paths; compared implementation and tests against the invariant registry and security/privacy claims; wrote [`audits/2026-11-10-171-v3-audit.md`](audits/2026-11-10-171-v3-audit.md), appended the register and added the record-index link.
+**Verification:** static evidence only. This environment has no Bun, Node, Docker, Playwright or local Supabase; no lint, typecheck, build, database test, CLI test, browser test or fault-injection run was executed. Findings cite source, migration, test, configuration or recorded CI evidence. The audit report records 3 Critical, 9 Major, 6 Minor and 2 Informational findings, all Open.
+**Learning:** The v3 authorization boundary is materially stronger than v2, but three controls are not closed: anonymous auth remains enabled; the legacy organizer ticket policy survives; and the market lifecycle is not coupled to the match result. The "Verified" labels for T-INV4, T-INV8 and T-INV10 are broader than their tests. A green CI run is not a substitute for a failure-mode-specific test.
+**Relevant rejected/corrected suggestions:** The audit considered reporting club plan self-selection as a defect, but ADR-007 and the domain model explicitly describe a simulated plan choice, so it was not raised. It also considered reporting post-`FINISHED` trading as a direct spec violation; M-INV1 defines the window as opening at kickoff and ending at resolution, so the finding is recorded as a design/invariant risk requiring a human decision. The any-organizer rule for unlinked legacy markets is already a documented residual in the threat model, so it was noted as a limitation rather than duplicated as a new finding.
+**Limitations:** No hosted deployment, production configuration, live environment, legal/privacy review, external penetration test or load test. FND-007 and FND-008 remain open. The triage table is intentionally pending; no remediation is approved or implemented.
+
+**Links:** issue #171 · [`audit report`](audits/2026-11-10-171-v3-audit.md) · [`findings register`](findings-register.md) · `baseline bbc4a43 / v3.0.0`
+
+---
+
 ## Standing rule
 
 AI may investigate, analyse, draft, implement within an approved scope, and run verification. The human retains every decision that affects business rules, architecture, schema, scope, priority, risk acceptance and merging. Contributions that cannot be verified are recorded as unverified rather than asserted.

@@ -20,6 +20,8 @@ Permanent index of every audit, refactor, incident, and verification finding. Th
 
 Recorded 2026-11-07 from the current known gaps and the Checkpoint C quality review. These are current findings, not retroactively invented history.
 
+Findings FND-009 to FND-028 were appended on 2026-11-10 from the [v3.0.0 audit](audits/2026-11-10-171-v3-audit.md). The 2026-11-07 sentence above remains the historical note for FND-001 to FND-008.
+
 | ID | Type | Title | Severity / Impact | Status | Source record | Issue | PR | Remediation | Verification |
 |---|---|---|---|---|---|---|---|---|---|
 | FND-001 | Security | No authentication, RLS or grants; anon can act as any participant and call `resolve_market` | Critical | Fixed | [README Known gaps](../../README.md#known-gaps); [INV-05](checkpoint-A/02-invariants.md) | [#95](https://github.com/match-pulse/match-pulse/issues/95) | [#96](https://github.com/match-pulse/match-pulse/pull/96) | Supabase Auth, roles, RLS, grants, `SECURITY DEFINER` RPCs and organizer check | [Verification record](verification/2026-11-95-authorization-rls.md); CI run 42397891717 |
@@ -30,6 +32,26 @@ Recorded 2026-11-07 from the current known gaps and the Checkpoint C quality rev
 | FND-006 | Operations | No deployment, observability or recovery evidence; operation is proposed, not observed | Major | Partly fixed | [Architecture characteristics §3.2/§6](../architecture/03-architecture-characteristics.md); [Checkpoint C residual risk](checkpoint-C/05-residual-risk.md) | [#111](https://github.com/match-pulse/match-pulse/issues/111), [#117](https://github.com/match-pulse/match-pulse/issues/117) | [#112](https://github.com/match-pulse/match-pulse/pull/112), [#118](https://github.com/match-pulse/match-pulse/pull/118) | Health, JSON logs, smoke, `Delivery and recovery` CI job, runbook, SLOs and an exercised public-schema backup/restore drill; no hosted deployment or production recovery | [Delivery verification](verification/2026-11-111-delivery-operations-baseline.md); [Recovery drill](verification/2026-11-117-recovery-drill.md); CI run 42467767299 |
 | FND-007 | Context | The problem claim has no real organizer observation; it is a hypothesis | Major | Open | [Checkpoint A product claims §1](checkpoint-A/03-product-claims.md); [bounded proposal §1](checkpoint-A/01-bounded-proposal.md) | — | — | Planned — interview or observe one organizer; dated addendum to the claim | — |
 | FND-008 | Collaboration | No independent human review; review is structured self-review plus automated checks and agent role passes | Minor | Open | [Operating model §6](checkpoint-B/02-operating-model.md); [Checkpoint C review decisions](checkpoint-C/03-review-decision.md) | — | — | Planned — peer review of one PR, with the review decision recorded | — |
+| FND-009 | Security | Anonymous sign-ins are enabled and mint authenticated profiles with 200 points and all fan privileges | Critical | Open | [v3.0.0 audit](audits/2026-11-10-171-v3-audit.md) AUD-001 | [#171](https://github.com/match-pulse/match-pulse/issues/171) | — | Pending triage — disable anonymous sign-ins; add a negative test | — |
+| FND-010 | Security / Privacy | Former staff retain attendee identity read through `tickets_select_organizer` | Critical | Open | [v3.0.0 audit](audits/2026-11-10-171-v3-audit.md) AUD-002 | [#171](https://github.com/match-pulse/match-pulse/issues/171) | — | Pending triage — drop or replace the legacy policy | — |
+| FND-011 | Market integrity | Entry remains open after the match is `FINISHED`; resolution can be early or inconsistent with the score | Critical | Open | [v3.0.0 audit](audits/2026-11-10-171-v3-audit.md) AUD-003 | [#171](https://github.com/match-pulse/match-pulse/issues/171) | — | Pending triage — tie the market window and resolution to the match result | — |
+| FND-012 | Ticketing | `max_per_buyer` is checked per order, not cumulatively per event | Major | Open | [v3.0.0 audit](audits/2026-11-10-171-v3-audit.md) AUD-004 | [#171](https://github.com/match-pulse/match-pulse/issues/171) | — | Pending triage — cumulative buyer cap inside the purchase transaction | — |
+| FND-013 | Reliability | Reward redemption is not idempotent and can double-charge on retry or double submit | Major | Open | [v3.0.0 audit](audits/2026-11-10-171-v3-audit.md) AUD-005 | [#171](https://github.com/match-pulse/match-pulse/issues/171) | — | Pending triage — request key and replay/refusal semantics | — |
+| FND-014 | Market invariant | Disabling predictions blocks exits as well as entries | Major | Open | [v3.0.0 audit](audits/2026-11-10-171-v3-audit.md) AUD-006 | [#171](https://github.com/match-pulse/match-pulse/issues/171) | — | Pending triage — restrict the trigger to `BUY` trades | — |
+| FND-015 | Privacy | Retention clears ticket fields only; transfer history, audit card numbers and invite emails persist | Major | Open | [v3.0.0 audit](audits/2026-11-10-171-v3-audit.md) AUD-007 | [#171](https://github.com/match-pulse/match-pulse/issues/171) | — | Pending triage — extend retention and redaction | — |
+| FND-016 | Privacy | Threshold-5 suppression is applied per market, not per outcome cohort | Major | Open | [v3.0.0 audit](audits/2026-11-10-171-v3-audit.md) AUD-008 | [#171](https://github.com/match-pulse/match-pulse/issues/171) | — | Pending triage — outcome-level cohort counts and suppression | — |
+| FND-017 | Domain integrity | Legacy `claim_ticket` bypasses v3 nominal ticketing on v3 events | Major | Open | [v3.0.0 audit](audits/2026-11-10-171-v3-audit.md) AUD-009 | [#171](https://github.com/match-pulse/match-pulse/issues/171) | — | Pending triage — retire or scope the legacy claim path | — |
+| FND-018 | Domain integrity | Ticket sales are not bounded by venue capacity; registrations and tickets use independent counters | Major | Open | [v3.0.0 audit](audits/2026-11-10-171-v3-audit.md) AUD-010 | [#171](https://github.com/match-pulse/match-pulse/issues/171) | — | Pending triage — define and enforce the capacity model | — |
+| FND-019 | Entitlements | Missing or inactive subscriptions become unlimited member/event plans | Major | Open | [v3.0.0 audit](audits/2026-11-10-171-v3-audit.md) AUD-011 | [#171](https://github.com/match-pulse/match-pulse/issues/171) | — | Pending triage — distinguish unlimited from no active entitlement | — |
+| FND-020 | Verification | Several “Verified” invariant claims exceed the tests in the repository | Major | Open | [v3.0.0 audit](audits/2026-11-10-171-v3-audit.md) AUD-012 | [#171](https://github.com/match-pulse/match-pulse/issues/171) | — | Pending triage — add failure-mode tests and correct the registry | — |
+| FND-021 | Security | CSV exports do not neutralise spreadsheet formula prefixes | Minor | Open | [v3.0.0 audit](audits/2026-11-10-171-v3-audit.md) AUD-013 | [#171](https://github.com/match-pulse/match-pulse/issues/171) | — | Pending triage — sanitise leading formula characters | — |
+| FND-022 | Privacy | Platform admin reads fan-card and invite data directly without an audited support path | Minor | Open | [v3.0.0 audit](audits/2026-11-10-171-v3-audit.md) AUD-014 | [#171](https://github.com/match-pulse/match-pulse/issues/171) | — | Pending triage — remove the direct branch or add an audited RPC | — |
+| FND-023 | Privacy | Legacy `CLUB` role sees cross-club aggregate analytics | Minor | Open | [v3.0.0 audit](audits/2026-11-10-171-v3-audit.md) AUD-015 | [#171](https://github.com/match-pulse/match-pulse/issues/171) | — | Pending triage — retire or scope the legacy analytics surface | — |
+| FND-024 | Demo data | The seeded Summer Cup market is unresolvable by any user | Minor | Open | [v3.0.0 audit](audits/2026-11-10-171-v3-audit.md) AUD-016 | [#171](https://github.com/match-pulse/match-pulse/issues/171) | — | Pending triage — assign the seed tournament to a fixture owner or remove the market | — |
+| FND-025 | Reliability | Ticket purchase replay does not cover the attendee payload, and the client key is not rotated on payload change | Minor | Open | [v3.0.0 audit](audits/2026-11-10-171-v3-audit.md) AUD-017 | [#171](https://github.com/match-pulse/match-pulse/issues/171) | — | Pending triage — compare a payload hash and rotate the key | — |
+| FND-026 | Product / Economy | Club-controlled `ticket_points` issuance is unbounded | Informational | Open | [v3.0.0 audit](audits/2026-11-10-171-v3-audit.md) AUD-018 | [#171](https://github.com/match-pulse/match-pulse/issues/171) | — | Pending triage — define a cap/approval or document the simulated economy | — |
+| FND-027 | Billing model | Subscription `current_period_end` is stored but never enforced | Informational | Open | [v3.0.0 audit](audits/2026-11-10-171-v3-audit.md) AUD-019 | [#171](https://github.com/match-pulse/match-pulse/issues/171) | — | Pending triage — define expiry semantics or remove the field from the decision | — |
+| FND-028 | Concurrency | Plan member and active-event limits are count-then-insert without a club lock | Minor | Open | [v3.0.0 audit](audits/2026-11-10-171-v3-audit.md) AUD-020 | [#171](https://github.com/match-pulse/match-pulse/issues/171) | — | Pending triage — serialize the limit check and insert | — |
 
 ## Relations
 
@@ -38,6 +60,19 @@ Recorded 2026-11-07 from the current known gaps and the Checkpoint C quality rev
 | FND-001 | Related | FND-004 | An unauthenticated exposed RPC surface makes a public load test and production authorization evidence meaningless until access control exists | 2026-11-07 |
 | FND-003 | Related | FND-001 | A retry can create a second entry without a request key, and the open RPC surface makes the retry reachable by anyone | 2026-11-07 |
 | FND-005 | Related | FND-002 | Dependent tests reduce the credibility of the invariant evidence that the remaining injections are meant to strengthen | 2026-11-07 |
+| FND-009 | Related | FND-001 | The prior finding removed the missing auth boundary; anonymous sessions are a residual identity bypass in the same boundary | 2026-11-10 |
+| FND-010 | Related | FND-001 | The prior RLS fix did not remove the legacy organizer policy, leaving a private-table attendee read | 2026-11-10 |
+| FND-013 | Related | FND-003 | The trade path has request-key idempotency, but reward redemption does not | 2026-11-10 |
+| FND-012 | Related | FND-020 | The max-per-buyer defect is one of the claims whose verification evidence is overstated | 2026-11-10 |
+| FND-013 | Related | FND-020 | The reward-idempotency playbook claim is part of the evidence gap | 2026-11-10 |
+| FND-015 | Related | FND-020 | The retention test does not cover transfer history or audit metadata | 2026-11-10 |
+| FND-016 | Related | FND-020 | The suppression test does not cover the outcome-cohort boundary | 2026-11-10 |
+| FND-014 | Related | FND-002 | The market invariant evidence covers the entry window and exits during cooldown but not disabling predictions | 2026-11-10 |
+| FND-017 | Related | FND-001 | The legacy claim RPC remains an authenticated path that bypasses the v3 ticketing boundary | 2026-11-10 |
+| FND-020 | Related | FND-002, FND-005 | The verification claim is broader than the observed fault-injection and test-quality evidence | 2026-11-10 |
+| FND-025 | Related | FND-003, FND-005 | Ticket idempotency follows the trade principle but does not cover the payload or the CLI key | 2026-11-10 |
+| FND-027 | Related | FND-019 | Both findings concern whether subscription state and limits are actually enforced | 2026-11-10 |
+| FND-028 | Related | FND-019, FND-020 | The concurrency gap affects the same plan-limit control and is not covered by the current evidence | 2026-11-10 |
 
 ## Lifecycle log
 
@@ -58,6 +93,26 @@ Recorded 2026-11-07 from the current known gaps and the Checkpoint C quality rev
 | 2026-11-08 | FND-006 | Partly fixed in #111 / PR #112; local/CI delivery, observability and recovery procedure exist; hosted deployment and production recovery remain open | [Verification record](verification/2026-11-111-delivery-operations-baseline.md) |
 | 2026-11-08 | FND-006 | Recovery evidence improved in #117 / PR #118: public-schema backup restored into a scratch database, with table/policy/row and marker assertions passing in CI run 42467767299 | [Recovery drill](verification/2026-11-117-recovery-drill.md) |
 | 2026-11-08 | FND-002 | Partly fixed in #125 / PR #126: 10 observed-red mutations pass for M-INV1/3/5/8 and the M-INV7 details; M-INV2 is verified by forced-failure rollback but is not an observed-red mutation | [Verification record](verification/2026-11-125-market-fault-injections.md); CI run 42474762811 |
+| 2026-11-10 | FND-009 | Recorded as Open from the v3.0.0 audit (AUD-001) | [Audit report](audits/2026-11-10-171-v3-audit.md) |
+| 2026-11-10 | FND-010 | Recorded as Open from the v3.0.0 audit (AUD-002) | [Audit report](audits/2026-11-10-171-v3-audit.md) |
+| 2026-11-10 | FND-011 | Recorded as Open from the v3.0.0 audit (AUD-003) | [Audit report](audits/2026-11-10-171-v3-audit.md) |
+| 2026-11-10 | FND-012 | Recorded as Open from the v3.0.0 audit (AUD-004) | [Audit report](audits/2026-11-10-171-v3-audit.md) |
+| 2026-11-10 | FND-013 | Recorded as Open from the v3.0.0 audit (AUD-005) | [Audit report](audits/2026-11-10-171-v3-audit.md) |
+| 2026-11-10 | FND-014 | Recorded as Open from the v3.0.0 audit (AUD-006) | [Audit report](audits/2026-11-10-171-v3-audit.md) |
+| 2026-11-10 | FND-015 | Recorded as Open from the v3.0.0 audit (AUD-007) | [Audit report](audits/2026-11-10-171-v3-audit.md) |
+| 2026-11-10 | FND-016 | Recorded as Open from the v3.0.0 audit (AUD-008) | [Audit report](audits/2026-11-10-171-v3-audit.md) |
+| 2026-11-10 | FND-017 | Recorded as Open from the v3.0.0 audit (AUD-009) | [Audit report](audits/2026-11-10-171-v3-audit.md) |
+| 2026-11-10 | FND-018 | Recorded as Open from the v3.0.0 audit (AUD-010) | [Audit report](audits/2026-11-10-171-v3-audit.md) |
+| 2026-11-10 | FND-019 | Recorded as Open from the v3.0.0 audit (AUD-011) | [Audit report](audits/2026-11-10-171-v3-audit.md) |
+| 2026-11-10 | FND-020 | Recorded as Open from the v3.0.0 audit (AUD-012) | [Audit report](audits/2026-11-10-171-v3-audit.md) |
+| 2026-11-10 | FND-021 | Recorded as Open from the v3.0.0 audit (AUD-013) | [Audit report](audits/2026-11-10-171-v3-audit.md) |
+| 2026-11-10 | FND-022 | Recorded as Open from the v3.0.0 audit (AUD-014) | [Audit report](audits/2026-11-10-171-v3-audit.md) |
+| 2026-11-10 | FND-023 | Recorded as Open from the v3.0.0 audit (AUD-015) | [Audit report](audits/2026-11-10-171-v3-audit.md) |
+| 2026-11-10 | FND-024 | Recorded as Open from the v3.0.0 audit (AUD-016) | [Audit report](audits/2026-11-10-171-v3-audit.md) |
+| 2026-11-10 | FND-025 | Recorded as Open from the v3.0.0 audit (AUD-017) | [Audit report](audits/2026-11-10-171-v3-audit.md) |
+| 2026-11-10 | FND-026 | Recorded as Open from the v3.0.0 audit (AUD-018) | [Audit report](audits/2026-11-10-171-v3-audit.md) |
+| 2026-11-10 | FND-027 | Recorded as Open from the v3.0.0 audit (AUD-019) | [Audit report](audits/2026-11-10-171-v3-audit.md) |
+| 2026-11-10 | FND-028 | Recorded as Open from the v3.0.0 audit (AUD-020) | [Audit report](audits/2026-11-10-171-v3-audit.md) |
 
 ## Historical baseline
 
