@@ -28,6 +28,7 @@ ADRs remain in [`docs/architecture/adr/`](../architecture/adr/) and follow the e
 - [`checkpoint-C/`](checkpoint-C/) — risk control map, quality story, review decisions, test-case process, residual risk, and documentation review.
 - [`checkpoint-D/`](checkpoint-D/) — pre-read for architecture ownership, dependency rules, fitness functions, change scenario, compatibility and technical debt.
 - [`checkpoint-E/`](checkpoint-E/) — pre-read for delivery, observability, recovery, SLOs and p95 measurement.
+- [`audits/`](audits/) — dated software audit reports; the v3.0.0 baseline audit is [`2026-11-10-171-v3-audit.md`](audits/2026-11-10-171-v3-audit.md).
 - [`reports/`](reports/) — dated project reports; [`2026-11-08.md`](reports/2026-11-08.md) is the current methodology synthesis.
 - [`exec-plans/153-v3-club-subscriptions.md`](exec-plans/153-v3-club-subscriptions.md) — approved v3.0.0 execution plan.
 - [`verification/2026-11-157-v3-club-tenancy.md`](verification/2026-11-157-v3-club-tenancy.md) — verified v3 database foundation.
