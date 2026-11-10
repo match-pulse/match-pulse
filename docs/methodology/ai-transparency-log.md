@@ -950,6 +950,22 @@ Secret hygiene re-verified: `release.env` in history contains only `APP_VERSION`
 
 ---
 
+## Entry 54 — Ticketing integrity
+
+**Date:** 2026-11-10
+**Tool:** opencode CLI (`deepseek-v4.1-flash`)
+**Intent:** Close FND-012, FND-017 and FND-018 from the v3.0.0 audit.
+**Boundary:** New trigger migration, legacy claim/registration scoping, legacy fan-page filters, database tests, domain model, invariant registry, agent playbook, code map and verification record.
+**Prior records reviewed:** audit AUD-004/AUD-009/AUD-010; FND-012/FND-017/FND-018; T-INV4/T-INV5; ADR-010; ticket integration tests; execution plan #173.
+**Work performed:** added `20261208_ticketing_integrity.sql` with cumulative buyer-limit, event-capacity-config and ticket-capacity triggers; scoped `claim_ticket`/`register_for_tournament` to `club_id IS NULL`; filtered the legacy tournament pages; added sequential and concurrent cap/legacy tests.
+**Verification:** targeted `v3-club-tenancy` tests pass; after rebasing onto merged market lifecycle and resetting the local database, `bun run test` is 50 pass, `test:agent` 2 pass, `test:e2e` 11 passed, and build/typecheck/lint/architecture pass. Details: [`verification/2026-11-178-ticketing-integrity.md`](verification/2026-11-178-ticketing-integrity.md).
+**Learning:** A per-order cap check is not a per-buyer cap; the cumulative rule needs a transaction-boundary check on the order insert. Capacity configuration and sales need both a configuration guard and a sales-path guard.
+**Limitations:** Fault-injection and independent verification pending. The legacy compatibility pages remain for club-less tournaments. Local Kong/Docker DNS workaround remains.
+
+**Links:** issue #178 · [`verification`](verification/2026-11-178-ticketing-integrity.md) · [`findings register`](findings-register.md) · [`execution plan`](exec-plans/173-audit-remediation.md)
+
+---
+
 ## Standing rule
 
 AI may investigate, analyse, draft, implement within an approved scope, and run verification. The human retains every decision that affects business rules, architecture, schema, scope, priority, risk acceptance and merging. Contributions that cannot be verified are recorded as unverified rather than asserted.

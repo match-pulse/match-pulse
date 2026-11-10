@@ -388,12 +388,13 @@ async function dispatch(
     }
     case 'club events create': {
       const client = await getClient(profile)
+      const capacity = requiredNumber(flags, 'capacity')
       const eventId = await createClubEvent(
         client,
         required(flags, 'club'),
         required(flags, 'name'),
-        requiredNumber(flags, 'capacity'),
-        optionalNumber(flags, 'allocation') ?? 100,
+        capacity,
+        optionalNumber(flags, 'allocation') ?? capacity,
         optionalNumber(flags, 'points') ?? 0
       )
       return { eventId }

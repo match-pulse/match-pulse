@@ -36,19 +36,37 @@ Observed behaviour:
 - A v3 event registration returns `false`; the legacy event path remains covered by the MVP backend suite.
 - Existing v3 purchase, transfer, check-in, box-office, retention and security tests still pass.
 
+Full suite after rebasing onto the merged market lifecycle and resetting the local database:
+
+```text
+bun run test
+50 pass / 0 fail, 416 expect() calls
+
+bun run test:agent
+2 pass / 0 fail, 29 expect() calls
+
+bun run test:e2e
+11 passed
+
+bun run build (local .env.local)
+passed
+```
+
 ## 4. Result
 
-- Targeted v3 database tests pass.
+- Targeted, full database (50 tests), CLI (2) and E2E (11) suites pass.
 - The cumulative cap and legacy scope are implemented.
-- Full-suite, CLI, E2E and fault-injection evidence are pending the branch rebase and the evidence workstream.
+- Fault injection for the new triggers remains for the evidence workstream.
 - FND-012, FND-017 and FND-018 are implementation-complete and eligible for independent verification after merge.
 
 ## 5. Limitations
 
-- The full suite was not run on this branch because the market lifecycle PR #185 is not merged yet; it will be rebased and rerun.
+- The tests use synthetic matches/markets and a disposable local database.
 - The venue-capacity trigger is defence in depth behind the `ticket_allocation <= max_capacity` configuration rule.
 - No UI E2E specifically covers the hidden legacy forms on v3 events; the database refuses the paths regardless.
+- Fault-injection mutations for the new triggers are not added yet (FND-020 evidence work).
 - Local Kong/Docker DNS workaround remains an environment limitation.
+- The E2E run emitted pre-existing Next.js `Date.now()` prerender warnings but all 11 tests passed.
 
 ## 6. Links
 
