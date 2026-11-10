@@ -145,6 +145,7 @@ async function MarketContent({ params }: { params: Promise<{ id: string }> }) {
   const resolvedWinner = market.status === 'RESOLVED' ? market.winning_outcome : null
   const started = hasStarted(match.kickoff_time)
   const open = resolvedWinner === null && started
+  const acceptingEntries = open && match.status !== 'FINISHED'
 
   const homePrice = await marketPrice(supabase, 'HOME', b, qh, qd, qa)
   const drawPrice = await marketPrice(supabase, 'DRAW', b, qh, qd, qa)
@@ -255,6 +256,7 @@ async function MarketContent({ params }: { params: Promise<{ id: string }> }) {
           <MarketTrader
             marketId={marketId}
             open={open}
+            acceptingEntries={acceptingEntries}
             resolvedWinner={resolvedWinner}
             points={points}
             prices={prices}

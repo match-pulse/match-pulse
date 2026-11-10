@@ -84,8 +84,8 @@ erDiagram
 3. **Event and ticket setup:** club staff create a draft event, ticket types with rules, matches and an optional market; publishing requires at least one active ticket type.
 4. **Fan purchase:** a fan opens a published event, chooses a ticket type and 1–4 attendees, enters identity data, accepts the club terms and buys. The order is simulated; each ticket gets a code/QR.
 5. **Check-in and name change:** staff check in by code (idempotent); a buyer may transfer a transferable ticket to a new named attendee before the deadline.
-6. **Prediction:** once the market opens, a fan enters a points position, may exit part or all, and is subject to the entry cooldown. Retries are idempotent.
-7. **Resolution:** club staff resolve the market once; winning shares pay one point each and losing shares pay nothing.
+6. **Prediction:** once the market opens, a fan enters a points position, may exit part or all, and is subject to the entry cooldown. New entries stop when the match is `FINISHED`; exits remain available while the market is open. Retries are idempotent.
+7. **Resolution:** club staff resolve the market once after the match is `FINISHED`, using the score-derived winner; winning shares pay one point each and losing shares pay nothing.
 8. **Rewards:** a fan redeems points for a club reward if they have a ticket for that club; the code is local and simulated.
 9. **Insights:** club staff/analysts read aggregate prediction choices and engagement for their own events; cohorts below 5 are suppressed and no attendee identity is included. `ELITE` can export CSV.
 10. **Admin and retention:** the platform admin manages clubs/plans and reviews audit. A service-role cleanup removes attendee identity from past-event tickets after the retention window.
@@ -98,12 +98,12 @@ This is a summary. The [registry](../methodology/checkpoint-A/02-invariants.md) 
 | :--- | :--- | :--- |
 | Tournament capacity is never exceeded under concurrency; the stored counter matches stored rows | `register_for_tournament` + CHECK constraints | **Verified** (INV-01, fault-injected, CI) |
 | A participant cannot register twice for a tournament | Unique constraint + idempotent refusal | **Verified** (INV-02, fault-injected, CI) |
-| Trading opens only at kickoff and stops at resolution | Market window guard in `open_trade` / `close_trade` | **Verified** (M-INV1, fault-injected) |
+| Trading opens at kickoff; new entries stop at `FINISHED`; exits remain available until resolution | Market-window and prediction-enabled triggers on `market_trades`; `open_trade` / `close_trade` | **Enforced, unverified by fault injection** (M-INV1; targeted tests pass, independent verification pending) |
 | Entry/exit, position, balance and trade log succeed or fail together | Single database transaction | **Verified by forced-failure rollback** (M-INV2) |
 | Cannot sell shares not held; holdings never negative | Position guard | **Verified** (M-INV3, fault-injected) |
 | Balance never negative, including concurrent same-user requests | Profile row lock + conditional debit | **Verified** (M-INV4, fault-injected) |
 | Sum of held shares equals the market's outstanding quantity | Transactional state update | **Verified** (M-INV5, fault-injected) |
-| Resolution pays exactly one point per winning share, once, terminally | `resolve_market` | **Verified** (M-INV6, fault-injected) |
+| Resolution pays exactly one point per winning share, once, terminally, and only for the score-derived winner after `FINISHED` | `resolve_market` + result-binding trigger | **Enforced, unverified by fault injection** (M-INV6; targeted tests pass, independent verification pending) |
 | Entry cooldown ladder and decay; exits never restricted | `open_trade` cooldown gate | **Verified** (M-INV7, fault-injected) |
 | No commission on entry, exit or settlement | No fee path; exact payout formulas | **Verified** (M-INV8, fault-injected) |
 | A caller must be a real auth user; a fan acts only on their own rows | Supabase Auth, RLS, `auth.uid()` | **Verified** (INV-05, A-INV1–A-INV2) |

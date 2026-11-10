@@ -48,6 +48,12 @@ function describeTradeError(message: string): string {
   if (message.includes('market has not opened')) {
     return 'The market opens at kickoff.'
   }
+  if (message.includes('market is closed')) {
+    return 'The market is closed because the match is finished.'
+  }
+  if (message.includes('predictions are not enabled')) {
+    return 'Predictions are disabled for this match.'
+  }
   if (message.includes('market is not open')) {
     return 'This market is no longer open.'
   }

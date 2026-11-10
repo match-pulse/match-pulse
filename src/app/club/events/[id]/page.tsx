@@ -350,7 +350,13 @@ export default async function ClubEventPage({ params, searchParams }: PageProps)
                 </button>
               </form>
 
-              {match.market_id && match.market_status === 'OPEN' && (
+              {match.market_id && match.market_status === 'OPEN' && match.status !== 'FINISHED' && (
+                <p className="mt-3 text-sm text-slate-400">
+                  Market resolution is available after the match is FINISHED.
+                </p>
+              )}
+
+              {match.market_id && match.market_status === 'OPEN' && match.status === 'FINISHED' && (
                 <form action={resolveMarketAction} className="mt-3 flex flex-wrap items-end gap-2 text-sm text-slate-300">
                   <input type="hidden" name="eventId" value={id} />
                   <input type="hidden" name="marketId" value={match.market_id} />

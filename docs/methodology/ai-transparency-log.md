@@ -934,6 +934,22 @@ Secret hygiene re-verified: `release.env` in history contains only `APP_VERSION`
 
 ---
 
+## Entry 53 — Result-bound market lifecycle
+
+**Date:** 2026-11-10
+**Tool:** opencode CLI (`deepseek-v4.1-flash`)
+**Intent:** Close FND-011 and FND-014 from the v3.0.0 audit.
+**Boundary:** New trigger migration, market/event UI, CLI test, fixtures, ADR-011, domain model, invariant registry, agent playbook and verification record. No payment, ticket or entitlement changes.
+**Prior records reviewed:** audit AUD-003/AUD-006; FND-011/FND-014; M-INV1/M-INV6; ADR-002; execution plan #173.
+**Work performed:** added `20261207_market_result_binding.sql` with triggers for the entry window, score-bound resolution, match-result integrity and BUY-only prediction gating; updated the market page and trader to close entries while preserving exits; showed the resolve form only after `FINISHED`; added `finishMatch` fixture and lifecycle tests; added ADR-011 and updated the domain model/invariant registry/playbook.
+**Verification:** `bun test --env-file=.env.local tests/invariants/market-lifecycle.test.ts` — 9 pass / 0 fail. `bun test --env-file=.env.local tests/integration/mvp-backend.test.ts` — 8 pass / 0 fail. `bun run typecheck`, `lint`, `build` and `check:architecture` passed. Full suite/E2E and independent verification remain pending. Details: [`verification/2026-11-175-market-lifecycle.md`](verification/2026-11-175-market-lifecycle.md).
+**Learning:** The result is public at full time, so "until resolution" is not a safe entry window. Exits and entries need different gates: a finished match closes buying but must not trap holders. Triggers enforce the rule on every mutation path and keep the check close to the data.
+**Limitations:** Fault injection for the new triggers is not added yet; full suite/E2E and independent verification are pending. Local Docker/Kong workaround remains.
+
+**Links:** issue #175 · PR [#185](https://github.com/match-pulse/match-pulse/pull/185) · [`ADR-011`](../architecture/adr/011-result-bound-market-lifecycle.md) · [`verification`](verification/2026-11-175-market-lifecycle.md) · [`findings register`](findings-register.md) · [`execution plan`](exec-plans/173-audit-remediation.md)
+
+---
+
 ## Standing rule
 
 AI may investigate, analyse, draft, implement within an approved scope, and run verification. The human retains every decision that affects business rules, architecture, schema, scope, priority, risk acceptance and merging. Contributions that cannot be verified are recorded as unverified rather than asserted.

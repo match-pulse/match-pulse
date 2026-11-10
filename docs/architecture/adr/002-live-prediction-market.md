@@ -52,6 +52,8 @@ The domain still requires correctness under concurrency: balances and holdings n
 
 **Addendum 2026-11-08:** entry and exit are now idempotent. `open_trade`/`close_trade` accept an optional request ID and claim a `trade_requests` row before the trade; a completed request replays the recorded trade, and a different payload with the same key is refused. The request and trade commit or roll back together. The pricing, position, cooldown and settlement rules in this ADR are unchanged. See [M-INV9](../../methodology/checkpoint-A/02-invariants.md) and the [execution plan](../../methodology/exec-plans/107-idempotent-trades.md).
 
+**Addendum 2026-11-10:** the statement that market status alone decides whether trades are accepted is superseded by [ADR-011](./011-result-bound-market-lifecycle.md). Entries now stop when the match is `FINISHED`; exits remain available until resolution; resolution requires a finished match and the score-derived winner. This closes AUD-003/AUD-006 from the v3.0.0 audit.
+
 ## Related
 
 - [`../../methodology/exec-plans/live-prediction-market.md`](../../methodology/exec-plans/live-prediction-market.md) — approved execution plan
