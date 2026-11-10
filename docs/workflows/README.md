@@ -4,7 +4,7 @@
 
 This folder defines the operating contracts for an iterative, human-governed, agent-assisted software engineering process. The workflows are complementary: some define how work enters and moves through the lifecycle; others coordinate agents or provide cross-cutting quality, recordkeeping, and operational controls.
 
-The human developer remains the sole decision owner. An AI recommendation is not an approval, and a completed agent task is not accepted until the required human decisions and evidence are recorded.
+The working style is deliberately agile: small end-to-end slices, one implementation slice in progress at a time, feedback before the next commitment, working evidence over document volume, and just-in-time documentation. The human developer remains the sole decision owner. An AI recommendation is not an approval, and a completed agent task is not accepted until the required human decisions and evidence are recorded.
 
 ## Repository Integration
 

@@ -1,52 +1,66 @@
 # Test Strategy
 
-- **Status:** Current for v3.0.0 (2026-11-09).
-- **Related:** [Agent playbook](../testing/agent-playbook.md), [capability manifest](../testing/capabilities.md), [invariant registry](checkpoint-A/02-invariants.md), [execution plan](exec-plans/153-v3-club-subscriptions.md).
+The strategy is invariant-first and risk-first. The goal is not coverage; it is
+evidence that a specific rule holds and can fail when the rule is broken.
 
 ## 1. Layers
 
-| Layer | What it proves | Tooling |
+| Layer | What it checks | Where |
 | :--- | :--- | :--- |
-| Unit | Pure pricing, cooldown, validation and formatting | `bun test` |
-| Database invariants | Capacity, uniqueness, points, market lifecycle, idempotency, resolution | `tests/invariants/`, real PostgreSQL |
-| Tenancy and authorization | Club isolation, role matrix, entitlements, attendee identity, privacy, admin audit | `tests/integration/v3-club-tenancy.test.ts` |
-| Nominal ticketing | Buyer vs attendee, max four, fan card, transfer, check-in, box office, retention | `tests/integration/v3-club-tenancy.test.ts` |
-| CLI contract | Command parity, JSON, exit codes, profiles, match-day and refusal scenarios | `tests/agent/cli.test.ts`, `bun run test:agent` |
-| E2E and accessibility | Fan sign-up/purchase, club dashboard/event page, admin console, organizer and legacy journeys; serious/critical axe | `tests/e2e/`, Playwright + axe |
-| Performance | 20/50/100 concurrent registration bursts; p50/p95/p99, errors | `scripts/performance.ts`, performance workflow |
-| Delivery/recovery | Build, start, health, smoke, backup/restore | `Delivery and recovery` CI job |
-| Fault injection | Observed-red mutation evidence for the market invariants | `bun run fault:inject` |
-| Retention | Old vs recent attendee identity, audit and authenticated denial | `tests/integration/v3-club-tenancy.test.ts` |
+| Unit | Pure rules, CSV safety, error mapping | `tests/unit/` |
+| Domain invariants | Capacity, uniqueness, pricing, lifecycle, concurrency, idempotency, authorization | `tests/invariants/` |
+| Integration | v3 club tenancy, nominal ticketing, plans, retention, admin | `tests/integration/` |
+| CLI agent | Match-day journey and refusal cases | `tests/agent/` |
+| E2E and accessibility | Fan purchase, club/admin pages, axe checks | `tests/e2e/` |
+| Fault injection | A deliberate mutation makes the targeted test fail | `tests/fault-injection/`, `scripts/fault-injection.ts` |
+
+The invariant suites use authenticated user clients for the real mutation path
+and a local service-role client for setup and committed-state reads. The service
+role is not an application runtime credential.
 
 ## 2. Coverage rule
 
-- Every critical invariant, role boundary, club-scoped read and entitlement gate has executable evidence.
-- Every customer capability in the [manifest](../testing/capabilities.md) has a CLI command and, where applicable, an E2E/axe check.
-- Every role journey has at least one browser or CLI scenario.
-- Pure logic targets 80% line/branch coverage where meaningful.
-- Coverage is a map, not a verdict.
+Every **critical invariant** needs:
+
+1. a statement of the rule independent of the implementation;
+2. a database-backed test against the real schema;
+3. an assertion on committed state, not only the response;
+4. an observed-red fault injection, or an explicit record of why it cannot be
+   observed-red;
+5. a verification record with the environment and the limit.
+
+A test that has only passed is not evidence. A test that can only pass is not
+evidence either. The v3.1.0 audit corrected several claims that were broader than
+the tests (FND-020).
 
 ## 3. Gates
 
-- **PR:** static checks, secret scan, dependency audit, database invariants, CLI agent scenarios, E2E, serious/critical accessibility, delivery/recovery and fault injection.
-- **Scheduled/manual:** performance baseline.
-- **Release:** all gates green, known limits recorded, tag/Release approved by the human owner.
+CI runs five jobs on every pull request:
+
+- lint, typecheck, build, architecture guard, secret scan and dependency audit;
+- domain invariants and CLI scenarios;
+- delivery, health, smoke and public-schema backup/restore;
+- fault injection, 27 entries;
+- Playwright journeys and axe checks.
+
+A green gate is evidence, not approval. The human owner authorizes the merge.
 
 ## 4. Current evidence
 
-| Suite | Observed |
-| :--- | ---: |
-| Database/application | 42 pass / 0 fail |
-| CLI agent scenarios | 2 pass / 0 fail |
-| Playwright/axe | 11 passed |
-| Fault injection | 11 expected results |
+Last recorded: 57 database/application tests, 2 CLI scenarios, 11 Playwright
+journeys, 27/27 fault-injection entries expected. The one exception is M-INV2:
+transaction atomicity is verified by a forced insert failure, not an observed-red
+mutation, because PostgreSQL function atomicity cannot be broken in one
+connection. See the
+[remediation verification](../methodology/verification/2026-11-173-audit-remediation.md)
+and the
+[fault-injection verification](../methodology/verification/2026-11-181-fault-injection.md).
 
 ## 5. Limits
 
-- Local/CI, one database instance; no production load or multi-instance behaviour.
-- No real payment provider, financial KYC, invoice/refund or settlement.
-- Accessibility gate blocks serious and critical WCAG A/AA violations, not moderate/minor.
-- Some v3 UI paths (invite acceptance, fan rewards, export) are covered by database/CLI tests rather than a dedicated browser journey.
-- No seat maps, wallet passes, turnstile hardware or FIGC/Questura integration.
-- Performance results are environment-specific and not a release gate.
-- FND-007 real-user evidence and FND-008 independent review require human action.
+- Local/CI only; one database instance.
+- No production load, multi-instance or network-failure test.
+- No independent test author. AI-generated tests can share assumptions with
+  AI-generated code; the oracle and the observed-red injections reduce that risk.
+- E2E and accessibility are not exhaustive; the axe gate blocks serious and
+  critical violations, not every minor issue.

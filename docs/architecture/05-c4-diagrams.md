@@ -1,20 +1,16 @@
-# MatchPulse — C4 Diagrams
+# MatchPulse — C4 Views
 
-> **How to read this document.** Four C4 views, written in Mermaid so they render
-> from the repository. They describe the v3.0.0 prototype: club tenancy, nominal
-> ticketing, prediction insights and the CLI. Elements that do not exist are
-> labelled **Planned**. The code and [code map](./04-code-map.md) remain
-> authoritative.
+Four views of the current prototype. The code and
+[code map](./04-code-map.md) remain authoritative. Elements that do not exist are
+not drawn.
 
 ## Level 1 — System context
 
-Who uses MatchPulse and which external systems it depends on.
-
 ```mermaid
 C4Context
-  title MatchPulse — System Context
+  title MatchPulse — system context
 
-  Person(fan, "Football fan", "Buys nominal tickets and predicts across clubs")
+  Person(fan, "Football fan", "Buys tickets and predicts across clubs")
   Person(staff, "Club staff", "Owns events, tickets, attendees and insights")
   Person(admin, "Platform admin", "Manages clubs, plans and audit")
   Person(ops, "Operator", "Runs the CLI, retention and recovery checks")
@@ -23,7 +19,7 @@ C4Context
   System_Ext(supabase, "Supabase", "PostgreSQL, Auth, REST API and local Docker")
 
   Rel(fan, matchpulse, "Signs up, buys tickets and predicts")
-  Rel(staff, matchpulse, "Manages the club and resolve markets")
+  Rel(staff, matchpulse, "Manages the club and resolves markets")
   Rel(admin, matchpulse, "Manages plans and audit")
   Rel(ops, matchpulse, "Runs maintenance and the CLI")
   Rel(matchpulse, supabase, "Reads, writes and verifies identity")
@@ -33,11 +29,9 @@ C4Context
 
 ## Level 2 — Containers
 
-The deployable/runtime pieces inside MatchPulse.
-
 ```mermaid
 C4Container
-  title MatchPulse — Containers
+  title MatchPulse — containers
 
   Person(fan, "Football fan", "Buys tickets and predicts")
   Person(staff, "Club staff", "Manages events and attendees")
@@ -45,13 +39,13 @@ C4Container
 
   Container_Boundary(app, "MatchPulse") {
     Container(browser, "Web browser", "React 19", "Renders pages and submits forms")
-    Container(web, "Next.js application", "Next.js 16, Bun", "App Router pages, Server Actions, v3 member UI and auth proxy")
+    Container(web, "Next.js application", "Next.js 16, Bun", "App Router pages, Server Actions, auth proxy")
     Container(cli, "matchpulse CLI", "Bun, TypeScript", "JSON command client for fans, clubs, admin and agents")
-    Container(domain, "Shared domain contract", "TypeScript", "Typed wrappers and error mapping used by the web and CLI")
+    Container(domain, "Shared domain contract", "TypeScript", "Typed wrappers and error mapping used by web and CLI")
   }
 
   Container(auth, "Supabase Auth", "GoTrue", "Email/password identity and sessions")
-  ContainerDb(db, "PostgreSQL", "Supabase Postgres 17", "Clubs, plans, tickets, markets, RLS and RPCs")
+  ContainerDb(db, "PostgreSQL", "Supabase Postgres 17", "Clubs, tickets, markets, RLS and RPCs")
 
   Rel(fan, browser, "Uses")
   Rel(staff, browser, "Uses")
@@ -68,55 +62,48 @@ C4Container
   UpdateLayoutConfig($c4ShapeInRow="2", $c4BoundaryInRow="1")
 ```
 
-There is one application container and one CLI. Server Components, Server
-Actions and the shared domain wrappers run in the Next.js container; the CLI
-uses the same wrappers and the same anon-key/user-session boundary. The browser
-does not query the database directly. All users use email/password; the service
-role is an operator/fixture credential outside the application runtime.
+There is one application container and one CLI. The browser does not query the
+database directly. All users use email/password; the service role is an
+operator/fixture credential outside the application runtime.
 
 ## Level 3 — Market trading components
 
-The components that implement the market path.
-
 ```mermaid
 C4Component
-  title MatchPulse — Market Trading Components
+  title MatchPulse — market trading components
 
   Container_Boundary(web, "Next.js application") {
     Component(page, "Market page", "React Server Component", "Loads the market, prices and recent trades")
     Component(trader, "MarketTrader", "React Client Component", "Entry and exit forms")
     Component(actions, "Market actions", "Server Actions", "Validates input and calls the shared domain")
     Component(domain, "Domain contract", "TypeScript", "Typed open/close/resolve wrappers and error mapping")
-    Component(session, "Session seam", "TypeScript", "getCurrentUser()/requireUser() — Supabase Auth session")
+    Component(session, "Session seam", "TypeScript", "getCurrentUser()/requireUser()")
     Component(client, "Supabase server client", "@supabase/ssr", "Cookie-based anon-key client")
   }
 
   Container(auth, "Supabase Auth", "GoTrue", "Identity and sessions")
   ContainerDb(db, "PostgreSQL", "Supabase Postgres 17", "Domain tables, RLS, grants and functions")
 
-  Rel(trader, actions, "")
-  Rel(page, client, "")
-  Rel(actions, domain, "")
-  Rel(actions, session, "")
-  Rel(domain, client, "")
-  Rel(client, auth, "")
-  Rel(client, db, "")
+  Rel(trader, actions, "Submits")
+  Rel(page, client, "Reads")
+  Rel(actions, domain, "Calls")
+  Rel(actions, session, "Resolves caller")
+  Rel(domain, client, "Calls")
+  Rel(client, auth, "Authenticates")
+  Rel(client, db, "Reads and calls RPCs")
 
   UpdateLayoutConfig($c4ShapeInRow="3", $c4BoundaryInRow="1")
 ```
 
-`resolve_market` is club-aware: a club `OWNER`/`ADMIN`/`STAFF` may resolve a
-club market, while the legacy organizer rule remains for non-club markets. The
-CLI exposes `club predictions resolve` for agents.
+`resolve_market` is club-aware: a club `OWNER`/`ADMIN`/`STAFF` may resolve a club
+market; the legacy organizer rule remains for non-club markets. The CLI exposes
+`club predictions resolve`.
 
-## Level 3 — Club, ticketing and admin components
-
-The components that implement club onboarding, nominal ticketing and the admin
-console.
+## Level 3 — Club and ticketing components
 
 ```mermaid
 C4Component
-  title MatchPulse — Club and Ticketing Components
+  title MatchPulse — club and ticketing components
 
   Container_Boundary(web, "Next.js application") {
     Component(clubDashboard, "Club dashboard", "React Server Component", "Plan, members, events, rewards and insights")
@@ -130,13 +117,13 @@ C4Component
   ContainerDb(db, "PostgreSQL", "Supabase Postgres 17", "Clubs, plans, ticket orders, attendees, RLS and RPCs")
   Container(auth, "Supabase Auth", "GoTrue", "Email/password identity")
 
-  Rel(clubDashboard, domain, "")
-  Rel(eventPage, domain, "")
-  Rel(checkout, actions, "")
-  Rel(adminPage, domain, "")
-  Rel(actions, domain, "")
-  Rel(domain, auth, "")
-  Rel(domain, db, "")
+  Rel(clubDashboard, domain, "Reads")
+  Rel(eventPage, domain, "Reads and calls")
+  Rel(checkout, actions, "Submits")
+  Rel(adminPage, domain, "Reads and calls")
+  Rel(actions, domain, "Calls")
+  Rel(domain, auth, "Authenticates")
+  Rel(domain, db, "Reads and calls RPCs")
 
   UpdateLayoutConfig($c4ShapeInRow="3", $c4BoundaryInRow="1")
 ```

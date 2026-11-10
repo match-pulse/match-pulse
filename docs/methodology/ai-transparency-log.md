@@ -1127,6 +1127,22 @@ Secret hygiene re-verified: `release.env` in history contains only `APP_VERSION`
 
 ---
 
+## Entry 70 — Course submission brief rewrite (issue #217)
+
+**Date:** 2026-11-10
+**Tool:** opencode CLI (`deepseek-v4.1-flash`)
+**Intent:** Make the CM0639 submission documents match the course deliverables and timeboxes, with detail moved to linked records.
+**Boundary:** Course-facing documentation, checklist pages, submission index and PDF export script. No product, schema, authorization or runtime change. Issues #217 (parent), #218 (Development Methodologies), #219 (verification), #220 (Software Architectures). Branch `docs/217-course-submission-brief`.
+**Prior records reviewed:** findings register (no open documentation-length finding); SA L04/L07 and DM L04/L08/L12 transcripts/slides; `Project_Handbook.md`; old architecture reports and checkpoint folders; invariant, delivery and fault-injection verification records; full AI log.
+**Work performed:** replaced the kata with a one-page broad R1–R8 brief and a 108-word one-minute pitch, plus a separate detailed requirement register; cut the characteristics document to selection, traceability and quantified targets; cut the architecture description to a three-minute walkthrough with code references; cut checkpoints A–E to one page each; replaced the long methodology report with a one-page Markdown index; kept a one-page AI-use summary; updated the PDF exporter to produce 1+2+3+5 pages.
+**Verification:** link check 0 broken across the rewritten files; `bun run docs:pdf` produced kata 1 page, characteristics 2, architecture 3, methodology checkpoints 5; `bun run lint`, `bunx next typegen && bun run typecheck`, `bun run check:architecture` and `git diff --check` passed. No build, database, E2E or fault-injection run was performed because only documentation and the export script changed.
+**Learning:** The course artifacts are summaries with a timebox, not evidence dumps. The kata is a one-page problem brief; broad R requirements keep it explainable, while the detailed register preserves traceability. The checkpoints become usable when each is one page and three minutes.
+**Limitations:** No independent review; the course D/E materials are not available, so those pages answer the stated focus rather than a known rubric. At the time of this entry, the branch had no commit, push or pull request.
+
+**Links:** issue #217 · sub-issues [#218](https://github.com/match-pulse/match-pulse/issues/218), [#219](https://github.com/match-pulse/match-pulse/issues/219), [#220](https://github.com/match-pulse/match-pulse/issues/220) · [`course package`](../course/README.md) · [`submissions`](../submissions/README.md) · [`verification`](verification/2026-11-10-217-course-submission-brief.md)
+
+---
+
 ## Standing rule
 
 AI may investigate, analyse, draft, implement within an approved scope, and run verification. The human retains every decision that affects business rules, architecture, schema, scope, priority, risk acceptance and merging. Contributions that cannot be verified are recorded as unverified rather than asserted.
