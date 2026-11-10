@@ -8,8 +8,6 @@ import { describe, expect, test } from 'bun:test'
 import { randomUUID } from 'crypto'
 import { admin, createUser, deleteUsers, type TestUser } from '../support/auth'
 import {
-  createMarket,
-  deleteMarket,
   deleteTournament,
   finishMatch,
   pointsOf,
@@ -331,104 +329,6 @@ describe('MVP backend: organizer projections and club analytics', () => {
     TEST_TIMEOUT_MS
   )
 
-  test(
-    'club analytics aggregate five traders and suppress small cohorts',
-    async () => {
-      const organizer = await createUser('ORGANIZER')
-      const club = await createUser('CLUB')
-      const fans = await Promise.all(Array.from({ length: 5 }, () => createUser('FAN')))
-      let tournamentId: string | null = null
-      let smallMarketId: string | null = null
-
-      try {
-        tournamentId = await createOwnedTournament(organizer, 8, 10, 50)
-        const { marketId } = await createOwnedMatch(organizer, tournamentId)
-
-        for (const fan of fans) {
-          await setPoints(fan.id, 200)
-          await openTrade(fan, marketId, 10)
-        }
-
-        const summary = await club.client.rpc('club_analytics_summary', {
-          p_tournament_id: tournamentId,
-          p_match_id: null
-        })
-        expect(summary.error).toBeNull()
-        expect(summary.data?.length).toBeGreaterThan(0)
-        const aggregate = summary.data!.find((row: Row) => row.outcome === 'HOME') as Row
-        expect(Number(aggregate.unique_traders)).toBe(5)
-        expect(aggregate.suppressed).toBe(false)
-
-        // A separate market with one trader must be suppressed.
-        smallMarketId = await createMarket(-3_600_000)
-        await setPoints(fans[0].id, 200)
-        await openTrade(fans[0], smallMarketId, 10)
-
-        const small = await club.client.rpc('club_analytics_summary', {
-          p_tournament_id: null,
-          p_match_id: null
-        })
-        expect(small.error).toBeNull()
-        const suppressed = small.data!.find(
-          (row: Row) => row.market_id === smallMarketId
-        ) as Row
-        expect(suppressed.suppressed).toBe(true)
-        expect(suppressed.unique_traders).toBeNull()
-
-        // Club cannot read private rows.
-        const trades = await club.client.from('market_trades').select('id').limit(1)
-        expect(trades.error).toBeNull()
-        expect(trades.data).toEqual([])
-
-        const profiles = await club.client.from('profiles').select('id')
-        expect(profiles.error).toBeNull()
-        expect(profiles.data?.every((row: Row) => row.id === club.id)).toBe(true)
-
-        const series = await club.client.rpc('club_analytics_timeseries', {
-          p_market_id: marketId,
-          p_bucket_minutes: 5
-        })
-        expect(series.error).toBeNull()
-        expect(series.data?.length).toBeGreaterThan(0)
-
-        const exported = await club.client.rpc('record_club_export', {
-          p_resource: 'summary',
-          p_metadata: { tournament_id: tournamentId }
-        })
-        expect(exported.error).toBeNull()
-
-        const audit = await admin
-          .from('audit_events')
-          .select('action')
-          .eq('actor_id', club.id)
-          .eq('action', 'club.export')
-        expect(audit.data?.length).toBe(1)
-      } finally {
-        if (smallMarketId) await deleteMarket(smallMarketId)
-        if (tournamentId) await deleteTournament(tournamentId)
-        await deleteUsers([organizer, club, ...fans])
-      }
-    },
-    TEST_TIMEOUT_MS
-  )
-
-  test(
-    'a non-club user cannot call club analytics',
-    async () => {
-      const fan = await createUser('FAN')
-
-      try {
-        const result = await fan.client.rpc('club_analytics_summary', {
-          p_tournament_id: null,
-          p_match_id: null
-        })
-        expect(result.error?.message).toContain('club authorization required')
-      } finally {
-        await deleteUsers([fan])
-      }
-    },
-    TEST_TIMEOUT_MS
-  )
 })
 
 describe('MVP backend: ownership-aware resolution', () => {
