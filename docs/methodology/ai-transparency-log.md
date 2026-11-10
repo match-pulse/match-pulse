@@ -930,7 +930,7 @@ Secret hygiene re-verified: `release.env` in history contains only `APP_VERSION`
 **Learning:** The legacy organizer policies survived the v3 RLS migration because the new policies were additive; policy review must include `DROP POLICY`, not only new `CREATE POLICY` statements. Local Docker 29 exposed a Kong 2.8.1 DNS-resolution issue; the running Kong config was patched to container IPs for this session and the local stack limitation is recorded.
 **Limitations:** The verification is implementer-authored; independent verification and the PR link are pending. The local Kong workaround is an environment issue, not an application fix. E2E, fault injection and smoke remain for the campaign final gate. FND-007/FND-008 remain open.
 
-**Links:** issue #174 · [`verification`](verification/2026-11-174-security-boundary.md) · [`findings register`](findings-register.md) · [`execution plan`](exec-plans/173-audit-remediation.md)
+**Links:** issue #174 · PR [#184](https://github.com/match-pulse/match-pulse/pull/184) · [`verification`](verification/2026-11-174-security-boundary.md) · [`findings register`](findings-register.md) · [`execution plan`](exec-plans/173-audit-remediation.md)
 
 ---
 

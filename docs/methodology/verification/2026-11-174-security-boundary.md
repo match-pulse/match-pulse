@@ -1,7 +1,7 @@
 # Verification Record — Security Boundary
 
 - **Issue:** [#174](https://github.com/match-pulse/match-pulse/issues/174)
-- **PR:** Pending
+- **PR:** [#184](https://github.com/match-pulse/match-pulse/pull/184)
 - **Date:** 2026-11-10
 - **Environment:** Local Fedora 44; Node 22.23.1; Bun 1.4.2; Docker CE 29.9.3; local Supabase PostgreSQL 17.11
 - **Status:** Partially verified — implementer evidence; independent verification pending
@@ -71,7 +71,7 @@ Environment note: `supabase start` health checks returned 502 for the REST and e
 ## 6. Links
 
 - Issue: [#174](https://github.com/match-pulse/match-pulse/issues/174)
-- PR: Pending
+- PR: [#184](https://github.com/match-pulse/match-pulse/pull/184)
 - Execution plan / audit / refactor / incident record: [v3 audit](../audits/2026-11-10-171-v3-audit.md), [execution plan](../exec-plans/173-audit-remediation.md)
 - Findings register: FND-009, FND-010, FND-022
 - AI transparency entry: Entry 52
@@ -79,4 +79,4 @@ Environment note: `supabase start` health checks returned 502 for the REST and e
 
 ## 7. Addenda
 
-Pending independent verification and PR link.
+2026-11-10: PR [#184](https://github.com/match-pulse/match-pulse/pull/184) opened. Independent verification and CI results are pending.
