@@ -33,17 +33,17 @@ These are verified by `tests/integration/v3-club-tenancy.test.ts`, the CLI suite
 | :--- | :--- | :--- | :--- |
 | **T-INV1** | A club member cannot read or mutate another club's events, orders, attendees, tickets, members or insights. | Club-scoped RLS + `is_club_member`/`has_club_role` in RPCs. | **Verified.** Cross-club attendee/order/insight refusals; CLI denial. |
 | **T-INV2** | Club roles are enforced: `OWNER` > `ADMIN` > `STAFF` > `ANALYST`; an `ANALYST` is read-only and cannot read attendee identity. | Role checks in membership/event/ticket/analytics RPCs. | **Verified.** Role matrix tests and attendee denial. |
-| **T-INV3** | Only an `ACTIVE` subscription grants entitlements; plan limits are enforced and serialised. | `has_entitlement`/`entitlement_limit`; `require_entitlement` and subscription row locks in invite/accept/event-create. | **Enforced, unverified by independent verification.** Canceled and concurrent-limit tests pass; full-suite/fault-injection evidence pending. |
-| **T-INV4** | A buyer may buy 1–4 named tickets; each requires identity data and terms acceptance; the maximum per buyer is enforced cumulatively per event across orders and channels. | `purchase_ticket` transaction + `ticket_orders_buyer_limit` trigger + attendee validation. | **Enforced, unverified by independent verification.** Sequential and concurrent cumulative-cap tests pass; full-suite/fault-injection evidence pending. |
-| **T-INV5** | Ticket sales never exceed the event `max_capacity`, the event `ticket_allocation` or the ticket-type allocation; a club event cannot configure allocation above capacity. | Ticket type/event locks + counts; `tournaments_capacity_config` and `tickets_capacity_guard` triggers. | **Enforced, unverified by independent verification.** Oversized-allocation and purchase-capacity tests pass; full-suite/fault-injection evidence pending. |
+| **T-INV3** | Only an `ACTIVE` subscription grants entitlements; plan limits are enforced and serialised. | `has_entitlement`/`entitlement_limit`; `require_entitlement` and subscription row locks in invite/accept/event-create. | **Enforced, fault-injected; independent verification pending.** Canceled and concurrent-limit tests pass; `t-inv3-entitlement` fails the suite when removed. |
+| **T-INV4** | A buyer may buy 1–4 named tickets; each requires identity data and terms acceptance; the maximum per buyer is enforced cumulatively per event across orders and channels. | `purchase_ticket` transaction + `ticket_orders_buyer_limit` trigger + attendee validation. | **Enforced, fault-injected; independent verification pending.** Sequential and concurrent cumulative-cap tests pass; `t-inv4-buyer-cap` is observed red. |
+| **T-INV5** | Ticket sales never exceed the event `max_capacity`, the event `ticket_allocation` or the ticket-type allocation; a club event cannot configure allocation above capacity. | Ticket type/event locks + counts; `tournaments_capacity_config` and `tickets_capacity_guard` triggers. | **Enforced, partly fault-injected; independent verification pending.** Oversized-allocation and purchase-capacity tests pass; `t-inv5-capacity-config` is observed red. The sales-path trigger is defence in depth and is not separately mutated. |
 | **T-INV6** | Purchase and check-in are idempotent; a second check-in does not create duplicate attendance. | Request id + unique order; ticket code check-in guard. | **Verified.** Retry and second-check-in tests; CLI. |
 | **T-INV7** | Fan-card, transferability, transfer-deadline, away-sector and box-office rules are enforced. | Ticket type rules + attendee validation + channel check. | **Verified.** Fan-card refusal/success, transfer, box office. |
-| **T-INV8** | Clubs see aggregate prediction data only; each outcome/time-bucket cohort below 5 is suppressed; no attendee identity is included. | `club_prediction_insights`/`club_prediction_timeseries` outcome/bucket counts and suppression; CSV aggregate. | **Enforced, unverified by independent verification.** 5-total skewed-cohort boundary test passes; full-suite/fault-injection evidence pending. |
+| **T-INV8** | Clubs see aggregate prediction data only; each outcome/time-bucket cohort below 5 is suppressed; no attendee identity is included. | `club_prediction_insights`/`club_prediction_timeseries` outcome/bucket counts and suppression; CSV aggregate. | **Enforced, fault-injected; independent verification pending.** 5-total skewed-cohort boundary test passes; `t-inv8-cohort-suppression` is observed red. |
 | **T-INV9** | The platform admin is scoped and audited; no impersonation or fan-point override. | Separate `platform_admins`, scoped RPCs, audit rows. | **Verified.** Admin plan assignment/audit; owner denial. |
-| **T-INV10** | Attendee identity is removable after the retention window from tickets, transfer history, fan-card audit metadata and invitation emails without losing ticket/order/audit; recent identity remains. | `cleanup_expired_attendee_data`, service-role only; future fan-card audit stores card ID only. | **Enforced, unverified by independent verification.** Transferred old ticket, audit-card and invite retention tests pass; full-suite/fault-injection evidence pending. |
-| **T-INV11** | Legacy claim and registration paths are available only for tournaments with no club; v3 club events use nominal ticketing. | `claim_ticket`/`register_for_tournament` club guard; legacy fan pages filter to `club_id IS NULL`. | **Enforced, unverified by independent verification.** V3 claim refusal and registration refusal tests pass; legacy path covered by the MVP backend suite; full-suite evidence pending. |
-| **T-INV12** | Reward redemption requires a request key; the same key and payload replays the recorded code without a second debit, and a different payload is refused. | `reward_redemptions` request key/index; `redeem_reward` reward → profile → replay → eligibility → debit lock order. | **Enforced, unverified by independent verification.** Replay, payload-mismatch and concurrent-duplicate tests pass; full-suite evidence pending. |
-| **T-INV13** | A ticket request key replays only when the attendee payload, channel, buyer, ticket type and quantity match; a changed payload is refused. | `ticket_orders.payload_hash` persisted on the first request; `purchase_ticket` compares it on replay. | **Enforced, unverified by independent verification.** Identical-payload replay and changed-payload refusal tests pass; full-suite evidence pending. |
+| **T-INV10** | Attendee identity is removable after the retention window from tickets, transfer history, fan-card audit metadata and invitation emails without losing ticket/order/audit; recent identity remains. | `cleanup_expired_attendee_data`, service-role only; future fan-card audit stores card ID only. | **Enforced, fault-injected; independent verification pending.** Transferred old ticket, audit-card and invite retention tests pass; the transfer, audit and invite mutations are observed red. |
+| **T-INV11** | Legacy claim and registration paths are available only for tournaments with no club; v3 club events use nominal ticketing. | `claim_ticket`/`register_for_tournament` club guard; legacy fan pages filter to `club_id IS NULL`. | **Enforced, fault-injected; independent verification pending.** V3 claim refusal and registration refusal tests pass; both mutations are observed red; legacy path covered by the MVP backend suite. |
+| **T-INV12** | Reward redemption requires a request key; the same key and payload replays the recorded code without a second debit, and a different payload is refused. | `reward_redemptions` request key/index; `redeem_reward` reward → profile → replay → eligibility → debit lock order. | **Enforced, fault-injected; independent verification pending.** Replay, payload-mismatch and concurrent-duplicate tests pass; `t-inv12-reward-replay` is observed red. |
+| **T-INV13** | A ticket request key replays only when the attendee payload, channel, buyer, ticket type and quantity match; a changed payload is refused. | `ticket_orders.payload_hash` persisted on the first request; `purchase_ticket` compares it on replay. | **Enforced, fault-injected; independent verification pending.** Identical-payload replay and changed-payload refusal tests pass; `t-inv13-ticket-payload` is observed red. |
 
 ### Market invariants (specified for the live market increment)
 
@@ -51,12 +51,12 @@ These replace the withdrawn prediction invariants. Enforcement and the first evi
 
 | ID | Invariant | Enforcement | Status |
 | :--- | :--- | :--- | :--- |
-| **M-INV1** | Entries are accepted only while the market is open (`status = OPEN`), authoritative database time is at or after `kickoff_time`, the match is not `FINISHED` and the event is not `CANCELLED`; entries at or after resolution are refused. Exits are accepted while open, including after `FINISHED` and during an entry cooldown. | `market_trades_market_window` and `enforce_prediction_enabled` triggers, plus the window guard inside `open_trade`/`close_trade`. | **Enforced, unverified by fault injection.** `market-lifecycle.test.ts` covers post-`FINISHED` entry refusal, exit after `FINISHED` and disable-predictions exit; independent verification pending. |
+| **M-INV1** | Entries are accepted only while the market is open (`status = OPEN`), authoritative database time is at or after `kickoff_time`, the match is not `FINISHED` and the event is not `CANCELLED`; entries at or after resolution are refused. Exits are accepted while open, including after `FINISHED` and during an entry cooldown. | `market_trades_market_window` and `enforce_prediction_enabled` triggers, plus the window guard inside `open_trade`/`close_trade`. | **Enforced, fault-injected; independent verification pending.** `market-lifecycle.test.ts` covers the cases; `m-inv1-window`, `m-inv1-finished-window` and `m-inv1-disable-exit` are observed red. |
 | **M-INV2** | An entry or exit commits the position, the point debit/credit and the trade-log row together, or not at all. | One transaction per RPC; no separate read-modify-write. | **Verified by forced-failure rollback.** `tests/fault-injection/atomic-rollback.fault.ts` forces a trade-insert failure and asserts no partial balance, position or trade survives (CI 42474762811). This is not an observed-red mutation: PostgreSQL function atomicity cannot be broken without a second connection. The limit is recorded in the verification record. |
 | **M-INV3** | A position cannot sell more shares than it holds; holdings never become negative. | Position guard in `close_trade`; `shares >= 0` constraint. | **Verified.** `market-pricing.test.ts`; fault injection removed the position guard and the non-negative constraints, and the over-sell test failed (CI 42474762811). |
 | **M-INV4** | A balance never becomes negative, including concurrent requests from the same user across markets. | Profile row lock plus conditional debit. | **Verified.** `market-concurrency.test.ts` races two 50-point spends against a 60-point balance. Injection removed the profile lock and both point guards: both spends were accepted and the balance reached **−40**. Restored; suite green. |
 | **M-INV5** | For every outcome, the sum of held position shares equals the market's outstanding quantity `q`. | Transactional updates of positions and `q` in the same statement path. | **Verified.** Bookkeeping assertion in `market-pricing.test.ts`; fault injection advanced `q` without the matching position update and the test failed (CI 42474762811). |
-| **M-INV6** | Resolution is terminal and pays exactly one point per winning share, once per holder; losing shares pay nothing. Resolution requires the match to be `FINISHED` and the winner to match the score-derived outcome. | `resolve_market` with a terminal status check and one payout path; `markets_result_binding` and `matches_result_integrity` triggers. | **Enforced, unverified by fault injection.** `market-lifecycle.test.ts` covers pre-`FINISHED` refusal, score-mismatch refusal, one-shot payout and post-resolution score rejection; independent verification pending. |
+| **M-INV6** | Resolution is terminal and pays exactly one point per winning share, once per holder; losing shares pay nothing. Resolution requires the match to be `FINISHED` and the winner to match the score-derived outcome. | `resolve_market` with a terminal status check and one payout path; `markets_result_binding` and `matches_result_integrity` triggers. | **Enforced, fault-injected; independent verification pending.** `market-lifecycle.test.ts` covers the cases; the score-binding, premature-finish and post-resolution-score mutations are observed red. |
 | **M-INV7** | Entry cooldown is per user × market: 5 s first rung, then a linear `+15 s` ladder capped at 600 s, decaying one level per five quiet minutes. Refusals do not escalate; exits are exempt. | Cooldown gate in `open_trade`; `close_trade` never reads it. | **Verified.** Gate, ladder, cap, decay, scope, no-escalation and exit exemption each have an observed-red mutation in `market-lifecycle.test.ts` (CI 42474762811). |
 | **M-INV8** | No commission of any kind: entry debits `ceil(cost)`, exit credits `floor(proceeds)`, and no fee path exists. | RPC formulas; no maker account. | **Verified.** `market-pricing.test.ts`; fault injection replaced `ceil` with `floor` and the debit assertion failed (CI 42474762811). |
 | **M-INV9** | A retried entry or exit with the same request key and payload returns the recorded trade and does not debit, credit, create a position or write a second trade. Reusing the key with a different payload is refused. | `trade_requests` unique `(user_id, request_id)`; claim-before-work in `open_trade`/`close_trade`; request and trade commit or roll back together. | **Verified.** `idempotency.test.ts`; CI run [42425131584](https://github.com/match-pulse/match-pulse/actions/runs/42425131584). Fault injection not yet observed locally. |
@@ -199,13 +199,13 @@ The six idempotency tests cover:
 The request row is owner-only through RLS; direct writes are denied. The legacy
 null-key path remains non-idempotent and is exercised by the existing suites.
 
-### Fault-injection matrix (2026-11-08)
+### Fault-injection matrix (2026-11-10)
 
 `bun run fault:inject` applies each mutation to a disposable local database,
 runs the targeted test, compares the exit code with the declared expectation,
-resets the schema and records the result. CI run
-[42474762811](https://github.com/match-pulse/match-pulse/actions/runs/42474762811)
-passed all 11 entries:
+resets the schema and records the result. The local 2026-11-10 run passed all
+27 entries; the restored suite then passed 57/57 after the documented local
+Kong/Docker DNS workaround:
 
 | Mutation | Invariant | Expected | Observed |
 | :--- | :--- | :--- | :--- |
@@ -220,13 +220,31 @@ passed all 11 entries:
 | `m-inv7-scope` | M-INV7 | targeted test fails | exit 1 |
 | `m-inv7-no-escalation` | M-INV7 | targeted test fails | exit 1 |
 | `m-inv7-exit-exemption` | M-INV7 | targeted test fails | exit 1 |
+| `m-inv1-finished-window` | M-INV1 | targeted test fails | exit 1 |
+| `m-inv1-disable-exit` | M-INV1 | targeted test fails | exit 1 |
+| `m-inv6-score-binding` | M-INV6 | targeted test fails | exit 1 |
+| `m-inv6-premature-finish` | M-INV6 | targeted test fails | exit 1 |
+| `m-inv6-post-resolution-score` | M-INV6 | targeted test fails | exit 1 |
+| `t-inv4-buyer-cap` | T-INV4 | targeted test fails | exit 1 |
+| `t-inv5-capacity-config` | T-INV5 | targeted test fails | exit 1 |
+| `t-inv11-legacy-claim` | T-INV11 | targeted test fails | exit 1 |
+| `t-inv11-legacy-registration` | T-INV11 | targeted test fails | exit 1 |
+| `t-inv12-reward-replay` | T-INV12 | targeted test fails | exit 1 |
+| `t-inv3-entitlement` | T-INV3 | targeted test fails | exit 1 |
+| `t-inv10-transfer-retention` | T-INV10 | targeted test fails | exit 1 |
+| `t-inv10-audit-retention` | T-INV10 | targeted test fails | exit 1 |
+| `t-inv10-invite-retention` | T-INV10 | targeted test fails | exit 1 |
+| `t-inv8-cohort-suppression` | T-INV8 | targeted test fails | exit 1 |
+| `t-inv13-ticket-payload` | T-INV13 | targeted test fails | exit 1 |
 
-The full invariant suite then returned **28 pass / 0 fail**. The M-INV2 row is a
+The full invariant suite then returned **57 pass / 0 fail**. The M-INV2 row is a
 **forced-failure rollback** check, not an observed-red mutation: the trigger
 forces the trade insert to fail and the test asserts that no partial balance,
 position, market update or trade survives. PostgreSQL function atomicity cannot
 be broken without a second connection, so a true observed-red version of M-INV2
-is not claimed.
+is not claimed. The sales-path capacity trigger and the subscription-lock
+concurrency path are exercised by tests but are not separately mutated; the
+former is defence in depth and the latter is timing-dependent.
 
 ### What a green run does and does not establish
 
@@ -234,6 +252,6 @@ It establishes that these scenarios hold, on this machine, against a single data
 
 ## 4. Current focus
 
-INV-01 and INV-02 remain verified. INV-03 and INV-04 are withdrawn with the retired fixed-score feature (owner decision, 2026-10-19); M-INV1–M-INV9 replace them. M-INV1, M-INV3, M-INV4, M-INV5, M-INV6, M-INV7 (gate and every detail), M-INV8 and M-INV9 are **Verified** by tests in CI, with observed-red fault injection for the recorded mechanisms. M-INV2 is **Verified by forced-failure rollback**: the trade-insert failure test proves no partial state survives, but it is not an observed-red mutation because PostgreSQL function atomicity cannot be broken without a second connection. That limit is recorded in the verification record.
+INV-01 and INV-02 remain verified by their tests. INV-03 and INV-04 are withdrawn with the retired fixed-score feature (owner decision, 2026-10-19); M-INV1–M-INV9 replace them. M-INV1–M-INV9 are enforced by the database and covered by the invariant suite; the mechanisms listed in the 2026-11-10 matrix are observed red, except M-INV2, which is a **forced-failure rollback** check because PostgreSQL function atomicity cannot be broken without a second connection. The 2026-11-10 matrix also covers the v3.1.0 market, ticketing, entitlement, reward, retention and cohort guards. No v3.1.0 claim is marked independently verified.
 
-INV-05 and A-INV1–A-INV5 are **Verified** for the platform boundary by the authorization suite in CI. The v3.1.0 remediation changed several market, ticketing, entitlement, reward and privacy guards; those specific claims are **Enforced, unverified by independent verification** until the separate verification pass closes them, even where the targeted database tests pass. The v3 suite currently records **53 pass / 0 fail**, the CLI suite **2 pass / 0 fail** and Playwright/axe **11 passed**. The remaining open findings are FND-020 (partly fixed; fault-injection evidence in #181), FND-023 (deferred to #188), FND-026/FND-027 (accepted risks), the M-INV2 observed-red limitation (FND-002), load/p95 (FND-004), delivery/operations (FND-006), real-user evidence (FND-007) and independent review (FND-008).
+INV-05 and A-INV1–A-INV5 are **Verified** for the platform boundary by the authorization suite in CI. The v3.1.0 remediation changed several market, ticketing, entitlement, reward and privacy guards; those claims are **Enforced, fault-injected; independent verification pending**. The v3 suite currently records **57 pass / 0 fail**, the CLI suite **2 pass / 0 fail** and Playwright/axe **11 passed**. The remaining open findings are FND-020 (fixed by the evidence workstream; independent verification pending), FND-023 (deferred to #188), FND-026/FND-027 (accepted risks), the M-INV2 observed-red limitation (FND-002), load/p95 (FND-004), delivery/operations (FND-006), real-user evidence (FND-007) and independent review (FND-008).

@@ -412,5 +412,100 @@ FOR EACH ROW EXECUTE FUNCTION public.fault_inject_trade_insert();`
           replace: '    -- fault injection: replay lookup removed'
         }
       ])
+  },
+  {
+    id: 't-inv3-entitlement',
+    invariant: 'T-INV3',
+    description: 'Remove the active-entitlement check from club event creation.',
+    kind: 'observed-red',
+    test: 'tests/integration/v3-club-tenancy.test.ts',
+    expected: 'fail',
+    sql: ({ subscription }) =>
+      mutateFunction(subscription, 'create_club_event', [
+        {
+          find: "    PERFORM public.require_entitlement(p_club_id, 'max_active_events');",
+          replace: ''
+        }
+      ])
+  },
+  {
+    id: 't-inv10-transfer-retention',
+    invariant: 'T-INV10',
+    description: 'Stop redacting the previous attendee identity from transfer history.',
+    kind: 'observed-red',
+    test: 'tests/integration/v3-club-tenancy.test.ts',
+    expected: 'fail',
+    sql: ({ privacy }) =>
+      mutateFunction(privacy, 'cleanup_expired_attendee_data', [
+        {
+          find: '       SET previous_first_name = NULL,',
+          replace: '       SET previous_first_name = previous_first_name,'
+        }
+      ])
+  },
+  {
+    id: 't-inv10-audit-retention',
+    invariant: 'T-INV10',
+    description: 'Stop removing the card number from old fan-card audit metadata.',
+    kind: 'observed-red',
+    test: 'tests/integration/v3-club-tenancy.test.ts',
+    expected: 'fail',
+    sql: ({ privacy }) =>
+      mutateFunction(privacy, 'cleanup_expired_attendee_data', [
+        {
+          find: "       SET metadata = metadata - 'card_number'",
+          replace: '       SET metadata = metadata'
+        }
+      ])
+  },
+  {
+    id: 't-inv10-invite-retention',
+    invariant: 'T-INV10',
+    description: 'Stop deleting accepted or expired invitation emails after the retention window.',
+    kind: 'observed-red',
+    test: 'tests/integration/v3-club-tenancy.test.ts',
+    expected: 'fail',
+    sql: ({ privacy }) =>
+      mutateFunction(privacy, 'cleanup_expired_attendee_data', [
+        {
+          find: `    DELETE FROM public.club_invites
+     WHERE (accepted_at IS NOT NULL AND accepted_at < NOW() - p_older_than)
+        OR (accepted_at IS NULL AND expires_at < NOW() - p_older_than);
+
+    GET DIAGNOSTICS v_invites = ROW_COUNT;`,
+          replace: '    v_invites := 0;'
+        }
+      ])
+  },
+  {
+    id: 't-inv8-cohort-suppression',
+    invariant: 'T-INV8',
+    description: 'Show every outcome cohort regardless of the five-predictor threshold.',
+    kind: 'observed-red',
+    test: 'tests/integration/v3-club-tenancy.test.ts',
+    expected: 'fail',
+    sql: ({ privacy }) =>
+      mutateFunction(privacy, 'club_prediction_insights', [
+        {
+          find: 'CASE WHEN COALESCE(mt.traders, 0) >= 5 THEN',
+          replace: 'CASE WHEN TRUE THEN',
+          all: true
+        }
+      ])
+  },
+  {
+    id: 't-inv13-ticket-payload',
+    invariant: 'T-INV13',
+    description: 'Ignore the stored attendee payload when replaying a ticket request key.',
+    kind: 'observed-red',
+    test: 'tests/integration/v3-club-tenancy.test.ts',
+    expected: 'fail',
+    sql: ({ payload }) =>
+      mutateFunction(payload, 'purchase_ticket', [
+        {
+          find: '           OR (v_existing_payload IS NOT NULL AND v_existing_payload <> v_payload_hash) THEN',
+          replace: '           OR FALSE THEN'
+        }
+      ])
   }
 ]

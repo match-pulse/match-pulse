@@ -8,6 +8,9 @@ export type MigrationSource = {
   marketBinding: string
   ticketing: string
   reward: string
+  subscription: string
+  privacy: string
+  payload: string
 }
 
 export type Replacement = {
@@ -26,7 +29,10 @@ export function loadMigrations(root: string): MigrationSource {
     security: migration('20261206_security_boundary.sql'),
     marketBinding: migration('20261207_market_result_binding.sql'),
     ticketing: migration('20261208_ticketing_integrity.sql'),
-    reward: migration('20261209_reward_idempotency.sql')
+    reward: migration('20261209_reward_idempotency.sql'),
+    subscription: migration('20261210_subscription_limits.sql'),
+    privacy: migration('20261211_privacy_retention.sql'),
+    payload: migration('20261212_ticket_payload_hash.sql')
   }
 }
 
