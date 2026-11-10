@@ -1078,6 +1078,22 @@ Secret hygiene re-verified: `release.env` in history contains only `APP_VERSION`
 
 ---
 
+## Entry 62 — Project-scoped frontend-design skill (issue #204, PR #205)
+
+**Date:** 2026-11-10
+**Tool:** opencode CLI (`deepseek-v4.1-flash`)
+**Intent:** Install Anthropic's official `frontend-design` skill at project scope so future frontend work has a shared design authority.
+**Boundary:** AI installed the skill, added its recorded files and `skills-lock.json`, and wrote this entry. AI did not change application code, configuration, or any user-facing view, and did not edit the skill's `SKILL.md`, frontmatter, or license. The human authorized the installation, commit, push, and pull request.
+**Prior records reviewed:** findings register (no related finding); GitHub issue search (no existing skill-installation issue); `AGENTS.md` workflow and tooling rules, including the Frontend Audit & Improvement workflow.
+**Work performed:** ran `npx skills add anthropics/skills --skill frontend-design -a opencode -y`; confirmed project scope and OpenCode discovery with `npx skills list --json`; verified the installed files against the upstream Git blob hashes; loaded the skill by ID `frontend-design`.
+**Verification:** `SKILL.md` and `LICENSE.txt` are byte-identical to upstream (`a533345…` and `f433b1a…`); `npx skills list --json` reports `scope: project` and agent `OpenCode`; the `skill` tool returned the full body from `.agents/skills/frontend-design`. No application checks were run because no application source changed.
+**Learning:** OpenCode already discovers `.agents/skills`, so no configuration change was needed. Committing the installed files plus `skills-lock.json` records the exact upstream version; leaving them untracked would make the installation local-only. The working tree on `fix/188` retains identical untracked copies, which must be removed before checking out this branch in that worktree.
+**Limitations:** No independent verifier; the skill's guidance has not yet been applied to a UI task. The issue was not added to the project board at creation time.
+
+**Links:** issue #204 · PR [#205](https://github.com/match-pulse/match-pulse/pull/205)
+
+---
+
 ## Standing rule
 
 AI may investigate, analyse, draft, implement within an approved scope, and run verification. The human retains every decision that affects business rules, architecture, schema, scope, priority, risk acceptance and merging. Contributions that cannot be verified are recorded as unverified rather than asserted.
