@@ -1078,6 +1078,22 @@ Secret hygiene re-verified: `release.env` in history contains only `APP_VERSION`
 
 ---
 
+## Entry 62 — Frontend audit and improvement workflow
+
+**Date:** 2026-11-10
+**Tool:** opencode CLI (`deepseek-v4.1-flash`)
+**Intent:** Add a reusable workflow contract for a design-led frontend audit and improvement campaign, using the installed `frontend-design` skill as design authority, and register it with the repository's workflow governance.
+**Boundary:** `docs/workflows/frontend-audit-improvement-workflow.md`, `docs/workflows/README.md`, `AGENTS.md`, and the issue, branch, commit, push and pull request. No application code, UI, schema, authentication, authorization, migration, configuration, skill files or runtime behavior changes.
+**Prior records reviewed:** `docs/workflows/README.md`, `AGENTS.md` workflow and human-gate rules, `docs/methodology/findings-register.md` (no matching frontend workflow entry), `.agents/skills/frontend-design/SKILL.md`, and the existing requirements/design, software audit and software refactoring workflow contracts.
+**Work performed:** created issue #207; added the six-phase workflow covering discovery, audit and plan, sequential view improvement, consistency review, validation and final reporting; registered it in the workflow index and `AGENTS.md`; committed as `1cc331e`, pushed branch `docs/207-frontend-audit-workflow` and opened PR #208.
+**Verification:** `git diff --check` passed; `git show --stat` confirmed the commit contains only the workflow file and the two registration edits; `git ls-remote` confirmed the remote branch at `1cc331e`. No runtime checks were run because no application code changed. The workflow itself has not been executed.
+**Learning:** The workflow needs an explicit approved-campaign gate before view-by-view work so autonomous visual decisions do not conflict with the repository's human decision authority. Design-specific defect findings must still route through the Software Audit Workflow rather than being silently fixed as styling.
+**Limitations:** Documentation-only change; no application rendering or browser verification. No independent review yet. The workflow has not been run against the current frontend, so its inventory and sequencing assumptions remain unverified.
+
+**Links:** issue #207 · PR [#208](https://github.com/match-pulse/match-pulse/pull/208) · [`workflow`](../workflows/frontend-audit-improvement-workflow.md) · [`workflow index`](../workflows/README.md) · [`findings register`](findings-register.md)
+
+---
+
 ## Standing rule
 
 AI may investigate, analyse, draft, implement within an approved scope, and run verification. The human retains every decision that affects business rules, architecture, schema, scope, priority, risk acceptance and merging. Contributions that cannot be verified are recorded as unverified rather than asserted.
