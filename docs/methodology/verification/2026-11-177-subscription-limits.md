@@ -25,6 +25,22 @@ bun test --env-file=.env.local tests/integration/v3-club-tenancy.test.ts
 9 pass / 0 fail, 87 expect() calls
 ```
 
+Full suite after rebasing onto the merged market lifecycle and resetting the local database:
+
+```text
+bun run test
+50 pass / 0 fail, 412 expect() calls
+
+bun run test:agent
+2 pass / 0 fail, 29 expect() calls
+
+bun run test:e2e
+11 passed
+
+bun run build (local .env.local)
+passed
+```
+
 Observed behaviour:
 
 - A `CANCELED` club is refused with `plan entitlement required: max_active_events` and `max_members`.
@@ -33,15 +49,16 @@ Observed behaviour:
 
 ## 4. Result
 
-- Targeted tests pass.
+- Targeted, full database (50 tests), CLI (2) and E2E (11) suites pass.
 - The subscription lock order is documented in the migration and used by invite, accept and event creation.
-- Full-suite/fault-injection and independent verification remain pending after rebase.
+- FND-019 and FND-028 are implementation-complete and eligible for independent verification after merge.
 
 ## 5. Limitations
 
-- The full suite was not run on this branch because the market/ticketing/reward PRs are not all merged.
 - The concurrent test uses four requests against a STARTER limit of three; it is not a high-load benchmark.
+- Fault-injection mutations for the new locks are not added yet (FND-020 evidence work).
 - Local Kong/Docker DNS workaround remains an environment limitation.
+- The E2E run emitted pre-existing Next.js `Date.now()` prerender warnings but all 11 tests passed.
 
 ## 6. Links
 
