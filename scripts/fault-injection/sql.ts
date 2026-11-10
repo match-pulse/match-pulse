@@ -4,6 +4,10 @@ import { join } from 'node:path'
 export type MigrationSource = {
   core: string
   idempotent: string
+  security: string
+  marketBinding: string
+  ticketing: string
+  reward: string
 }
 
 export type Replacement = {
@@ -13,12 +17,16 @@ export type Replacement = {
 }
 
 export function loadMigrations(root: string): MigrationSource {
+  const migration = (name: string) =>
+    readFileSync(join(root, 'supabase', 'migrations', name), 'utf8')
+
   return {
-    core: readFileSync(join(root, 'supabase', 'migrations', '20261021_market_core.sql'), 'utf8'),
-    idempotent: readFileSync(
-      join(root, 'supabase', 'migrations', '20261112_idempotent_rpcs.sql'),
-      'utf8'
-    )
+    core: migration('20261021_market_core.sql'),
+    idempotent: migration('20261112_idempotent_rpcs.sql'),
+    security: migration('20261206_security_boundary.sql'),
+    marketBinding: migration('20261207_market_result_binding.sql'),
+    ticketing: migration('20261208_ticketing_integrity.sql'),
+    reward: migration('20261209_reward_idempotency.sql')
   }
 }
 
