@@ -1,7 +1,7 @@
 # Verification Record — Ticketing Integrity
 
 - **Issue:** [#178](https://github.com/match-pulse/match-pulse/issues/178)
-- **PR:** Pending
+- **PR:** [#186](https://github.com/match-pulse/match-pulse/pull/186)
 - **Date:** 2026-11-10
 - **Environment:** Local Fedora 44; Node 22.23.1; Bun 1.4.2; Docker CE 29.9.3; local Supabase PostgreSQL 17.11
 - **Status:** Partially verified — targeted implementer evidence; full suite after rebase and independent verification pending
@@ -71,7 +71,7 @@ passed
 ## 6. Links
 
 - Issue: [#178](https://github.com/match-pulse/match-pulse/issues/178)
-- PR: Pending
+- PR: [#186](https://github.com/match-pulse/match-pulse/pull/186)
 - Execution plan / audit: [v3 audit](../audits/2026-11-10-171-v3-audit.md), [execution plan](../exec-plans/173-audit-remediation.md)
 - Findings register: FND-012, FND-017, FND-018
 - AI transparency entry: Entry 54
@@ -79,4 +79,4 @@ passed
 
 ## 7. Addenda
 
-Pending PR link, full-suite evidence and independent verification.
+2026-11-10: PR [#186](https://github.com/match-pulse/match-pulse/pull/186) opened; full-suite evidence recorded; independent verification pending.

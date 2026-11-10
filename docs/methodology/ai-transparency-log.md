@@ -962,7 +962,7 @@ Secret hygiene re-verified: `release.env` in history contains only `APP_VERSION`
 **Learning:** A per-order cap check is not a per-buyer cap; the cumulative rule needs a transaction-boundary check on the order insert. Capacity configuration and sales need both a configuration guard and a sales-path guard.
 **Limitations:** Fault-injection and independent verification pending. The legacy compatibility pages remain for club-less tournaments. Local Kong/Docker DNS workaround remains.
 
-**Links:** issue #178 · [`verification`](verification/2026-11-178-ticketing-integrity.md) · [`findings register`](findings-register.md) · [`execution plan`](exec-plans/173-audit-remediation.md)
+**Links:** issue #178 · PR [#186](https://github.com/match-pulse/match-pulse/pull/186) · [`verification`](verification/2026-11-178-ticketing-integrity.md) · [`findings register`](findings-register.md) · [`execution plan`](exec-plans/173-audit-remediation.md)
 
 ---
 
