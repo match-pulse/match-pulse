@@ -966,6 +966,38 @@ Secret hygiene re-verified: `release.env` in history contains only `APP_VERSION`
 
 ---
 
+## Entry 55 — Reward idempotency
+
+**Date:** 2026-11-10
+**Tool:** opencode CLI (`deepseek-v4.1-flash`)
+**Intent:** Close FND-013 by making reward redemption retry-safe.
+**Boundary:** Reward schema/RPC, domain wrapper, Server Action, fan rewards client form, CLI, architecture guard, tests and verification record.
+**Prior records reviewed:** audit AUD-005; FND-013; FND-003 idempotency pattern; trade request tables; agent playbook; execution plan #173.
+**Work performed:** added `request_id`/`points_after` to `reward_redemptions` with a unique index; replaced `redeem_reward` with a required key and reward → profile → replay → eligibility → debit order; updated the web form and CLI; removed the obsolete one-argument legacy action.
+**Verification:** targeted reward tests 3 pass; full database 49 pass, CLI 2 pass, E2E 11 passed, build/typecheck/lint/architecture pass. Details: [`verification/2026-11-180-reward-idempotency.md`](verification/2026-11-180-reward-idempotency.md).
+**Learning:** A retry must be replayable even after the balance or club-ticket eligibility has changed; the replay lookup therefore precedes the current eligibility/balance checks.
+**Limitations:** Fault injection and independent verification pending. The client key survives while the form is mounted but not across a full page reload. Local Kong/Docker DNS workaround remains.
+
+**Links:** issue #180 · PR [#187](https://github.com/match-pulse/match-pulse/pull/187) · [`verification`](verification/2026-11-180-reward-idempotency.md) · [`findings register`](findings-register.md) · [`execution plan`](exec-plans/173-audit-remediation.md)
+
+---
+
+## Entry 56 — Subscription limits and concurrency
+
+**Date:** 2026-11-10
+**Tool:** opencode CLI (`deepseek-v4.1-flash`)
+**Intent:** Close FND-019 and FND-028 by refusing inactive subscriptions and serialising plan-limit checks.
+**Boundary:** One migration replacing invite, accept and event-create RPCs; v3 integration tests; invariant registry, findings register and verification record.
+**Prior records reviewed:** audit AUD-011/AUD-020; FND-019/FND-028; T-INV3; failure modes; execution plan #173.
+**Work performed:** required an active subscription entitlement before reading the plan limit; locked the subscription row before member/event count-and-insert with a documented lock order; added a canceled-subscription test and a four-request concurrent STARTER event test.
+**Verification:** targeted v3 tests 9 pass; full database 50 pass, CLI 2 pass, E2E 11 passed, build passed after rebasing and resetting the local database. Details: [`verification/2026-11-177-subscription-limits.md`](verification/2026-11-177-subscription-limits.md).
+**Learning:** `NULL` limits mean unlimited only for an active, entitled plan. Without an active-subscription check, a canceled club is treated as unlimited, which is the opposite of the intended control.
+**Limitations:** Fault injection and independent verification pending. The concurrency test is a four-request boundary check, not a load benchmark. Local Kong/Docker DNS workaround remains.
+
+**Links:** issue #177 · [`verification`](verification/2026-11-177-subscription-limits.md) · [`findings register`](findings-register.md) · [`execution plan`](exec-plans/173-audit-remediation.md)
+
+---
+
 ## Entry 58 — Minor hardening and residual dispositions
 
 **Date:** 2026-11-10

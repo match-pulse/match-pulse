@@ -79,7 +79,7 @@ const COMMANDS: CommandInfo[] = [
   { command: 'fan portfolio', group: 'fan', description: 'Show positions, trades and payouts', usage: '', mutates: false },
   { command: 'fan portfolio show', group: 'fan', description: 'Show positions, trades and payouts', usage: '', mutates: false },
   { command: 'fan rewards list', group: 'fan', description: 'List active club rewards', usage: '', mutates: false },
-  { command: 'fan rewards redeem', group: 'fan', description: 'Redeem points for a club reward', usage: '--reward <id>', mutates: true },
+  { command: 'fan rewards redeem', group: 'fan', description: 'Redeem points for a club reward', usage: '--reward <id> [--request-id]', mutates: true },
 
   { command: 'club create', group: 'club', description: 'Create a club and become its owner', usage: '--name <name> [--plan STARTER|PRO|ELITE] [--slug]', mutates: true },
   { command: 'club list', group: 'club', description: 'List the memberships of the current user', usage: '', mutates: false },
@@ -316,7 +316,7 @@ async function dispatch(
     }
     case 'fan rewards redeem': {
       const client = await getClient(profile)
-      return redeemReward(client, required(flags, 'reward'))
+      return redeemReward(client, required(flags, 'reward'), requestId(flags))
     }
 
     case 'club create': {
