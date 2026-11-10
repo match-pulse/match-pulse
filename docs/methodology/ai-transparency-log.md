@@ -1042,7 +1042,23 @@ Secret hygiene re-verified: `release.env` in history contains only `APP_VERSION`
 **Learning:** A test that passes with a guard removed proves nothing. The matrix must load the migration that owns the current function, not only the original definition, or a later replacement silently escapes mutation. CI also caught a weak assertion: the cohort test checked the `suppressed` flag but not that the metrics were withheld, so the mutation initially passed; the test now asserts null metrics for suppressed cohorts. The registry must say “fault-injected” rather than “verified” until a separate verifier checks it.
 **Limitations:** The automatic post-matrix suite failed locally after the final reset because Kong recreated the Docker 29 upstream-DNS issue; the documented workaround restored REST/auth and the suite passed 57/57. M-INV2 remains forced-failure, the sales-path capacity trigger is defence in depth, and the subscription-lock concurrency path is timing-dependent. Independent verification pending.
 
-**Links:** issue #181 · [`verification`](verification/2026-11-181-fault-injection.md) · [`findings register`](findings-register.md) · [`execution plan`](exec-plans/173-audit-remediation.md)
+**Links:** issue #181 · PR [#192](https://github.com/match-pulse/match-pulse/pull/192) · [`verification`](verification/2026-11-181-fault-injection.md) · [`findings register`](findings-register.md) · [`execution plan`](exec-plans/173-audit-remediation.md)
+
+---
+
+## Entry 60 — v3.1.0 audit-remediation campaign closure
+
+**Date:** 2026-11-10
+**Tool:** opencode CLI (`deepseek-v4.1-flash`)
+**Intent:** Close the remediation campaign for FND-009 to FND-028 and record the final dispositions, evidence and remaining gates.
+**Boundary:** Campaign verification record, audit triage/closure, findings register, README known gaps, changelog and OpenSpec tasks. No new application behaviour.
+**Prior records reviewed:** audit report; findings register; execution plan #173; all workstream verification records; invariant registry; ADR-011; AI Entries 51–59.
+**Work performed:** consolidated the eight remediation PRs, updated the audit triage table to the human-approved scope, corrected the closure-log PR links, added the final campaign verification record, recorded the Unreleased changelog section and closed the completed OpenSpec tasks.
+**Verification:** final local/CI results are recorded in [`verification/2026-11-173-audit-remediation.md`](verification/2026-11-173-audit-remediation.md). All implemented findings are **Fixed**, not **Verified**.
+**Learning:** The campaign needed separate workstreams for security, market integrity, ticketing, rewards, entitlements, privacy and evidence; combining them would have made review and rollback unsafe. The fault-injection matrix caught a weak cohort assertion that ordinary tests missed.
+**Limitations:** FND-007 (real-user evidence) and FND-008 (independent human review) remain open. FND-023 is deferred to #188. FND-026/FND-027 are accepted risks. The local Kong/Docker workaround remains. No independent verifier has confirmed the findings.
+
+**Links:** issue #173 · [`verification`](verification/2026-11-173-audit-remediation.md) · [`findings register`](findings-register.md) · [`execution plan`](exec-plans/173-audit-remediation.md) · [`changelog`](../../CHANGELOG.md)
 
 ---
 

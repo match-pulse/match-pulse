@@ -1,7 +1,7 @@
 # Verification Record — Fault-Injection Evidence and Invariant Corrections
 
 - **Issue:** [#181](https://github.com/match-pulse/match-pulse/issues/181)
-- **PR:** Pending
+- **PR:** [#192](https://github.com/match-pulse/match-pulse/pull/192)
 - **Date:** 2026-11-10
 - **Environment:** Local Fedora 44; Node 22.23.1; Bun 1.4.2; Docker CE 29.9.3; local Supabase PostgreSQL 17.11
 - **Status:** Partially verified — observed-red matrix passed; independent verification pending
@@ -61,7 +61,7 @@ Restored suite and supporting checks after the final reset:
 
 ```text
 bun run test
-57 pass / 0 fail, 469 expect() calls
+57 pass / 0 fail, 473 expect() calls
 
 bun run test:agent
 2 pass / 0 fail, 30 expect() calls
@@ -94,7 +94,7 @@ passed
 ## 6. Links
 
 - Issue: [#181](https://github.com/match-pulse/match-pulse/issues/181)
-- PR: Pending
+- PR: [#192](https://github.com/match-pulse/match-pulse/pull/192)
 - Execution plan / audit: [v3 audit](../audits/2026-11-10-171-v3-audit.md), [execution plan](../exec-plans/173-audit-remediation.md)
 - Findings register: FND-020
 - AI transparency entry: Entry 59
