@@ -69,8 +69,9 @@ Email confirmation is disabled locally. The agent must not assume a confirmation
 
 ### Assertions
 
-- The ticket count never exceeds the event capacity or ticket-type allocation.
+- The ticket count never exceeds the event capacity or ticket-type allocation, and the buyer cap is cumulative per event.
 - Every ticket is nominative and has its own attendee identity and code.
+- Legacy claim and registration are refused on v3 club events.
 - The buyer can buy for attendees who do not have a MatchPulse account.
 - The fan sees the same account and points balance across Club A and Club B.
 - Club A's analytics contain only Club A events; Club B cannot read Club A's event, orders or insights.
@@ -97,7 +98,8 @@ Email confirmation is disabled locally. The agent must not assume a confirmation
 
 - `tickets.buyer_id` is the purchasing fan; the attendee fields are the named person.
 - The buyer can purchase for attendees without creating four accounts.
-- Max four is enforced in the database transaction, not only in the UI.
+- Max four per buyer is enforced cumulatively per event in the database transaction, not only in the UI.
+- Legacy claim/registration paths are limited to tournaments with no club.
 - A refused purchase or transfer leaves the order, ticket and attendee state unchanged.
 - Attendee identity is visible only to `OWNER`, `ADMIN` and `STAFF`.
 - The transfer history records the previous and new attendee.

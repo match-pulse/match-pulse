@@ -16,6 +16,7 @@ async function TournamentContent({ params }: { params: Promise<{ id: string }> }
     .from('tournaments')
     .select('*')
     .eq('id', tournamentId)
+    .is('club_id', null)
     .maybeSingle()
 
   if (tournamentError) {
