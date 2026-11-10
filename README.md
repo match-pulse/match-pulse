@@ -304,7 +304,7 @@ Recorded so they are not mistaken for delivered work. Full detail in the [invari
 - **Request-key retention is a local maintenance command.** `bun run maintenance:cleanup` deletes completed requests older than 30 days; there is no scheduled production retention job.
 - **Attendee-data retention is a local maintenance command.** `bun run maintenance:cleanup-attendees` clears identity from past-event tickets, transfer history, old fan-card audit metadata and expired invitation emails older than 365 days; there is no scheduled production job or legal retention review.
 - **Legacy CLUB analytics still exists for local fixtures.** The v2 `/club` page, `/api/club/export`, `CLUB` role and legacy analytics RPCs are deferred to #188; the v3 club dashboard/export are club-scoped.
-- **Ticket points are a simulated unbounded economy.** Clubs control `ticket_points` issuance; no platform cap exists until rewards become a real commercial promise.
+- **Ticket points are a simulated capped economy.** Clubs configure `ticket_points` within 500 per ticket and 10,000 per event; the caps are enforced by database constraints and RPC checks.
 - **Subscription period end is informational.** There is no billing provider or renewal scheduler; plan status is managed manually by the platform admin.
 - **Club privacy has not had an independent review.** Aggregate-only insights and the threshold-5 rule are implemented; data resale is not implemented and personal data is not sold.
 - **p95 latency is observed, not asserted.** The capacity burst records p50/p95/max, but the target is not a CI gate yet, and the value is environment-specific.

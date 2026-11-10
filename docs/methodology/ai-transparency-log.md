@@ -1078,6 +1078,22 @@ Secret hygiene re-verified: `release.env` in history contains only `APP_VERSION`
 
 ---
 
+## Entry 64 — Ticket-point caps (FND-026 / #200)
+
+**Date:** 2026-11-10
+**Tool:** opencode CLI (`deepseek-v4.1-flash`)
+**Intent:** Bound club-issued ticket points at 500 per ticket and 10,000 per event.
+**Boundary:** One migration with CHECK constraints and replaced create/update event RPCs, boundary tests, docs and verification record.
+**Prior records reviewed:** FND-026; AUD-018; event create/update RPCs; ticket-point issuance.
+**Work performed:** added per-ticket and per-event CHECK constraints (legacy club-less tournaments exempt), added explicit RPC checks with clear errors, and added boundary tests for 501/ticket and 10,500/event.
+**Verification:** targeted test 1 pass; database 58 pass; CLI 2 pass; typecheck/lint/architecture/secrets pass. Details: [`verification/2026-11-200-ticket-points-cap.md`](verification/2026-11-200-ticket-points-cap.md).
+**Learning:** The cap belongs in both the RPC and a table constraint; the RPC gives a usable error, the constraint protects every write path. Legacy tournaments need an explicit exemption.
+**Limitations:** Local/CI evidence only; production deployment is the final post-MVP step.
+
+**Links:** issue #200 · [`verification`](verification/2026-11-200-ticket-points-cap.md) · [`findings register`](findings-register.md) · [`audit`](audits/2026-11-10-171-v3-audit.md)
+
+---
+
 ## Standing rule
 
 AI may investigate, analyse, draft, implement within an approved scope, and run verification. The human retains every decision that affects business rules, architecture, schema, scope, priority, risk acceptance and merging. Contributions that cannot be verified are recorded as unverified rather than asserted.

@@ -1019,3 +1019,67 @@ describe('v3 subscription limits', () => {
     TEST_TIMEOUT_MS
   )
 })
+
+describe('v3 ticket point caps', () => {
+  test(
+    'refuses more than 500 points per ticket or 10000 points per event',
+    async () => {
+      const owner = await createUser()
+      let clubId: string | null = null
+
+      try {
+        clubId = await createClub(owner, 'Point Cap Club', 'PRO')
+
+        const perTicket = await owner.client.rpc('create_club_event', {
+          p_club_id: clubId,
+          p_name: 'Too Many Points',
+          p_max_capacity: 30,
+          p_ticket_allocation: 20,
+          p_ticket_points: 501
+        })
+        expect(perTicket.error?.message).toContain('cannot exceed 500 per ticket')
+
+        const perEvent = await owner.client.rpc('create_club_event', {
+          p_club_id: clubId,
+          p_name: 'Too Many Event Points',
+          p_max_capacity: 30,
+          p_ticket_allocation: 21,
+          p_ticket_points: 500
+        })
+        expect(perEvent.error?.message).toContain('cannot exceed 10000 per event')
+
+        const allowed = await owner.client.rpc('create_club_event', {
+          p_club_id: clubId,
+          p_name: 'At The Cap',
+          p_max_capacity: 30,
+          p_ticket_allocation: 20,
+          p_ticket_points: 500
+        })
+        expect(allowed.error).toBeNull()
+        const eventId = String(allowed.data)
+
+        const updateTicket = await owner.client.rpc('update_club_event', {
+          p_event_id: eventId,
+          p_name: 'At The Cap',
+          p_max_capacity: 30,
+          p_ticket_allocation: 20,
+          p_ticket_points: 501
+        })
+        expect(updateTicket.error?.message).toContain('cannot exceed 500 per ticket')
+
+        const updateEvent = await owner.client.rpc('update_club_event', {
+          p_event_id: eventId,
+          p_name: 'At The Cap',
+          p_max_capacity: 30,
+          p_ticket_allocation: 21,
+          p_ticket_points: 500
+        })
+        expect(updateEvent.error?.message).toContain('cannot exceed 10000 per event')
+      } finally {
+        await cleanupClub(clubId)
+        await deleteUsers([owner])
+      }
+    },
+    TEST_TIMEOUT_MS
+  )
+})
