@@ -93,6 +93,7 @@ Migrations in `supabase/migrations/`, replayed in filename order:
 | `20261209_reward_idempotency.sql` | `reward_redemptions.request_id`, `points_after` | `redeem_reward` replay/refusal semantics |
 | `20261210_subscription_limits.sql` | — | `invite_club_member`, `accept_club_invite`, `create_club_event` active-entitlement checks and subscription locks |
 | `20261211_privacy_retention.sql` | `ticket_transfers` nullable identity columns | `cleanup_expired_attendee_data`, `issue_club_fan_card`, `club_prediction_insights`, `club_prediction_timeseries` |
+| `20261212_ticket_payload_hash.sql` | — (ticket order payload fingerprint) | `purchase_ticket` payload-aware replay |
 
 `supabase/seed.sql` seeds one legacy LIVE match, its `b = 100` market and one capacity-limited tournament. It does **not** seed a profile: profiles are created by the auth trigger. `scripts/create-organizer.ts` creates the v3 demo club, event, ticket type, match and market for local/E2E use.
 

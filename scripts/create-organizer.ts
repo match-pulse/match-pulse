@@ -163,6 +163,18 @@ if (marketError) throw new Error(`Could not create demo market: ${marketError.me
 
 console.log(`Demo v3 club and event ready: ${demoEventId}`)
 
+// The v2 seed market is linked to a legacy tournament with no organizer. Assign
+// it to the local organizer so the seeded market can be resolved end-to-end.
+const seedTournamentId = '22222222-2222-2222-2222-222222222222'
+const { error: seedOrganizerError } = await admin
+  .from('tournaments')
+  .update({ organizer_id: user.id })
+  .eq('id', seedTournamentId)
+if (seedOrganizerError) {
+  throw new Error(`Could not assign the seed tournament: ${seedOrganizerError.message}`)
+}
+console.log(`Seed tournament assigned to the organizer: ${seedTournamentId}`)
+
 // Platform-admin fixture for the local/CI admin console.
 const adminEmail = process.env.ADMIN_EMAIL ?? 'admin@matchpulse.local'
 const adminPassword = process.env.ADMIN_PASSWORD ?? 'matchpulse-admin'

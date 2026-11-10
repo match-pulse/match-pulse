@@ -1,5 +1,6 @@
 import { getProfile } from '@/lib/session'
 import { createSupabaseServerClient } from '@/lib/supabase/server'
+import { csvValue } from '@/lib/csv'
 
 type Aggregate = {
   match_id: string
@@ -12,11 +13,6 @@ type Aggregate = {
   shares: number | null
   last_price: number | null
   suppressed: boolean
-}
-
-function csvCell(value: unknown): string {
-  const text = value === null || value === undefined ? '' : String(value)
-  return /[",\n]/.test(text) ? `"${text.replaceAll('"', '""')}"` : text
 }
 
 export async function GET() {
@@ -37,7 +33,7 @@ export async function GET() {
 
   const rows = (data as Aggregate[] | null) ?? []
   const header = ['match_id', 'home_team', 'away_team', 'market_id', 'outcome', 'traders', 'trades', 'shares', 'last_price', 'suppressed']
-  const lines = [header.join(',')]
+  const lines = [header.map(csvValue).join(',')]
   for (const row of rows) {
     lines.push(
       [
@@ -51,7 +47,7 @@ export async function GET() {
         row.shares,
         row.last_price,
         row.suppressed
-      ].map(csvCell).join(',')
+      ].map(csvValue).join(',')
     )
   }
 

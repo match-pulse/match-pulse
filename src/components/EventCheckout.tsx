@@ -13,7 +13,7 @@ export default function EventCheckout({
 }) {
   const [ticketTypeId, setTicketTypeId] = useState(ticketTypes[0]?.id ?? '')
   const [quantity, setQuantity] = useState(1)
-  const [requestId] = useState(() => crypto.randomUUID())
+  const [requestId, setRequestId] = useState(() => crypto.randomUUID())
 
   const selected = ticketTypes.find((type) => type.id === ticketTypeId) ?? ticketTypes[0]
   const maxQuantity = Math.max(1, Math.min(selected?.max_per_buyer ?? 1, 4))
@@ -44,6 +44,7 @@ export default function EventCheckout({
             onChange={(event) => {
               setTicketTypeId(event.target.value)
               setQuantity(1)
+              setRequestId(crypto.randomUUID())
             }}
             className="w-full rounded p-2 bg-white font-semibold text-black"
           >
@@ -64,7 +65,10 @@ export default function EventCheckout({
             id="quantity"
             name="quantity"
             value={quantity}
-            onChange={(event) => setQuantity(Number(event.target.value))}
+            onChange={(event) => {
+              setQuantity(Number(event.target.value))
+              setRequestId(crypto.randomUUID())
+            }}
             className="w-full rounded p-2 bg-white font-semibold text-black"
           >
             {Array.from({ length: maxQuantity }, (_, index) => index + 1).map((value) => (

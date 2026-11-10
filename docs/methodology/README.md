@@ -31,6 +31,8 @@ ADRs remain in [`docs/architecture/adr/`](../architecture/adr/) and follow the e
 - [`audits/`](audits/) — dated software audit reports; the v3.0.0 baseline audit is [`2026-11-10-171-v3-audit.md`](audits/2026-11-10-171-v3-audit.md).
 - [`reports/`](reports/) — dated project reports; [`2026-11-08.md`](reports/2026-11-08.md) is the current methodology synthesis.
 - [`exec-plans/153-v3-club-subscriptions.md`](exec-plans/153-v3-club-subscriptions.md) — approved v3.0.0 execution plan.
+- [`exec-plans/173-audit-remediation.md`](exec-plans/173-audit-remediation.md) — approved v3.1.0 audit-remediation plan.
+- [`remediation/2026-11-10-audit-dispositions.md`](remediation/2026-11-10-audit-dispositions.md) — residual audit dispositions (FND-020/023/026/027).
 - [`verification/2026-11-157-v3-club-tenancy.md`](verification/2026-11-157-v3-club-tenancy.md) — verified v3 database foundation.
 - [`verification/2026-11-159-cli-and-agent-playbook.md`](verification/2026-11-159-cli-and-agent-playbook.md) — verified CLI and agent playbook.
 - [`verification/2026-11-161-v3-auth-ui.md`](verification/2026-11-161-v3-auth-ui.md) — verified email/password auth and core v3 UI.
@@ -39,6 +41,7 @@ ADRs remain in [`docs/architecture/adr/`](../architecture/adr/) and follow the e
 - [`verification/2026-11-169-v3-release.md`](verification/2026-11-169-v3-release.md) — verified v3.0.0 documentation and release package.
 - [`verification/2026-11-177-subscription-limits.md`](verification/2026-11-177-subscription-limits.md) — active-subscription and quota-concurrency evidence.
 - [`verification/2026-11-179-privacy-retention.md`](verification/2026-11-179-privacy-retention.md) — retention and outcome-level cohort-suppression evidence.
+- [`verification/2026-11-182-minor-hardening.md`](verification/2026-11-182-minor-hardening.md) — CSV safety, seed resolution and payload-aware ticket replay evidence.
 - [`../testing/agent-playbook.md`](../testing/agent-playbook.md) — CLI-driven agent scenarios and evidence.
 - [`../testing/capabilities.md`](../testing/capabilities.md) — capability-to-command parity manifest.
 - [`../product/competitive-landscape.md`](../product/competitive-landscape.md) — TicketOne/Vivaticket positioning and nominal ticketing context.
