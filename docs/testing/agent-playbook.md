@@ -59,7 +59,8 @@ Email confirmation is disabled locally. The agent must not assume a confirmation
 | 13 | club-a-owner | `club tickets check-in --code <ticket-code> --json` | checked in |
 | 14 | club-a-owner | `club analytics summary --json` | sales and attendance |
 | 15 | club-a-owner | `club analytics predictions --event <id> --json` | aggregate outcomes, no identities |
-| 15a | club-a-owner | `club predictions resolve --market <id> --winner HOME --json` | holders paid, market terminal |
+| 15a | club-a-owner | `club matches update --match <id> --home-score 1 --away-score 0 --status FINISHED --json` | match finished before resolution |
+| 15b | club-a-owner | `club predictions resolve --market <id> --winner HOME --json` | holders paid, market terminal |
 | 16 | fan-a | `fan portfolio show --json` | position visible |
 | 17 | fan-a | `fan rewards list --club <id> --json` | club rewards |
 | 18 | fan-a | `fan rewards redeem --reward <id> --request-id <uuid> --json` | discount code |

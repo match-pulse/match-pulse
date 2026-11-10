@@ -60,6 +60,31 @@ export async function createMarket(
   return marketId
 }
 
+export async function finishMatch(
+  marketId: string,
+  homeScore = 1,
+  awayScore = 0
+): Promise<void> {
+  const { data, error } = await admin
+    .from('markets')
+    .select('match_id')
+    .eq('id', marketId)
+    .single()
+
+  if (error || !data?.match_id) {
+    throw new Error(`Failed to find match for market: ${error?.message ?? 'no match'}`)
+  }
+
+  const { error: updateError } = await admin
+    .from('matches')
+    .update({ status: 'FINISHED', home_score: homeScore, away_score: awayScore })
+    .eq('id', data.match_id)
+
+  if (updateError) {
+    throw new Error(`Failed to finish match: ${updateError.message}`)
+  }
+}
+
 export async function setPoints(userId: string, points: number): Promise<void> {
   const { error } = await admin.from('profiles').update({ points }).eq('id', userId)
 

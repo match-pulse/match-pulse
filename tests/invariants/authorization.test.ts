@@ -20,6 +20,7 @@ import {
   createTournament,
   deleteMarket,
   deleteTournament,
+  finishMatch,
   setPoints
 } from '../support/fixtures'
 
@@ -184,6 +185,8 @@ describe('authorization boundary', () => {
           p_winner: 'HOME'
         })
         expect(refused.error?.message).toContain('organizer authorization required')
+
+        await finishMatch(marketId, 1, 0)
 
         const resolved = await organizer.client.rpc('resolve_market', {
           p_market_id: marketId,

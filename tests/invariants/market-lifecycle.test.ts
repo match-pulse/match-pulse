@@ -11,6 +11,7 @@ import {
   cooldownOf,
   createMarket,
   deleteMarket,
+  finishMatch,
   marketOf,
   pointsOf,
   positionOf,
@@ -121,6 +122,7 @@ describe('market resolution (M-INV6)', () => {
         const balanceBBefore = await pointsOf(winnerB.id)
         const balanceLBefore = await pointsOf(loser.id)
 
+        await finishMatch(marketId, 1, 0)
         const resolution = await resolveMarket(organizer, marketId, 'HOME')
         expect(resolution.error).toBeNull()
         expect(num(resolution.row!.holders)).toBe(2)
@@ -166,6 +168,151 @@ describe('market resolution (M-INV6)', () => {
         expect(payoutsAgain?.length).toBe(2)
       } finally {
         await deleteUsers([organizer, winnerA, winnerB, loser])
+        await deleteMarket(marketId)
+      }
+    },
+    TEST_TIMEOUT_MS
+  )
+})
+
+describe('market closure after full time (M-INV1)', () => {
+  test(
+    'refuses new entries after FINISHED but still accepts exits',
+    async () => {
+      const user = await createUser('FAN')
+      const second = await createUser('FAN')
+      const marketId = await createMarket()
+
+      try {
+        await setPoints(user.id, 100)
+        await setPoints(second.id, 100)
+        const entry = await openTrade(user, marketId, 'HOME', 10)
+        expect(entry.error).toBeNull()
+        const shares = num(entry.row!.shares)
+
+        await finishMatch(marketId, 1, 0)
+
+        const blocked = await openTrade(second, marketId, 'DRAW', 10)
+        expect(blocked.error?.message).toContain('market is closed')
+
+        const exit = await closeTrade(user, marketId, 'HOME', shares)
+        expect(exit.error).toBeNull()
+      } finally {
+        await deleteUsers([user, second])
+        await deleteMarket(marketId)
+      }
+    },
+    TEST_TIMEOUT_MS
+  )
+})
+
+describe('result-bound resolution (M-INV6)', () => {
+  test(
+    'requires a finished match and the score-derived winner',
+    async () => {
+      const organizer = await createUser('ORGANIZER')
+      const holder = await createUser('FAN')
+      const marketId = await createMarket()
+
+      try {
+        await setPoints(holder.id, 100)
+        const entry = await openTrade(holder, marketId, 'HOME', 10)
+        expect(entry.error).toBeNull()
+
+        const early = await resolveMarket(organizer, marketId, 'HOME')
+        expect(early.error?.message).toContain('match is not finished')
+
+        await finishMatch(marketId, 0, 0)
+
+        const mismatch = await resolveMarket(organizer, marketId, 'HOME')
+        expect(mismatch.error?.message).toContain('does not match the final score')
+
+        const resolved = await resolveMarket(organizer, marketId, 'DRAW')
+        expect(resolved.error).toBeNull()
+        expect((await marketOf(marketId)).status).toBe('RESOLVED')
+        expect((await marketOf(marketId)).winning_outcome).toBe('DRAW')
+
+        const { data: market } = await admin
+          .from('markets')
+          .select('match_id')
+          .eq('id', marketId)
+          .single()
+        const scoreChange = await admin
+          .from('matches')
+          .update({ home_score: 2 })
+          .eq('id', market!.match_id)
+        expect(scoreChange.error?.message).toContain('after market resolution')
+      } finally {
+        await deleteUsers([organizer, holder])
+        await deleteMarket(marketId)
+      }
+    },
+    TEST_TIMEOUT_MS
+  )
+})
+
+describe('match result integrity', () => {
+  test(
+    'refuses marking a future match FINISHED',
+    async () => {
+      const marketId = await createMarket(3_600_000)
+
+      try {
+        const { data: market } = await admin
+          .from('markets')
+          .select('match_id')
+          .eq('id', marketId)
+          .single()
+        expect(market?.match_id).toBeTruthy()
+
+        const premature = await admin
+          .from('matches')
+          .update({ status: 'FINISHED' })
+          .eq('id', market!.match_id)
+        expect(premature.error?.message).toContain('before kickoff')
+      } finally {
+        await deleteMarket(marketId)
+      }
+    },
+    TEST_TIMEOUT_MS
+  )
+})
+
+describe('prediction disable preserves exits (M-INV1)', () => {
+  test(
+    'allows a SELL exit but refuses a new BUY',
+    async () => {
+      const user = await createUser('FAN')
+      const second = await createUser('FAN')
+      const marketId = await createMarket()
+
+      try {
+        await setPoints(user.id, 100)
+        await setPoints(second.id, 100)
+        const entry = await openTrade(user, marketId, 'HOME', 50)
+        expect(entry.error).toBeNull()
+        const shares = num(entry.row!.shares)
+
+        const { data: market } = await admin
+          .from('markets')
+          .select('match_id')
+          .eq('id', marketId)
+          .single()
+        expect(market?.match_id).toBeTruthy()
+
+        const disabled = await admin
+          .from('matches')
+          .update({ prediction_enabled: false })
+          .eq('id', market!.match_id)
+        expect(disabled.error).toBeNull()
+
+        const exit = await closeTrade(user, marketId, 'HOME', shares)
+        expect(exit.error).toBeNull()
+
+        const blocked = await openTrade(second, marketId, 'HOME', 10)
+        expect(blocked.error?.message).toContain('predictions are not enabled')
+      } finally {
+        await deleteUsers([user, second])
         await deleteMarket(marketId)
       }
     },

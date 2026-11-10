@@ -10,6 +10,7 @@ import {
   createMarket,
   deleteMarket,
   deleteTournament,
+  finishMatch,
   pointsOf,
   setPoints
 } from '../support/fixtures'
@@ -372,6 +373,8 @@ describe('MVP backend: ownership-aware resolution', () => {
           p_winner: 'HOME'
         })
         expect(denied.error?.message).toContain('does not own')
+
+        await finishMatch(marketId, 1, 0)
 
         const resolved = await organizerA.client.rpc('resolve_market', {
           p_market_id: marketId,

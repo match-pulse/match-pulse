@@ -21,6 +21,7 @@ const LABELS: Record<Outcome, string> = {
 export default function MarketTrader({
   marketId,
   open,
+  acceptingEntries,
   resolvedWinner,
   points,
   prices,
@@ -28,6 +29,7 @@ export default function MarketTrader({
 }: {
   marketId: string
   open: boolean
+  acceptingEntries: boolean
   resolvedWinner: Outcome | null
   points: number
   prices: Record<Outcome, number>
@@ -97,6 +99,10 @@ export default function MarketTrader({
       ) : !open ? (
         <p className="text-center font-semibold text-slate-300">
           The market opens at kickoff. Positions can only be entered while the match is live.
+        </p>
+      ) : !acceptingEntries ? (
+        <p className="text-center font-semibold text-slate-300">
+          New entries are closed because the match is finished. You can still exit your positions until the market is resolved.
         </p>
       ) : (
         <form action={handleEnter} className="flex flex-col gap-4">

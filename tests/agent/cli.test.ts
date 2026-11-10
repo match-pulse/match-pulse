@@ -243,6 +243,16 @@ describe('matchpulse CLI', () => {
         expect(insights.length).toBeGreaterThan(0)
         expect(insights.every((row) => row.suppressed === true)).toBe(true)
 
+        const finished = runCli(
+          [
+            'club', 'matches', 'update', '--profile', 'owner',
+            '--match', String(matchData.match_id),
+            '--home-score', '1', '--away-score', '0', '--status', 'FINISHED', '--json'
+          ],
+          configDir
+        )
+        expect(finished.status).toBe(0)
+
         const resolution = dataOf(
           runCli(
             ['club', 'predictions', 'resolve', '--profile', 'owner', '--market', marketId, '--winner', 'HOME', '--json'],
