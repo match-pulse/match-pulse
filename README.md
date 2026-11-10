@@ -307,9 +307,9 @@ Recorded so they are not mistaken for delivered work. Full detail in the [invari
 - **Ticket points are a simulated unbounded economy.** Clubs control `ticket_points` issuance; no platform cap exists until rewards become a real commercial promise.
 - **Subscription period end is informational.** There is no billing provider or renewal scheduler; plan status is managed manually by the platform admin.
 - **Club privacy has not had an independent review.** Aggregate-only insights and the threshold-5 rule are implemented; data resale is not implemented and personal data is not sold.
-- **p95 latency is observed, not asserted.** The capacity burst records p50/p95/max, but the target is not a CI gate yet, and the value is environment-specific.
+- **p95 latency is asserted in CI.** The capacity burst and a 20-buyer ticket burst record p50/p95/max and fail above 1,000 ms; the values remain environment-specific.
 - **E2E and accessibility are not exhaustive.** The Playwright suite covers the v3 fan purchase, club dashboard/event page, admin console and legacy journeys; edge cases remain in integration/CLI tests. The accessibility gate blocks serious and critical violations, not moderate or minor ones.
-- **Performance is a scheduled baseline, not a release gate.** The 20/50/100 burst script records p50/p95/p99, but production load and multi-instance behaviour are not measured.
+- **Production and multi-instance load are not measured.** The CI p95 gate covers the local registration and ticket bursts; the scheduled 20/50/100 script is a baseline, not a production capacity claim.
 - **Legacy v2 pages coexist with the v3 surfaces** for backward compatibility; they are not the current product model.
 - **Human-verified, not a third-party audit.** The v3.1.0 remediation, FND-007 (real-user evidence) and FND-008 (independent human review) were confirmed by the human decision owner on 2026-11-10. No external audit was performed.
 
