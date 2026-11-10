@@ -22,6 +22,7 @@ export default async function FanTournamentDetail({ params }: { params: Promise<
     .from('tournaments')
     .select('id, name, max_capacity, current_players, ticket_allocation, ticket_points')
     .eq('id', id)
+    .is('club_id', null)
     .maybeSingle()
 
   if (!tournament) notFound()

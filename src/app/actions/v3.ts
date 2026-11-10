@@ -125,12 +125,13 @@ export async function createEventAction(formData: FormData): Promise<never> {
   const path = `/club/dashboard?club=${clubId}`
   const result = await attempt(async () => {
     const supabase = await createSupabaseServerClient()
+    const capacity = requiredNumber(formData, 'capacity')
     return createClubEvent(
       supabase,
       clubId,
       requiredText(formData, 'name'),
-      requiredNumber(formData, 'capacity'),
-      optionalNumber(formData, 'allocation') ?? 100,
+      capacity,
+      optionalNumber(formData, 'allocation') ?? capacity,
       optionalNumber(formData, 'points') ?? 0
     )
   })

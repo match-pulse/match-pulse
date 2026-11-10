@@ -21,6 +21,7 @@ export default async function FanTournaments() {
   const { data: tournaments } = await supabase
     .from('tournaments')
     .select('id, name, max_capacity, current_players, ticket_allocation, ticket_points')
+    .is('club_id', null)
     .order('name')
 
   return (

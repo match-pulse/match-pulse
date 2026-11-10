@@ -82,7 +82,7 @@ erDiagram
 1. **Fan sign-up/sign-in:** email/password creates or restores a profile with 200 points. No anonymous session.
 2. **Club onboarding:** a user creates a club, becomes `OWNER`, chooses a simulated plan and invites staff. The platform admin can override the plan/status.
 3. **Event and ticket setup:** club staff create a draft event, ticket types with rules, matches and an optional market; publishing requires at least one active ticket type.
-4. **Fan purchase:** a fan opens a published event, chooses a ticket type and 1–4 attendees, enters identity data, accepts the club terms and buys. The order is simulated; each ticket gets a code/QR.
+4. **Fan purchase:** a fan opens a published event, chooses a ticket type and 1–4 attendees, enters identity data, accepts the club terms and buys. The buyer cap is cumulative per event across orders and channels. The order is simulated; each ticket gets a code/QR.
 5. **Check-in and name change:** staff check in by code (idempotent); a buyer may transfer a transferable ticket to a new named attendee before the deadline.
 6. **Prediction:** once the market opens, a fan enters a points position, may exit part or all, and is subject to the entry cooldown. New entries stop when the match is `FINISHED`; exits remain available while the market is open. Retries are idempotent.
 7. **Resolution:** club staff resolve the market once after the match is `FINISHED`, using the score-derived winner; winning shares pay one point each and losing shares pay nothing.
@@ -113,7 +113,7 @@ This is a summary. The [registry](../methodology/checkpoint-A/02-invariants.md) 
 | Club data is isolated; a member cannot read another club's orders, attendees or insights | Club-scoped RLS + RPC membership checks | **Verified** (v3 integration) |
 | Plan entitlements and limits are enforced in the database | `has_entitlement`, subscription status, RPC checks | **Verified** (v3 integration/CLI) |
 | A buyer can buy 1–4 named tickets; identity fields and terms are required | `purchase_ticket` transaction | **Verified** (v3 integration/CLI) |
-| Ticket sales never exceed capacity or allocation | Ticket type/event locks + counts | **Verified** (v3 integration) |
+| Ticket sales never exceed capacity or allocation | Ticket type/event locks, capacity triggers and configuration guard | **Enforced, unverified by independent verification** (T-INV5; targeted tests pass) |
 | Purchase and check-in are idempotent | Request id + ticket code guard | **Verified** (v3 integration) |
 | Fan-card, transferability and transfer-deadline rules are enforced | Ticket type rules + attendee validation | **Verified** (v3 integration) |
 | Clubs see aggregate prediction data only; cohorts below 5 are suppressed; no attendee identity | `club_prediction_insights` + privacy rule | **Verified** (v3 integration) |

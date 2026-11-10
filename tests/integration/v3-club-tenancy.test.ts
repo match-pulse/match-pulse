@@ -648,3 +648,98 @@ describe('v3 security boundary', () => {
     TEST_TIMEOUT_MS
   )
 })
+
+describe('v3 ticket integrity', () => {
+  test(
+    'caps a buyer cumulatively and refuses legacy paths on v3 events',
+    async () => {
+      const owner = await createUser()
+      const buyer = await createUser()
+      let clubId: string | null = null
+
+      try {
+        clubId = await createClub(owner, 'Ticket Integrity Club', 'PRO')
+        const eventId = await createEvent(owner, clubId, 20)
+        const typeId = await createTicketType(owner, eventId, { allocation: 20 })
+        await publishEvent(owner, eventId)
+
+        const first = await buy(
+          buyer,
+          typeId,
+          Array.from({ length: 4 }, (_, index) => attendee(`Fan${index}`, 'Limit'))
+        )
+        expect(first?.order_id).toBeTruthy()
+
+        const fifth = await buy(buyer, typeId, [attendee('Fifth', 'Ticket')]).catch(
+          (error: Error) => error
+        )
+        expect(fifth instanceof Error ? fifth.message : '').toContain('maximum per buyer')
+
+        const oversized = await owner.client.rpc('create_club_event', {
+          p_club_id: clubId,
+          p_name: 'Too Big',
+          p_max_capacity: 2,
+          p_ticket_allocation: 3,
+          p_ticket_points: 0
+        })
+        expect(oversized.error?.message).toContain('allocation cannot exceed')
+
+        const claim = await buyer.client.rpc('claim_ticket', { p_tournament_id: eventId })
+        expect(claim.error?.message).toContain('legacy claim is not available')
+
+        const registration = await buyer.client.rpc('register_for_tournament', {
+          p_tournament_id: eventId
+        })
+        expect(registration.error).toBeNull()
+        expect(registration.data).toBe(false)
+      } finally {
+        await cleanupClub(clubId)
+        await deleteUsers([owner, buyer])
+      }
+    },
+    TEST_TIMEOUT_MS
+  )
+
+  test(
+    'concurrent orders cannot exceed the cumulative buyer cap',
+    async () => {
+      const owner = await createUser()
+      const buyer = await createUser()
+      let clubId: string | null = null
+
+      try {
+        clubId = await createClub(owner, 'Concurrent Cap Club', 'PRO')
+        const eventId = await createEvent(owner, clubId, 20)
+        const typeId = await createTicketType(owner, eventId, { allocation: 20 })
+        await publishEvent(owner, eventId)
+
+        const results = await Promise.allSettled([
+          buy(
+            buyer,
+            typeId,
+            Array.from({ length: 3 }, (_, index) => attendee(`First${index}`, 'Order')),
+            randomUUID()
+          ),
+          buy(
+            buyer,
+            typeId,
+            Array.from({ length: 3 }, (_, index) => attendee(`Second${index}`, 'Order')),
+            randomUUID()
+          )
+        ])
+
+        expect(results.filter((result) => result.status === 'fulfilled').length).toBe(1)
+
+        const { data: tickets } = await admin
+          .from('tickets')
+          .select('id')
+          .eq('tournament_id', eventId)
+        expect(tickets?.length).toBe(3)
+      } finally {
+        await cleanupClub(clubId)
+        await deleteUsers([owner, buyer])
+      }
+    },
+    TEST_TIMEOUT_MS
+  )
+})
