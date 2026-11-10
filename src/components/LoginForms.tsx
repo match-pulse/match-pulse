@@ -1,9 +1,9 @@
 'use client'
 
 import { useState } from 'react'
-import { signInClub, signInFan, signInOrganizer, signUpFan } from '@/app/actions/auth'
+import { signInFan, signInOrganizer, signUpFan } from '@/app/actions/auth'
 
-type Mode = 'FAN' | 'ORGANIZER' | 'CLUB'
+type Mode = 'FAN' | 'ORGANIZER'
 type AuthAction = (formData: FormData) => Promise<{ success: false; message: string }>
 
 export default function LoginForms({ next }: { next?: string }) {
@@ -28,8 +28,8 @@ export default function LoginForms({ next }: { next?: string }) {
 
   return (
     <div className="w-full max-w-md">
-      <div role="group" aria-label="Sign-in role" className="mb-5 grid grid-cols-3 gap-2 rounded bg-slate-800 p-1 text-sm">
-        {(['FAN', 'ORGANIZER', 'CLUB'] as const).map((option) => (
+      <div role="group" aria-label="Sign-in role" className="mb-5 grid grid-cols-2 gap-2 rounded bg-slate-800 p-1 text-sm">
+        {(['FAN', 'ORGANIZER'] as const).map((option) => (
           <button
             key={option}
             type="button"
@@ -39,7 +39,7 @@ export default function LoginForms({ next }: { next?: string }) {
               mode === option ? 'bg-blue-600 text-white' : 'text-slate-300 hover:bg-slate-700'
             }`}
           >
-            {option === 'FAN' ? 'Fan' : option === 'ORGANIZER' ? 'Organizer' : 'Club'}
+            {option === 'FAN' ? 'Fan' : 'Organizer'}
           </button>
         ))}
       </div>
@@ -131,33 +131,28 @@ export default function LoginForms({ next }: { next?: string }) {
         </form>
       )}
 
-      {mode !== 'FAN' && (
+      {mode === 'ORGANIZER' && (
         <form
-          action={(formData) =>
-            handlePassword(
-              formData,
-              mode === 'ORGANIZER' ? signInOrganizer : signInClub
-            )
-          }
+          action={(formData) => handlePassword(formData, signInOrganizer)}
           className="flex flex-col gap-3"
         >
           {next && <input type="hidden" name="next" value={next} />}
-          <label className="text-sm text-slate-400" htmlFor={`${mode}-email`}>
-            {mode === 'ORGANIZER' ? 'Organizer email' : 'Club email'}
+          <label className="text-sm text-slate-400" htmlFor="organizer-email">
+            Organizer email
           </label>
           <input
-            id={`${mode}-email`}
+            id="organizer-email"
             name="email"
             type="email"
             autoComplete="email"
             required
             className="rounded p-2 font-semibold text-black"
           />
-          <label className="text-sm text-slate-400" htmlFor={`${mode}-password`}>
+          <label className="text-sm text-slate-400" htmlFor="organizer-password">
             Password
           </label>
           <input
-            id={`${mode}-password`}
+            id="organizer-password"
             name="password"
             type="password"
             autoComplete="current-password"
@@ -169,7 +164,7 @@ export default function LoginForms({ next }: { next?: string }) {
             disabled={busy}
             className="rounded bg-slate-700 py-2 font-semibold text-white hover:bg-slate-600 disabled:opacity-50"
           >
-            Sign in as {mode === 'ORGANIZER' ? 'organizer' : 'club'}
+            Sign in as organizer
           </button>
         </form>
       )}

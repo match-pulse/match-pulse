@@ -2,8 +2,6 @@ import { expect, test } from '@playwright/test'
 
 const ORGANIZER_EMAIL = process.env.ORGANIZER_EMAIL ?? 'organizer@matchpulse.local'
 const ORGANIZER_PASSWORD = process.env.ORGANIZER_PASSWORD ?? 'matchpulse-organizer'
-const CLUB_EMAIL = process.env.CLUB_EMAIL ?? 'club@matchpulse.local'
-const CLUB_PASSWORD = process.env.CLUB_PASSWORD ?? 'matchpulse-club'
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL ?? 'admin@matchpulse.local'
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD ?? 'matchpulse-admin'
 
@@ -75,21 +73,6 @@ test('organizer can create a tournament, create a match, update it and resolve t
   await page.getByLabel('Winner').selectOption('HOME')
   await page.getByRole('button', { name: 'Resolve market' }).click()
   await expect(page.getByText('Market resolved.')).toBeVisible()
-})
-
-test('club can view aggregate analytics and export CSV', async ({ page }) => {
-  await page.goto('/login')
-  await page.getByRole('button', { name: 'Club' }).click()
-  await page.getByLabel('Club email').fill(CLUB_EMAIL)
-  await page.getByLabel('Password').fill(CLUB_PASSWORD)
-  await page.getByRole('button', { name: 'Sign in as club' }).click()
-  await expect(page.getByRole('heading', { name: 'Club analytics' })).toBeVisible()
-  await expect(page.getByRole('columnheader', { name: 'Traders' })).toBeVisible()
-
-  const response = await page.request.get('/api/club/export')
-  expect(response.status()).toBe(200)
-  expect(response.headers()['content-type']).toContain('text/csv')
-  expect(await response.text()).toContain('"match_id","home_team","away_team"')
 })
 
 test('club owner can open the v3 dashboard and create a reward', async ({ page }) => {

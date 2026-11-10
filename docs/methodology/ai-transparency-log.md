@@ -1078,19 +1078,19 @@ Secret hygiene re-verified: `release.env` in history contains only `APP_VERSION`
 
 ---
 
-## Entry 68 — Production deployment deferred to the final post-MVP step
+## Entry 63 — Legacy CLUB retirement (FND-023 / #188)
 
 **Date:** 2026-11-10
 **Tool:** opencode CLI (`deepseek-v4.1-flash`)
-**Intent:** Record the human decision that Vercel + hosted Supabase deployment is the final step, after the MVP is complete.
-**Boundary:** Operations runbook, production deployment policy, README known gaps, findings register and decision record. No deployment, credentials or production work.
-**Prior records reviewed:** FND-006; delivery and recovery verification records; runbook; issue #202.
-**Work performed:** added `docs/operations/production-deployment.md` with preconditions and a deployment checklist; marked production as not provisioned in the runbook; changed FND-006 to Deferred and added the decision record.
-**Verification:** Documentation-only; `git diff --check` and link checks. No production environment was created.
-**Learning:** Deferring deployment is a recorded decision, not an implicit omission; the record must state what is not claimed and what must happen before FND-006 can close.
-**Limitations:** FND-006 remains Deferred. No hosted URL, monitoring, production recovery or load evidence exists.
+**Intent:** Retire the legacy v2 CLUB analytics surface and close FND-023.
+**Boundary:** Removed legacy page/export/role/fixture, added a corrective migration, updated tests and docs.
+**Prior records reviewed:** FND-023; AUD-015; issue #188; v3 club dashboard/export; auth/routing tests.
+**Work performed:** deleted `/club`, `/api/club/export` and `auth:club`; removed `CLUB` from the profile role union, login UI, home routing, shell, test auth and fixtures; added `20261213_retire_legacy_club.sql` to convert legacy profiles to `FAN`, tighten the role constraint and drop the legacy analytics/export RPCs; removed legacy integration/E2E tests.
+**Verification:** database 55 pass / 0 fail, CLI 2 pass, E2E 9 passed, build/typecheck/lint/architecture passed. Details: [`verification/2026-11-188-legacy-club-retirement.md`](verification/2026-11-188-legacy-club-retirement.md).
+**Learning:** Retiring a role is not only deleting a page; the profile constraint, login UI, routing, fixtures, RPC grants and tests must move together.
+**Limitations:** Local/CI evidence only; production deployment is the final post-MVP step.
 
-**Links:** issue #202 · [`production deployment policy`](../operations/production-deployment.md) · [`decision record`](remediation/2026-11-202-production-deployment-deferral.md) · [`findings register`](findings-register.md)
+**Links:** issue #188 · [`verification`](verification/2026-11-188-legacy-club-retirement.md) · [`findings register`](findings-register.md) · [`audit`](audits/2026-11-10-171-v3-audit.md)
 
 ---
 
@@ -1126,6 +1126,22 @@ Secret hygiene re-verified: `release.env` in history contains only `APP_VERSION`
 
 ---
 
+## Entry 68 — Production deployment deferred to the final post-MVP step
+
+**Date:** 2026-11-10
+**Tool:** opencode CLI (`deepseek-v4.1-flash`)
+**Intent:** Record the human decision that Vercel + hosted Supabase deployment is the final step, after the MVP is complete.
+**Boundary:** Operations runbook, production deployment policy, README known gaps, findings register and decision record. No deployment, credentials or production work.
+**Prior records reviewed:** FND-006; delivery and recovery verification records; runbook; issue #202.
+**Work performed:** added `docs/operations/production-deployment.md` with preconditions and a deployment checklist; marked production as not provisioned in the runbook; changed FND-006 to Deferred and added the decision record.
+**Verification:** Documentation-only; `git diff --check` and link checks. No production environment was created.
+**Learning:** Deferring deployment is a recorded decision, not an implicit omission; the record must state what is not claimed and what must happen before FND-006 can close.
+**Limitations:** FND-006 remains Deferred. No hosted URL, monitoring, production recovery or load evidence exists.
+
+**Links:** issue #202 · [`production deployment policy`](../operations/production-deployment.md) · [`decision record`](remediation/2026-11-202-production-deployment-deferral.md) · [`findings register`](findings-register.md)
+
+---
+
 ## Entry 69 — Legacy finding verification (FND-001/003/005)
 
 **Date:** 2026-11-10
@@ -1139,6 +1155,8 @@ Secret hygiene re-verified: `release.env` in history contains only `APP_VERSION`
 **Limitations:** Local/CI evidence only; no hosted production evidence.
 
 **Links:** issue #197 · [`verification`](verification/2026-11-197-legacy-findings-verification.md) · [`findings register`](findings-register.md)
+
+---
 
 ---
 
