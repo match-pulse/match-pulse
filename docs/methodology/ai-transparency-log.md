@@ -1078,35 +1078,35 @@ Secret hygiene re-verified: `release.env` in history contains only `APP_VERSION`
 
 ---
 
-## Entry 62 — Project-scoped frontend-design skill (issue #204, PR #205)
+## Entry 68 — Production deployment deferred to the final post-MVP step
 
 **Date:** 2026-11-10
 **Tool:** opencode CLI (`deepseek-v4.1-flash`)
-**Intent:** Install Anthropic's official `frontend-design` skill at project scope so future frontend work has a shared design authority.
-**Boundary:** AI installed the skill, added its recorded files and `skills-lock.json`, and wrote this entry. AI did not change application code, configuration, or any user-facing view, and did not edit the skill's `SKILL.md`, frontmatter, or license. The human authorized the installation, commit, push, and pull request.
-**Prior records reviewed:** findings register (no related finding); GitHub issue search (no existing skill-installation issue); `AGENTS.md` workflow and tooling rules, including the Frontend Audit & Improvement workflow.
-**Work performed:** ran `npx skills add anthropics/skills --skill frontend-design -a opencode -y`; confirmed project scope and OpenCode discovery with `npx skills list --json`; verified the installed files against the upstream Git blob hashes; loaded the skill by ID `frontend-design`.
-**Verification:** `SKILL.md` and `LICENSE.txt` are byte-identical to upstream (`a533345…` and `f433b1a…`); `npx skills list --json` reports `scope: project` and agent `OpenCode`; the `skill` tool returned the full body from `.agents/skills/frontend-design`. No application checks were run because no application source changed.
-**Learning:** OpenCode already discovers `.agents/skills`, so no configuration change was needed. Committing the installed files plus `skills-lock.json` records the exact upstream version; leaving them untracked would make the installation local-only. The working tree on `fix/188` retains identical untracked copies, which must be removed before checking out this branch in that worktree.
-**Limitations:** No independent verifier; the skill's guidance has not yet been applied to a UI task. The issue was not added to the project board at creation time.
+**Intent:** Record the human decision that Vercel + hosted Supabase deployment is the final step, after the MVP is complete.
+**Boundary:** Operations runbook, production deployment policy, README known gaps, findings register and decision record. No deployment, credentials or production work.
+**Prior records reviewed:** FND-006; delivery and recovery verification records; runbook; issue #202.
+**Work performed:** added `docs/operations/production-deployment.md` with preconditions and a deployment checklist; marked production as not provisioned in the runbook; changed FND-006 to Deferred and added the decision record.
+**Verification:** Documentation-only; `git diff --check` and link checks. No production environment was created.
+**Learning:** Deferring deployment is a recorded decision, not an implicit omission; the record must state what is not claimed and what must happen before FND-006 can close.
+**Limitations:** FND-006 remains Deferred. No hosted URL, monitoring, production recovery or load evidence exists.
 
-**Links:** issue #204 · PR [#205](https://github.com/match-pulse/match-pulse/pull/205)
+**Links:** issue #202 · [`production deployment policy`](../operations/production-deployment.md) · [`decision record`](remediation/2026-11-202-production-deployment-deferral.md) · [`findings register`](findings-register.md)
 
 ---
 
-## Entry 63 — Frontend audit and improvement workflow
+## Entry 64 — Post-merge cleanup completion rule
 
 **Date:** 2026-11-10
 **Tool:** opencode CLI (`deepseek-v4.1-flash`)
-**Intent:** Add a reusable workflow contract for a design-led frontend audit and improvement campaign, using the installed `frontend-design` skill as design authority, and register it with the repository's workflow governance.
-**Boundary:** `docs/workflows/frontend-audit-improvement-workflow.md`, `docs/workflows/README.md`, `AGENTS.md`, and the issue, branch, commit, push and pull request. No application code, UI, schema, authentication, authorization, migration, configuration, skill files or runtime behavior changes.
-**Prior records reviewed:** `docs/workflows/README.md`, `AGENTS.md` workflow and human-gate rules, `docs/methodology/findings-register.md` (no matching frontend workflow entry), `.agents/skills/frontend-design/SKILL.md`, and the existing requirements/design, software audit and software refactoring workflow contracts.
-**Work performed:** created issue #207; added the six-phase workflow covering discovery, audit and plan, sequential view improvement, consistency review, validation and final reporting; registered it in the workflow index and `AGENTS.md`; committed as `1cc331e`, pushed branch `docs/207-frontend-audit-workflow`, opened PR #208, and merged `origin/main` to resolve the Entry 62 numbering conflict.
-**Verification:** `git diff --check` passed; `git show --stat` confirmed the original commit contains only the workflow file and the two registration edits; `git ls-remote` confirmed the initial remote branch at `1cc331e`. No runtime checks were run because no application code changed. The workflow itself has not been executed.
-**Learning:** The workflow needs an explicit approved-campaign gate before view-by-view work so autonomous visual decisions do not conflict with the repository's human decision authority. Design-specific defect findings must still route through the Software Audit Workflow rather than being silently fixed as styling.
-**Limitations:** Documentation-only change; no application rendering or browser verification. No independent review yet. The workflow has not been run against the current frontend, so its inventory and sequencing assumptions remain unverified.
+**Intent:** Make cleanup explicit before a `**No action**` response and define cleanup as removing a temporary worktree only after the branch is merged into remote `main` and required checks are green.
+**Boundary:** `AGENTS.md` §11 and §13, issue #212, branch `docs/212-post-merge-cleanup`, commit, push and PR #213. No application code, schema, configuration, historical record, deployment or runtime changes.
+**Prior records reviewed:** `AGENTS.md` §11/§13; issue #207 and PR #208 (merged at `d65ad27`, all five checks green); `git worktree list` (no temporary worktree remains); AI Entries 62–63.
+**Work performed:** added cleanup as completion step 7 and renumbered the next-action step to 8; updated the `**No action**` rule to require confirmed remote merge, green checks and temporary-worktree removal; verified the existing PR #208 cleanup state before making the change.
+**Verification:** `git diff --check` passed; `git show --stat` confirmed the first commit changes only `AGENTS.md`; PR #208 was confirmed merged with all five checks successful; `git worktree list` confirmed no temporary worktree remains. No runtime checks were run because no application code changed. PR #213 checks are pending at the time of this entry.
+**Learning:** Cleanup must be a verified post-merge action, not an assumption. Removing temporary worktrees keeps the checkout tidy without touching the primary worktree, unmerged work, or unrelated changes. A `**No action**` response is a claim that this cleanup has already been completed or is not applicable.
+**Limitations:** Documentation-only change; no independent review yet. The new rule is not exercised by an application test; its first use is the cleanup of PR #213 itself.
 
-**Links:** issue #207 · PR [#208](https://github.com/match-pulse/match-pulse/pull/208) · [`workflow`](../workflows/frontend-audit-improvement-workflow.md) · [`workflow index`](../workflows/README.md) · [`findings register`](findings-register.md)
+**Links:** issue #212 · PR [#213](https://github.com/match-pulse/match-pulse/pull/213) · [`AGENTS.md`](../../AGENTS.md)
 
 ---
 

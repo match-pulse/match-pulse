@@ -293,7 +293,7 @@ satisfy `${...}` interpolation.
 
 Recorded so they are not mistaken for delivered work. Full detail in the [invariants registry](docs/methodology/checkpoint-A/02-invariants.md).
 
-- **No hosted deployment.** Delivery is local/CI only: health, structured logs, smoke test and a `Delivery and recovery` CI job exist, but there is no cloud environment, TLS, DNS or production availability claim.
+- **Production deployment is the final post-MVP step.** Delivery is local/CI only today: health, structured logs, smoke test and a `Delivery and recovery` CI job exist, but there is no cloud environment, TLS, DNS or production availability claim. Vercel + hosted Supabase deployment is deliberately deferred until the MVP is complete; see [production-deployment.md](docs/operations/production-deployment.md).
 - **No external observability or alerting.** Logs are JSON to stdout; there is no collector, dashboard, trace or alert.
 - **No production recovery drill.** CI restores a public-schema backup into a scratch database and verifies table/policy/row counts; there is still no production backup, retention, RTO/RPO or disaster-recovery evidence.
 - **No real payments, financial KYC, invoices, refunds or settlement.** Ticket prices and subscription plans are simulated; the course prototype does not move money.
