@@ -1094,6 +1094,22 @@ Secret hygiene re-verified: `release.env` in history contains only `APP_VERSION`
 
 ---
 
+## Entry 66 — M-INV2 observed-red mutation (FND-002 / #198)
+
+**Date:** 2026-11-10
+**Tool:** opencode CLI (`deepseek-v4.1-flash`)
+**Intent:** Make M-INV2 an observed-red fault-injection result.
+**Boundary:** Fault-injection runner and mutation only; no application migration.
+**Prior records reviewed:** FND-002; M-INV2; `atomic-rollback.fault.ts`; fault-injection verification record.
+**Work performed:** added a test-only dblink mutation that commits a trade row on a second connection before raising, plus a per-mutation `supabase_admin` apply path. The existing rollback test fails under the mutation and still passes under the forced-failure mutation.
+**Verification:** targeted fault test fails with one surviving trade under the mutation; baseline forced-failure test passes. Details: [`verification/2026-11-198-m-inv2-observed-red.md`](verification/2026-11-198-m-inv2-observed-red.md).
+**Learning:** A positive rollback test can be strengthened by making a side effect escape the transaction; dblink is sufficient, but it must run as a superuser-owned test-only function and never ship in production.
+**Limitations:** The full 28-entry matrix is revalidated in CI; the dblink helper is test-only.
+
+**Links:** issue #198 · [`verification`](verification/2026-11-198-m-inv2-observed-red.md) · [`findings register`](findings-register.md) · [`invariant registry`](checkpoint-A/02-invariants.md)
+
+---
+
 ## Standing rule
 
 AI may investigate, analyse, draft, implement within an approved scope, and run verification. The human retains every decision that affects business rules, architecture, schema, scope, priority, risk acceptance and merging. Contributions that cannot be verified are recorded as unverified rather than asserted.

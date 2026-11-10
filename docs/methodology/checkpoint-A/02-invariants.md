@@ -52,7 +52,7 @@ These replace the withdrawn prediction invariants. Enforcement and the first evi
 | ID | Invariant | Enforcement | Status |
 | :--- | :--- | :--- | :--- |
 | **M-INV1** | Entries are accepted only while the market is open (`status = OPEN`), authoritative database time is at or after `kickoff_time`, the match is not `FINISHED` and the event is not `CANCELLED`; entries at or after resolution are refused. Exits are accepted while open, including after `FINISHED` and during an entry cooldown. | `market_trades_market_window` and `enforce_prediction_enabled` triggers, plus the window guard inside `open_trade`/`close_trade`. | **Verified — fault-injected and human-verified 2026-11-10.** `market-lifecycle.test.ts` covers the cases; `m-inv1-window`, `m-inv1-finished-window` and `m-inv1-disable-exit` are observed red. |
-| **M-INV2** | An entry or exit commits the position, the point debit/credit and the trade-log row together, or not at all. | One transaction per RPC; no separate read-modify-write. | **Verified by forced-failure rollback.** `tests/fault-injection/atomic-rollback.fault.ts` forces a trade-insert failure and asserts no partial balance, position or trade survives (CI 42474762811). This is not an observed-red mutation: PostgreSQL function atomicity cannot be broken without a second connection. The limit is recorded in the verification record. |
+| **M-INV2** | An entry or exit commits the position, the point debit/credit and the trade-log row together, or not at all. | One transaction per RPC; no separate read-modify-write. | **Verified — forced-failure and observed-red.** `tests/fault-injection/atomic-rollback.fault.ts` first proves the rollback with a forced trade-insert failure; the `m-inv2-nonateomic` dblink mutation then commits a trade row outside the failing transaction, and the same test fails. |
 | **M-INV3** | A position cannot sell more shares than it holds; holdings never become negative. | Position guard in `close_trade`; `shares >= 0` constraint. | **Verified.** `market-pricing.test.ts`; fault injection removed the position guard and the non-negative constraints, and the over-sell test failed (CI 42474762811). |
 | **M-INV4** | A balance never becomes negative, including concurrent requests from the same user across markets. | Profile row lock plus conditional debit. | **Verified.** `market-concurrency.test.ts` races two 50-point spends against a 60-point balance. Injection removed the profile lock and both point guards: both spends were accepted and the balance reached **−40**. Restored; suite green. |
 | **M-INV5** | For every outcome, the sum of held position shares equals the market's outstanding quantity `q`. | Transactional updates of positions and `q` in the same statement path. | **Verified.** Bookkeeping assertion in `market-pricing.test.ts`; fault injection advanced `q` without the matching position update and the test failed (CI 42474762811). |
@@ -211,6 +211,7 @@ Kong/Docker DNS workaround:
 | :--- | :--- | :--- | :--- |
 | `m-inv1-window` | M-INV1 | targeted test fails | exit 1 |
 | `m-inv2-rollback` | M-INV2 | forced-failure test passes | exit 0 |
+| `m-inv2-nonateomic` | M-INV2 | targeted test fails | exit 1 |
 | `m-inv3-oversell` | M-INV3 | targeted test fails | exit 1 |
 | `m-inv5-bookkeeping` | M-INV5 | targeted test fails | exit 1 |
 | `m-inv8-floor` | M-INV8 | targeted test fails | exit 1 |
@@ -237,14 +238,14 @@ Kong/Docker DNS workaround:
 | `t-inv8-cohort-suppression` | T-INV8 | targeted test fails | exit 1 |
 | `t-inv13-ticket-payload` | T-INV13 | targeted test fails | exit 1 |
 
-The full invariant suite then returned **57 pass / 0 fail**. The M-INV2 row is a
-**forced-failure rollback** check, not an observed-red mutation: the trigger
-forces the trade insert to fail and the test asserts that no partial balance,
-position, market update or trade survives. PostgreSQL function atomicity cannot
-be broken without a second connection, so a true observed-red version of M-INV2
-is not claimed. The sales-path capacity trigger and the subscription-lock
-concurrency path are exercised by tests but are not separately mutated; the
-former is defence in depth and the latter is timing-dependent.
+The full invariant suite then returned **57 pass / 0 fail**. M-INV2 has both a
+**forced-failure rollback** check and an **observed-red** dblink mutation: the
+forced trigger proves no partial state survives a failure; the dblink mutation
+commits a trade row on a second connection before raising, and the test fails
+because that side effect escaped the transaction. The sales-path capacity
+trigger and the subscription-lock concurrency path are exercised by tests but
+are not separately mutated; the former is defence in depth and the latter is
+timing-dependent.
 
 ### What a green run does and does not establish
 
@@ -252,6 +253,6 @@ It establishes that these scenarios hold, on this machine, against a single data
 
 ## 4. Current focus
 
-INV-01 and INV-02 remain verified by their tests. INV-03 and INV-04 are withdrawn with the retired fixed-score feature (owner decision, 2026-10-19); M-INV1–M-INV9 replace them. M-INV1–M-INV9 are enforced by the database and covered by the invariant suite; the mechanisms listed in the 2026-11-10 matrix are observed red, except M-INV2, which is a **forced-failure rollback** check because PostgreSQL function atomicity cannot be broken without a second connection. The 2026-11-10 matrix also covers the v3.1.0 market, ticketing, entitlement, reward, retention and cohort guards. The human decision owner confirmed the campaign on 2026-11-10.
+INV-01 and INV-02 remain verified by their tests. INV-03 and INV-04 are withdrawn with the retired fixed-score feature (owner decision, 2026-10-19); M-INV1–M-INV9 replace them. M-INV1–M-INV9 are enforced by the database and covered by the invariant suite; the mechanisms listed in the 2026-11-10 matrix are observed red, including M-INV2 through a dblink side-effect mutation. The 2026-11-10 matrix also covers the v3.1.0 market, ticketing, entitlement, reward, retention and cohort guards. The human decision owner confirmed the campaign on 2026-11-10.
 
 INV-05 and A-INV1–A-INV5 are **Verified** for the platform boundary by the authorization suite in CI. The v3.1.0 remediation changed several market, ticketing, entitlement, reward and privacy guards; those claims are **Verified by fault injection and the human decision owner on 2026-11-10**. The v3 suite currently records **57 pass / 0 fail**, the CLI suite **2 pass / 0 fail** and Playwright/axe **11 passed**. The remaining limits are FND-023 (deferred to #188), FND-026/FND-027 (accepted risks), the M-INV2 observed-red limitation (FND-002), load/p95 (FND-004) and delivery/operations (FND-006). FND-007 (real-user evidence) and FND-008 (independent human review) were confirmed Verified by the human decision owner on 2026-11-10.
