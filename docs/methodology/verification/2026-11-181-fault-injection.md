@@ -102,4 +102,4 @@ passed
 
 ## 7. Addenda
 
-Pending PR link and independent verification.
+2026-11-10: The first CI run of this matrix exposed a weak assertion: `t-inv8-cohort-suppression` did not fail the test because the cohort test checked only the `suppressed` flag while the mutation still returned the metrics. The test now also asserts that suppressed rows have null `trades`, `shares`, `last_price` and `unique_predictors`, and that the allowed cohort has non-null metrics. With the mutation applied the strengthened test failed locally; after restoring the schema it passed. The matrix was rerun and the result is recorded below.
