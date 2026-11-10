@@ -15,7 +15,6 @@
     "check:architecture": "bun scripts/check-architecture.ts",
     "smoke": "bun scripts/smoke-test.ts",
     "fault:inject": "bun scripts/fault-injection.ts",
-    "auth:club": "bun --env-file=.env.local scripts/create-club.ts",
     "test:e2e": "playwright test",
     "test:e2e:install": "playwright install chromium",
     "check:secrets": "bun scripts/check-secrets.ts",
