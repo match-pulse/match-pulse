@@ -33,17 +33,33 @@ Observed behaviour:
 - A new key with insufficient points is refused.
 - Two concurrent redemptions with the same key return the same code, debit once and store one redemption.
 
+Full suite after rebasing onto the merged market lifecycle and resetting the local database:
+
+```text
+bun run test
+49 pass / 0 fail, 419 expect() calls
+
+bun run test:agent
+2 pass / 0 fail, 30 expect() calls
+
+bun run test:e2e
+11 passed
+
+bun run build (local .env.local)
+passed
+```
+
 ## 4. Result
 
-- Targeted reward tests pass.
+- Targeted, full database (49 tests), CLI (2) and E2E (11) suites pass.
 - The old one-argument `redeem_reward` signature was removed; the CLI and web callers send a key.
-- Full-suite/CLI/E2E and independent verification remain pending after the branch is rebased onto the merged market/ticketing work.
+- FND-013 is implementation-complete and eligible for independent verification after merge.
 
 ## 5. Limitations
 
-- The full suite was not run on this branch because the market lifecycle and ticketing PRs are not both merged yet.
 - The client form holds one key while mounted; a full page reload after an ambiguous response creates a new key. The CLI supports explicit key reuse.
 - Local Kong/Docker DNS workaround remains an environment limitation.
+- The E2E run emitted pre-existing Next.js `Date.now()` prerender warnings but all 11 tests passed.
 
 ## 6. Links
 
