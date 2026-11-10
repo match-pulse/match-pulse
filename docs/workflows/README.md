@@ -22,6 +22,7 @@ Historical records are indexed in [`docs/methodology/README.md`](../methodology/
 | [`testing-verification-workflow.md`](testing-verification-workflow.md) | Establish and collect evidence that requirements, behavior, and invariants are satisfied. | Cross-cutting workflow |
 | [`software-audit-workflow.md`](software-audit-workflow.md) | Find, classify, document, and route defects, inconsistencies, risks, and remediation. | Assessment workflow |
 | [`software-refactoring-workflow.md`](software-refactoring-workflow.md) | Improve internal structure while preserving observable behavior. | Improvement workflow |
+| [`frontend-audit-improvement-workflow.md`](frontend-audit-improvement-workflow.md) | Audit and improve every user-facing view one at a time under a shared design system, using the `frontend-design` skill as design authority. | Improvement workflow |
 | [`operations-incident-workflow.md`](operations-incident-workflow.md) | Establish release readiness, monitor operations, respond to incidents, and learn. | Downstream workflow |
 | [`release-workflow.md`](release-workflow.md) | Cut an immutable, documented release from a green `main`; align changelog, version, tag and GitHub Release. | Downstream workflow |
 | [`recordkeeping-traceability-workflow.md`](recordkeeping-traceability-workflow.md) | Preserve permanent records, track findings, detect duplicates and recurrence, and prevent loops. | Cross-cutting workflow |
@@ -45,7 +46,7 @@ Agentic Execution coordinates approved tasks across the workflows.
 Human approval gates apply at every consequential decision.
 ```
 
-Development is the source of truth for the Kanban lifecycle. Agentic Execution does not create a parallel board or replace the workflow owners. Testing, security, privacy, recordkeeping, and traceability apply throughout the lifecycle. Audit and Refactoring do not bypass Development: their approved remediation work is represented by issues and pull requests. Operational findings return to **Enter** as new or updated work.
+Development is the source of truth for the Kanban lifecycle. Agentic Execution does not create a parallel board or replace the workflow owners. Testing, security, privacy, recordkeeping, and traceability apply throughout the lifecycle. Audit and Refactoring do not bypass Development: their approved remediation work is represented by issues and pull requests. Frontend Audit & Improvement is an approved design campaign delivered through Development: its visual changes still pass Review Queue and Release & Learn. Operational findings return to **Enter** as new or updated work.
 
 **Release** is the boundary between execution tracking and permanent history. A release is cut from a green `main`, recorded in `CHANGELOG.md`, tagged with an annotated SemVer tag, and published as a GitHub Release. The project board remains the execution record; the changelog and tag are the release record.
 
