@@ -1,0 +1,4 @@
+schema: spec-driven
+created: 2026-11-10
+goal: Close the security, market-integrity, ticketing, entitlement, privacy and
+  evidence defects recorded in the v3.0.0 audit.
