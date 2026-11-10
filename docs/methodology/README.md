@@ -44,6 +44,7 @@ ADRs remain in [`docs/architecture/adr/`](../architecture/adr/) and follow the e
 - [`verification/2026-11-181-fault-injection.md`](verification/2026-11-181-fault-injection.md) — 27-entry observed-red fault-injection matrix and invariant corrections.
 - [`verification/2026-11-182-minor-hardening.md`](verification/2026-11-182-minor-hardening.md) — CSV safety, seed resolution and payload-aware ticket replay evidence.
 - [`verification/2026-11-173-audit-remediation.md`](verification/2026-11-173-audit-remediation.md) — final v3.1.0 campaign verification and finding dispositions.
+- [`verification/2026-11-197-legacy-findings-verification.md`](verification/2026-11-197-legacy-findings-verification.md) — FND-001/003/005 targeted verification.
 - [`../testing/agent-playbook.md`](../testing/agent-playbook.md) — CLI-driven agent scenarios and evidence.
 - [`../testing/capabilities.md`](../testing/capabilities.md) — capability-to-command parity manifest.
 - [`../product/competitive-landscape.md`](../product/competitive-landscape.md) — TicketOne/Vivaticket positioning and nominal ticketing context.
