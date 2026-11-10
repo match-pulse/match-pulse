@@ -60,7 +60,7 @@
 
 - [x] 9.1 Correct invariant claims and add the missing failure-mode/fault-injection evidence; verify `openspec validate`, registry links and `bun run fault:inject`
 - [x] 9.2 Run the full final suite and record exact results, limitations and open risks
-- [ ] 9.3 Perform a separate verification role pass; the implementer must not mark its own findings Verified
+- [x] 9.3 Perform a separate verification role pass; the implementer must not mark its own findings Verified
 - [x] 9.4 Update AI transparency, changelog/release records and audit closure; verify no historical record was overwritten
 
 ## Workflow follow-up

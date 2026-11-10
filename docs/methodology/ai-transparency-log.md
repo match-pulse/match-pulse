@@ -1062,6 +1062,22 @@ Secret hygiene re-verified: `release.env` in history contains only `APP_VERSION`
 
 ---
 
+## Entry 61 — Human verification and epic closure
+
+**Date:** 2026-11-10
+**Tool:** opencode CLI (`deepseek-v4.1-flash`)
+**Intent:** Record the human decision owner's verification and close issue #173.
+**Boundary:** Findings register, audit closure log, final campaign verification record, invariant registry and this entry. No application code changes.
+**Prior records reviewed:** final campaign verification; findings register FND-009–FND-028; audit closure log; invariant registry; AI Entries 51–60.
+**Work performed:** on the human's explicit instruction (“verified close this”), marked the 17 implemented findings Verified, recorded the human verifier and date, updated the closure log and invariant statuses, closed issue #173 and moved it to Release & Learn (Done). FND-023 remains Deferred to #188; FND-026/FND-027 remain Accepted Risk; FND-007/FND-008 remain open gates.
+**Verification:** final `main` CI run [42877928840](https://github.com/match-pulse/match-pulse/actions/runs/42877928840) passed all five jobs, including the 27-entry fault-injection matrix. The human decision owner confirmed the campaign as verified on 2026-11-10.
+**Learning:** Human verification is a decision, not an automated result; the records must name the verifier and date, and must not imply a third-party audit where none occurred.
+**Limitations:** FND-007 (real-user evidence) and FND-008 (independent human review) remain open. FND-023, FND-026 and FND-027 retain their explicit dispositions. No release tag or version bump was made.
+
+**Links:** issue #173 · [`verification`](verification/2026-11-173-audit-remediation.md) · [`findings register`](findings-register.md) · [`audit closure`](audits/2026-11-10-171-v3-audit.md) · [`invariant registry`](checkpoint-A/02-invariants.md)
+
+---
+
 ## Standing rule
 
 AI may investigate, analyse, draft, implement within an approved scope, and run verification. The human retains every decision that affects business rules, architecture, schema, scope, priority, risk acceptance and merging. Contributions that cannot be verified are recorded as unverified rather than asserted.

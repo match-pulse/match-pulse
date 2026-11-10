@@ -311,7 +311,7 @@ Recorded so they are not mistaken for delivered work. Full detail in the [invari
 - **E2E and accessibility are not exhaustive.** The Playwright suite covers the v3 fan purchase, club dashboard/event page, admin console and legacy journeys; edge cases remain in integration/CLI tests. The accessibility gate blocks serious and critical violations, not moderate or minor ones.
 - **Performance is a scheduled baseline, not a release gate.** The 20/50/100 burst script records p50/p95/p99, but production load and multi-instance behaviour are not measured.
 - **Legacy v2 pages coexist with the v3 surfaces** for backward compatibility; they are not the current product model.
-- **No real-user validation or independent review.** FND-007 and FND-008 remain human gates.
+- **No real-user validation or third-party audit.** The v3.1.0 remediation was verified by the human decision owner on 2026-11-10; FND-007 (real-user evidence) and FND-008 (independent human review of a PR) remain open gates.
 
 ## Project Roles
 

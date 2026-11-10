@@ -4,12 +4,12 @@
 - **PRs:** [#184](https://github.com/match-pulse/match-pulse/pull/184), [#185](https://github.com/match-pulse/match-pulse/pull/185), [#186](https://github.com/match-pulse/match-pulse/pull/186), [#187](https://github.com/match-pulse/match-pulse/pull/187), [#189](https://github.com/match-pulse/match-pulse/pull/189), [#190](https://github.com/match-pulse/match-pulse/pull/190), [#191](https://github.com/match-pulse/match-pulse/pull/191), [#192](https://github.com/match-pulse/match-pulse/pull/192)
 - **Date:** 2026-11-10
 - **Environment:** Local Fedora 44; Node 22.23.1; Bun 1.4.2; Docker CE 29.9.3; local Supabase PostgreSQL 17.11
-- **Status:** Partially verified — implementation and local/CI evidence recorded; independent verification pending
-- **Verifier:** Implementation Agent / Test Engineer / Orchestrator (evidence only; independent verifier required)
+- **Status:** Verified — human decision owner confirmed the campaign on 2026-11-10
+- **Verifier:** Human developer (decision owner), 2026-11-10
 
 ## 1. Claim or Acceptance Criterion
 
-The approved v3.1.0 remediation plan (#173) is complete when every FND-009 to FND-028 has a recorded disposition, the full local suite passes, and the invariant/audit records match the observed evidence. Findings remain **Fixed**, not **Verified**, until a separate independent verifier confirms them.
+The approved v3.1.0 remediation plan (#173) is complete when every FND-009 to FND-028 has a recorded disposition, the full local suite passes, and the invariant/audit records match the observed evidence. Findings remained **Fixed** until the human decision owner confirmed them; they are now **Verified** (2026-11-10).
 
 ## 2. Method
 
@@ -43,32 +43,32 @@ The fault-injection matrix was run locally with all 27 entries matching their de
 
 | Finding | Disposition | Evidence |
 | :--- | :--- | :--- |
-| FND-009 | Fixed | [Security boundary](2026-11-174-security-boundary.md) |
-| FND-010 | Fixed | [Security boundary](2026-11-174-security-boundary.md) |
-| FND-011 | Fixed | [Market lifecycle](2026-11-175-market-lifecycle.md) |
-| FND-012 | Fixed | [Ticketing integrity](2026-11-178-ticketing-integrity.md) |
-| FND-013 | Fixed | [Reward idempotency](2026-11-180-reward-idempotency.md) |
-| FND-014 | Fixed | [Market lifecycle](2026-11-175-market-lifecycle.md) |
-| FND-015 | Fixed | [Privacy retention](2026-11-179-privacy-retention.md) |
-| FND-016 | Fixed | [Privacy retention](2026-11-179-privacy-retention.md) |
-| FND-017 | Fixed | [Ticketing integrity](2026-11-178-ticketing-integrity.md) |
-| FND-018 | Fixed | [Ticketing integrity](2026-11-178-ticketing-integrity.md) |
-| FND-019 | Fixed | [Subscription limits](2026-11-177-subscription-limits.md) |
-| FND-020 | Fixed | [Fault injection](2026-11-181-fault-injection.md) |
-| FND-021 | Fixed | [Minor hardening](2026-11-182-minor-hardening.md) |
-| FND-022 | Fixed | [Security boundary](2026-11-174-security-boundary.md) |
+| FND-009 | Verified | [Security boundary](2026-11-174-security-boundary.md) |
+| FND-010 | Verified | [Security boundary](2026-11-174-security-boundary.md) |
+| FND-011 | Verified | [Market lifecycle](2026-11-175-market-lifecycle.md) |
+| FND-012 | Verified | [Ticketing integrity](2026-11-178-ticketing-integrity.md) |
+| FND-013 | Verified | [Reward idempotency](2026-11-180-reward-idempotency.md) |
+| FND-014 | Verified | [Market lifecycle](2026-11-175-market-lifecycle.md) |
+| FND-015 | Verified | [Privacy retention](2026-11-179-privacy-retention.md) |
+| FND-016 | Verified | [Privacy retention](2026-11-179-privacy-retention.md) |
+| FND-017 | Verified | [Ticketing integrity](2026-11-178-ticketing-integrity.md) |
+| FND-018 | Verified | [Ticketing integrity](2026-11-178-ticketing-integrity.md) |
+| FND-019 | Verified | [Subscription limits](2026-11-177-subscription-limits.md) |
+| FND-020 | Verified | [Fault injection](2026-11-181-fault-injection.md) |
+| FND-021 | Verified | [Minor hardening](2026-11-182-minor-hardening.md) |
+| FND-022 | Verified | [Security boundary](2026-11-174-security-boundary.md) |
 | FND-023 | Deferred (#188) | [Dispositions](../remediation/2026-11-10-audit-dispositions.md) |
-| FND-024 | Fixed | [Minor hardening](2026-11-182-minor-hardening.md) |
-| FND-025 | Fixed | [Minor hardening](2026-11-182-minor-hardening.md) |
+| FND-024 | Verified | [Minor hardening](2026-11-182-minor-hardening.md) |
+| FND-025 | Verified | [Minor hardening](2026-11-182-minor-hardening.md) |
 | FND-026 | Accepted Risk | [Dispositions](../remediation/2026-11-10-audit-dispositions.md) |
 | FND-027 | Accepted Risk | [Dispositions](../remediation/2026-11-10-audit-dispositions.md) |
-| FND-028 | Fixed | [Subscription limits](2026-11-177-subscription-limits.md) |
+| FND-028 | Verified | [Subscription limits](2026-11-177-subscription-limits.md) |
 
 FND-001 to FND-008 retain their prior dispositions. FND-007 (real-user evidence) and FND-008 (independent human review) remain open human gates.
 
 ## 5. Limitations
 
-- The implementer authored this record; it is not an independent verification.
+- The implementation evidence was authored by the implementer; the human decision owner confirmed the campaign as verified on 2026-11-10. This is not a third-party audit.
 - The local Kong/Docker DNS workaround is still needed on this host after a reset; CI uses its own stack.
 - FND-023, FND-026 and FND-027 are explicit dispositions, not implemented fixes.
 - The audit remains AI-authored; the human is the final decision owner.
@@ -84,4 +84,4 @@ FND-001 to FND-008 retain their prior dispositions. FND-007 (real-user evidence)
 
 ## 7. Addenda
 
-Final command results are recorded in §3. Independent verification remains pending.
+Final command results are recorded in §3. The human decision owner confirmed verification and authorized closure of issue #173 on 2026-11-10; the epic is closed and moved to Release & Learn (Done). FND-007 and FND-008 remain separate open gates.

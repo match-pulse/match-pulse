@@ -72,3 +72,5 @@ Observed behaviour:
 ## 7. Addenda
 
 Pending PR link, full-suite evidence and independent verification.
+
+2026-11-10: The human decision owner confirmed the remediation campaign as verified and authorized closure of #173. This finding is now Verified. See the [final campaign verification](2026-11-173-audit-remediation.md).
