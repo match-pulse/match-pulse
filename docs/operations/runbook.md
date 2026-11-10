@@ -2,7 +2,8 @@
 
 - **Scope:** local and CI environments for the MatchPulse course project.
 - **Status:** implemented and exercised locally/CI. There is **no production
-  environment** and this runbook does not claim one.
+  environment** and this runbook does not claim one. Production deployment is the
+  final post-MVP step; see [production-deployment.md](./production-deployment.md).
 - **Related:** [`slo.md`](./slo.md), [release workflow](../workflows/release-workflow.md),
   [architecture characteristics](../architecture/03-architecture-characteristics.md),
   [FND-006](../methodology/findings-register.md).
@@ -14,10 +15,11 @@
 | Local | Development and manual verification | Supabase local (Docker) | `bun run dev`, `bun run start` |
 | CI | Repeatable verification on every PR and `main` | Supabase local in the runner | `.github/workflows/ci.yml` |
 | Release | Immutable snapshot by tag | Migrations replayed from `supabase/migrations/` | `git checkout vX.Y.Z` then local/CI start |
+| Production | Final post-MVP delivery step | Hosted Supabase | **Not provisioned** — see [production-deployment.md](./production-deployment.md) |
 
 There is no hosted production deployment, no paid service and no production
 data. Any statement about availability applies only to the environment named in
-the evidence.
+the evidence. Production deployment is deliberately the final step, after the MVP is complete.
 
 ## 2. Health
 
