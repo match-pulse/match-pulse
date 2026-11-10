@@ -99,6 +99,7 @@ Use the workflow contracts in `docs/workflows/`:
 - Testing & Verification — establish and collect evidence that behavior and invariants meet the approved criteria.
 - Software Audit — identify and document defects, inconsistencies, risks, and remediation recommendations; audit is read-only.
 - Software Refactoring — improve structure without changing observable behavior.
+- Frontend Audit & Improvement — audit every user-facing view and improve it one at a time under a shared design system, using the `frontend-design` skill as design authority.
 - Operations & Incident Management — verify releases, monitor operations, respond to incidents, and feed learning back into the backlog.
 - Recordkeeping & Traceability — preserve permanent records, track findings, detect duplicates and recurrence, and prevent repeated or conflicting change.
 
@@ -204,7 +205,8 @@ Before declaring a task complete:
 4. Report unresolved risks, assumptions, and decisions.
 5. Update the relevant plan, issue, documentation, findings register, changelog, and AI transparency log when authorized and applicable.
 6. Confirm that no historical record was overwritten, renamed, or deleted.
-7. Identify the next action required from the human.
+7. **Clean up after merge when applicable:** If the task created a branch or temporary worktree, verify that the branch is merged into remote `main` and that all required checks are green. Then remove any temporary worktree created for the task and confirm with `git worktree list` that it is gone. Do not remove the primary worktree, unmerged worktrees, branches, historical records, or unrelated working-tree changes. If the branch is not merged or checks are not green, do not clean up; report the blocker.
+8. Identify the next action required from the human.
 
 Never claim that a test, migration, commit, push, PR, merge, release, or deployment succeeded unless the result was observed. Do not begin an unrequested subsequent task.
 
@@ -243,7 +245,7 @@ Every final response to the human ends with a single closing line stating what i
 - The line is **bold**, so it is visually distinct from the body of the response.
 - The line is **at most one phrase long**. A phrase, not a sentence: a sentence carries its own clause and can hide a second instruction inside it. Write `**Review PR #4**`, not `**Please review PR #4 and then confirm the board status before I move on.**`
 - The line states either the action required from the human, or that none is required.
-- When the work is complete and nothing is needed, the line says so: `**No action**`. Do not invent a pending action to fill the line.
+- When the work is complete and nothing is needed, the line says so: `**No action**`, but only after the completion-report cleanup step confirms that the branch is merged into remote `main`, required checks are green, and any temporary worktree created for the task has been removed. If cleanup is not applicable or cannot proceed, state the blocker or required action instead. Do not invent a pending action to fill the line.
 - When several actions are needed, name the single next one. The rest belong in the body of the response.
 - When the response is a blocking question, the question itself is the action, and the line states what the human needs to decide.
 

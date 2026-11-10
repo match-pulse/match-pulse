@@ -1078,19 +1078,19 @@ Secret hygiene re-verified: `release.env` in history contains only `APP_VERSION`
 
 ---
 
-## Entry 62 — Project-scoped frontend-design skill (issue #204, PR #205)
+## Entry 64 — Post-merge cleanup completion rule
 
 **Date:** 2026-11-10
 **Tool:** opencode CLI (`deepseek-v4.1-flash`)
-**Intent:** Install Anthropic's official `frontend-design` skill at project scope so future frontend work has a shared design authority.
-**Boundary:** AI installed the skill, added its recorded files and `skills-lock.json`, and wrote this entry. AI did not change application code, configuration, or any user-facing view, and did not edit the skill's `SKILL.md`, frontmatter, or license. The human authorized the installation, commit, push, and pull request.
-**Prior records reviewed:** findings register (no related finding); GitHub issue search (no existing skill-installation issue); `AGENTS.md` workflow and tooling rules, including the Frontend Audit & Improvement workflow.
-**Work performed:** ran `npx skills add anthropics/skills --skill frontend-design -a opencode -y`; confirmed project scope and OpenCode discovery with `npx skills list --json`; verified the installed files against the upstream Git blob hashes; loaded the skill by ID `frontend-design`.
-**Verification:** `SKILL.md` and `LICENSE.txt` are byte-identical to upstream (`a533345…` and `f433b1a…`); `npx skills list --json` reports `scope: project` and agent `OpenCode`; the `skill` tool returned the full body from `.agents/skills/frontend-design`. No application checks were run because no application source changed.
-**Learning:** OpenCode already discovers `.agents/skills`, so no configuration change was needed. Committing the installed files plus `skills-lock.json` records the exact upstream version; leaving them untracked would make the installation local-only. The working tree on `fix/188` retains identical untracked copies, which must be removed before checking out this branch in that worktree.
-**Limitations:** No independent verifier; the skill's guidance has not yet been applied to a UI task. The issue was not added to the project board at creation time.
+**Intent:** Make cleanup explicit before a `**No action**` response and define cleanup as removing a temporary worktree only after the branch is merged into remote `main` and required checks are green.
+**Boundary:** `AGENTS.md` §11 and §13, issue #212, branch `docs/212-post-merge-cleanup`, commit, push and PR #213. No application code, schema, configuration, historical record, deployment or runtime changes.
+**Prior records reviewed:** `AGENTS.md` §11/§13; issue #207 and PR #208 (merged at `d65ad27`, all five checks green); `git worktree list` (no temporary worktree remains); AI Entries 62–63.
+**Work performed:** added cleanup as completion step 7 and renumbered the next-action step to 8; updated the `**No action**` rule to require confirmed remote merge, green checks and temporary-worktree removal; verified the existing PR #208 cleanup state before making the change.
+**Verification:** `git diff --check` passed; `git show --stat` confirmed the first commit changes only `AGENTS.md`; PR #208 was confirmed merged with all five checks successful; `git worktree list` confirmed no temporary worktree remains. No runtime checks were run because no application code changed. PR #213 checks are pending at the time of this entry.
+**Learning:** Cleanup must be a verified post-merge action, not an assumption. Removing temporary worktrees keeps the checkout tidy without touching the primary worktree, unmerged work, or unrelated changes. A `**No action**` response is a claim that this cleanup has already been completed or is not applicable.
+**Limitations:** Documentation-only change; no independent review yet. The new rule is not exercised by an application test; its first use is the cleanup of PR #213 itself.
 
-**Links:** issue #204 · PR [#205](https://github.com/match-pulse/match-pulse/pull/205)
+**Links:** issue #212 · PR [#213](https://github.com/match-pulse/match-pulse/pull/213) · [`AGENTS.md`](../../AGENTS.md)
 
 ---
 
@@ -1107,6 +1107,56 @@ Secret hygiene re-verified: `release.env` in history contains only `APP_VERSION`
 **Limitations:** The full 28-entry matrix is revalidated in CI; the dblink helper is test-only.
 
 **Links:** issue #198 · [`verification`](verification/2026-11-198-m-inv2-observed-red.md) · [`findings register`](findings-register.md) · [`invariant registry`](checkpoint-A/02-invariants.md)
+
+---
+
+---
+
+## Entry 67 — p95 CI gate and ticket burst (FND-004 / #199)
+
+**Date:** 2026-11-10
+**Tool:** opencode CLI (`deepseek-v4.1-flash`)
+**Intent:** Turn the observed p95 into a CI gate and add a v3 ticket-purchase burst.
+**Boundary:** Two test files, performance documentation and verification record; no application behaviour changes.
+**Prior records reviewed:** FND-004; architecture characteristics §3.2; capacity and v3 ticketing tests.
+**Work performed:** asserted p95 < 1,000 ms in the 100-request registration burst; added a 20-buyer concurrent ticket burst with the same assertion, no-oversell and ticket-count checks; updated the architecture/README status.
+**Verification:** capacity p95 878.04 ms; ticket burst p95 240.90 ms; database 58 pass; CLI 2 pass. Details: [`verification/2026-11-199-p95-gate.md`](verification/2026-11-199-p95-gate.md).
+**Learning:** A recorded latency is not a quality gate until a test fails above the target; the ticket burst also proves the purchase path under concurrency.
+**Limitations:** Environment-specific; production and multi-instance load remain part of the final deployment step.
+
+**Links:** issue #199 · [`verification`](verification/2026-11-199-p95-gate.md) · [`findings register`](findings-register.md) · [`architecture characteristics`](../architecture/03-architecture-characteristics.md)
+
+---
+
+## Entry 68 — Production deployment deferred to the final post-MVP step
+
+**Date:** 2026-11-10
+**Tool:** opencode CLI (`deepseek-v4.1-flash`)
+**Intent:** Record the human decision that Vercel + hosted Supabase deployment is the final step, after the MVP is complete.
+**Boundary:** Operations runbook, production deployment policy, README known gaps, findings register and decision record. No deployment, credentials or production work.
+**Prior records reviewed:** FND-006; delivery and recovery verification records; runbook; issue #202.
+**Work performed:** added `docs/operations/production-deployment.md` with preconditions and a deployment checklist; marked production as not provisioned in the runbook; changed FND-006 to Deferred and added the decision record.
+**Verification:** Documentation-only; `git diff --check` and link checks. No production environment was created.
+**Learning:** Deferring deployment is a recorded decision, not an implicit omission; the record must state what is not claimed and what must happen before FND-006 can close.
+**Limitations:** FND-006 remains Deferred. No hosted URL, monitoring, production recovery or load evidence exists.
+
+**Links:** issue #202 · [`production deployment policy`](../operations/production-deployment.md) · [`decision record`](remediation/2026-11-202-production-deployment-deferral.md) · [`findings register`](findings-register.md)
+
+---
+
+## Entry 69 — Legacy finding verification (FND-001/003/005)
+
+**Date:** 2026-11-10
+**Tool:** opencode CLI (`deepseek-v4.1-flash`)
+**Intent:** Verify the remaining Fixed findings without code changes.
+**Boundary:** Targeted test runs, verification record, findings register and this entry.
+**Prior records reviewed:** FND-001/003/005; authorization, idempotency, capacity and uniqueness records.
+**Work performed:** re-ran the authorization + v3 tenancy suites (20 pass), the idempotency suite (6 pass) and the capacity + uniqueness suites (3 pass); recorded the observed results and marked the findings Verified.
+**Verification:** `bun test --env-file=.env.local` on the named files; capacity burst p95 755.77 ms. Details: [`verification/2026-11-197-legacy-findings-verification.md`](verification/2026-11-197-legacy-findings-verification.md).
+**Learning:** The existing fixes were already covered by tests; the gap was the final verification record, not missing code.
+**Limitations:** Local/CI evidence only; no hosted production evidence.
+
+**Links:** issue #197 · [`verification`](verification/2026-11-197-legacy-findings-verification.md) · [`findings register`](findings-register.md)
 
 ---
 
