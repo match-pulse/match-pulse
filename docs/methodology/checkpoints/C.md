@@ -52,10 +52,11 @@ third-party audit.
 ## Residual risk and next action
 
 FND-002: 27 fault-injection entries, but M-INV2 is forced-failure only. FND-004:
-p95 observed, no sustained load. FND-006: local/CI delivery, production deferred.
-FND-023: legacy `CLUB` analytics deferred. FND-026/027: simulated points and
-manual subscription periods accepted. The next evidence is a hosted recovery
-drill, a production-like load test and an independent privacy review.
+p95 is asserted in CI for the 100-registration and 20-ticket bursts; production
+and multi-instance load are not measured. FND-006: local/CI delivery, production
+deferred. FND-023: legacy `CLUB` analytics deferred. FND-026/027: simulated points
+and manual subscription periods accepted. The next evidence is a hosted recovery
+drill and an independent privacy review.
 
 **Detail:** [risk map](../checkpoint-C/01-risk-control-map.md) ·
 [quality story](../checkpoint-C/02-quality-story.md) · [residual risk](../checkpoint-C/05-residual-risk.md) ·

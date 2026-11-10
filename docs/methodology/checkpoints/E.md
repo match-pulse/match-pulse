@@ -27,7 +27,7 @@ availability claim.
 | JSON logs | A health or key action failure happened | Trends, alerting, correlation |
 | `bun run smoke` | Health, login and home shell work | Authenticated purchase/trade, load |
 | CI status | The recorded checks ran and passed | Production behaviour |
-| Capacity burst p50/p95/max | A local latency observation | Sustained load, multi-instance |
+| Capacity and ticket burst p50/p95/max | p95 is asserted in CI for the named bursts | Production load, multi-instance |
 
 There is no collector, dashboard, trace or alert. Logs go to stdout and are lost
 when the process stops. That is acceptable for a course prototype and is stated
@@ -56,15 +56,17 @@ encryption keys or recovery from a corrupted backup.
 ## SLOs and limits
 
 Proposed, not production commitments: health returns 200 in smoke; p95 < 1,000 ms
-for 100 concurrent registrations (observed 463–572 ms); 0 invariant failures in
-the domain suite; public-schema restore matches tables/policies/rows. Availability
-is not claimed.
+for 100 concurrent registrations and 20 concurrent ticket purchases, asserted in
+CI (observed 878 ms and 241 ms); 0 invariant failures in the domain suite;
+public-schema restore matches tables/policies/rows. Availability is not claimed.
 
 The limits are: no hosted deployment, external monitoring, alerting, on-call,
-production backup, retention, RTO/RPO or incident drill. The p95 is an
-observation, not a release gate. If a hosted environment is required, it is an
-explicit decision with cost, security and operational approval.
+production backup, retention, RTO/RPO or incident drill. The p95 is a CI gate
+for the named local bursts, not a production capacity claim. If a hosted
+environment is required, it is an explicit decision with cost, security and
+operational approval.
 
 **Detail:** [runbook](../../operations/runbook.md) · [SLOs](../../operations/slo.md) ·
 [recovery drill](../verification/2026-11-117-recovery-drill.md) ·
+[p95 gate](../verification/2026-11-199-p95-gate.md) ·
 [delivery verification](../verification/2026-11-111-delivery-operations-baseline.md)

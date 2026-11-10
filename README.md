@@ -10,7 +10,7 @@ Commerce is **simulated**: no payment provider, financial KYC, invoice, refund o
 settlement. The project is a course prototype, not a production service.
 
 **Current code:** v3.0.0 plus the v3.1.0 security and integrity remediation
-(unreleased). **Last recorded check:** 57 database/application tests, 2 CLI
+(unreleased). **Last recorded check:** 58 database/application tests, 2 CLI
 scenarios, 11 Playwright journeys and a 27-entry fault-injection matrix.
 
 ## What works
@@ -116,7 +116,8 @@ immediately.
 - Attendee retention is a local maintenance command, not a scheduled job.
 - No independent privacy or security audit; no data resale.
 - M-INV2 is verified by forced-failure rollback, not observed-red.
-- The p95 latency is observed, not a CI gate.
+- The p95 latency is asserted in CI for the local registration and ticket bursts;
+  production and multi-instance load are not measured.
 - Legacy v2 pages and the legacy `CLUB` role remain for compatibility.
 
 See [`AGENTS.md`](AGENTS.md) for the engineering rules and human decision gates.
