@@ -70,7 +70,7 @@ const COMMANDS: CommandInfo[] = [
 
   { command: 'fan events list', group: 'fan', description: 'List published events', usage: '--json', mutates: false },
   { command: 'fan events show', group: 'fan', description: 'Show an event, ticket types and matches', usage: '--event <id>', mutates: false },
-  { command: 'fan tickets buy', group: 'fan', description: 'Buy one to four nominal tickets', usage: '--ticket-type <id> --attendee <json> [--attendee <json>] --accept-terms', mutates: true },
+  { command: 'fan tickets buy', group: 'fan', description: 'Buy one to four nominal tickets', usage: '--ticket-type <id> --attendee <json> [--attendee <json>] --accept-terms [--request-id]', mutates: true },
   { command: 'fan tickets list', group: 'fan', description: 'List the buyer tickets', usage: '', mutates: false },
   { command: 'fan tickets show', group: 'fan', description: 'Show one ticket and its code', usage: '--ticket <id>', mutates: false },
   { command: 'fan tickets transfer', group: 'fan', description: 'Change the named attendee before the deadline', usage: '--ticket <id> --attendee <json>', mutates: true },
@@ -106,7 +106,7 @@ const COMMANDS: CommandInfo[] = [
   { command: 'club orders list', group: 'club', description: 'List orders for an event', usage: '--event <id>', mutates: false },
   { command: 'club attendees list', group: 'club', description: 'List named attendees for an event', usage: '--event <id>', mutates: false },
   { command: 'club tickets check-in', group: 'club', description: 'Check in a ticket by code', usage: '--code <ticket-code>', mutates: true },
-  { command: 'club box-office sell', group: 'club', description: 'Sell tickets through the box office', usage: '--ticket-type <id> --buyer <profile-id> --attendee <json> --accept-terms', mutates: true },
+  { command: 'club box-office sell', group: 'club', description: 'Sell tickets through the box office', usage: '--ticket-type <id> --buyer <profile-id> --attendee <json> --accept-terms [--request-id]', mutates: true },
   { command: 'club fan-cards issue', group: 'club', description: 'Issue or reactivate a fan card', usage: '--club <id> --card <number> [--profile <id>]', mutates: true },
   { command: 'club fan-cards list', group: 'club', description: 'List club fan cards', usage: '--club <id>', mutates: false },
   { command: 'club analytics summary', group: 'club', description: 'Show sales and attendance aggregates', usage: '--club <id> [--event <id>]', mutates: false },
