@@ -5,6 +5,7 @@
  * These tests use the real local Supabase/PostgreSQL boundary.
  */
 import { describe, expect, test } from 'bun:test'
+import { randomUUID } from 'crypto'
 import { admin, createUser, deleteUsers, type TestUser } from '../support/auth'
 import {
   createMarket,
@@ -190,22 +191,99 @@ describe('MVP backend: tickets and rewards', () => {
           .from('rewards')
           .select('id, cost_points')
           .eq('active', true)
+          .is('club_id', null)
           .order('cost_points', { ascending: true })
-          .limit(1)
+          .limit(2)
 
-        expect(rewards?.length).toBe(1)
+        expect(rewards?.length).toBe(2)
         const reward = rewards![0]
+        const secondReward = rewards![1]
 
         await setPoints(fan.id, 120)
-        const first = await fan.client.rpc('redeem_reward', { p_reward_id: reward.id })
+        const requestId = randomUUID()
+        const first = await fan.client.rpc('redeem_reward', {
+          p_reward_id: reward.id,
+          p_request_id: requestId
+        })
         expect(first.error).toBeNull()
         const row = normalize(first.data)
         expect(String(row?.code)).toMatch(/^MP-[A-Z0-9]{10}$/)
         expect(Number(row?.points_after)).toBe(120 - reward.cost_points)
 
-        const second = await fan.client.rpc('redeem_reward', { p_reward_id: reward.id })
+        const replay = await fan.client.rpc('redeem_reward', {
+          p_reward_id: reward.id,
+          p_request_id: requestId
+        })
+        expect(replay.error).toBeNull()
+        expect(normalize(replay.data)?.code).toBe(row?.code)
+        expect(await pointsOf(fan.id)).toBe(120 - reward.cost_points)
+
+        const mismatch = await fan.client.rpc('redeem_reward', {
+          p_reward_id: secondReward.id,
+          p_request_id: requestId
+        })
+        expect(mismatch.error?.message).toContain('request id reused with a different payload')
+
+        const second = await fan.client.rpc('redeem_reward', {
+          p_reward_id: reward.id,
+          p_request_id: randomUUID()
+        })
         expect(second.error?.message).toContain('insufficient points')
         expect(await pointsOf(fan.id)).toBe(120 - reward.cost_points)
+
+        const { data: redemptions } = await admin
+          .from('reward_redemptions')
+          .select('id')
+          .eq('user_id', fan.id)
+        expect(redemptions?.length).toBe(1)
+      } finally {
+        await deleteUsers([fan])
+      }
+    },
+    TEST_TIMEOUT_MS
+  )
+
+  test(
+    'concurrent redemptions with one request key commit one debit and one code',
+    async () => {
+      const fan = await createUser('FAN')
+
+      try {
+        const { data: rewards } = await admin
+          .from('rewards')
+          .select('id, cost_points')
+          .eq('active', true)
+          .is('club_id', null)
+          .order('cost_points', { ascending: true })
+          .limit(1)
+
+        expect(rewards?.length).toBe(1)
+        const reward = rewards![0]
+        await setPoints(fan.id, 200)
+        const requestId = randomUUID()
+
+        const results = await Promise.all([
+          fan.client.rpc('redeem_reward', {
+            p_reward_id: reward.id,
+            p_request_id: requestId
+          }),
+          fan.client.rpc('redeem_reward', {
+            p_reward_id: reward.id,
+            p_request_id: requestId
+          })
+        ])
+
+        for (const result of results) {
+          expect(result.error).toBeNull()
+        }
+        expect(normalize(results[0].data)?.code).toBe(normalize(results[1].data)?.code)
+        expect(await pointsOf(fan.id)).toBe(200 - reward.cost_points)
+
+        const { data: redemptions } = await admin
+          .from('reward_redemptions')
+          .select('id')
+          .eq('user_id', fan.id)
+        expect(redemptions?.length).toBe(1)
       } finally {
         await deleteUsers([fan])
       }

@@ -102,12 +102,13 @@ export async function listFanRewards(client: SupabaseClient): Promise<Reward[]> 
 
 export async function redeemReward(
   client: SupabaseClient,
-  rewardId: string
+  rewardId: string,
+  requestId: string
 ): Promise<{ code: string; points_after: number }> {
   const rows = await callRpc<Array<{ code: string; points_after: number }>>(
     client,
     'redeem_reward',
-    { p_reward_id: rewardId }
+    { p_reward_id: rewardId, p_request_id: requestId }
   )
   const result = first(rows)
   if (!result) throw new Error('Reward redemption returned no code.')

@@ -116,7 +116,7 @@ const mutationRpcs = [
   { name: 'create_match', signature: '(UUID, TEXT, TEXT, TIMESTAMPTZ)' },
   { name: 'update_match', signature: '(UUID, INT, INT, TEXT)' },
   { name: 'claim_ticket', signature: '(UUID)' },
-  { name: 'redeem_reward', signature: '(UUID)' },
+  { name: 'redeem_reward', signature: '(UUID, UUID)' },
   { name: 'record_club_export', signature: '(TEXT, JSONB)' },
   { name: 'create_club', signature: '(TEXT, TEXT, TEXT)' },
   { name: 'update_club', signature: '(UUID, TEXT, TEXT)' },

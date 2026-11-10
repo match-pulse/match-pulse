@@ -966,6 +966,22 @@ Secret hygiene re-verified: `release.env` in history contains only `APP_VERSION`
 
 ---
 
+## Entry 55 — Reward idempotency
+
+**Date:** 2026-11-10
+**Tool:** opencode CLI (`deepseek-v4.1-flash`)
+**Intent:** Close FND-013 by making reward redemption retry-safe.
+**Boundary:** Reward schema/RPC, domain wrapper, Server Action, fan rewards client form, CLI, architecture guard, tests and verification record.
+**Prior records reviewed:** audit AUD-005; FND-013; FND-003 idempotency pattern; trade request tables; agent playbook; execution plan #173.
+**Work performed:** added `request_id`/`points_after` to `reward_redemptions` with a unique index; replaced `redeem_reward` with a required key and reward → profile → replay → eligibility → debit order; updated the web form and CLI; removed the obsolete one-argument legacy action.
+**Verification:** targeted reward tests 3 pass; full database 49 pass, CLI 2 pass, E2E 11 passed, build/typecheck/lint/architecture pass. Details: [`verification/2026-11-180-reward-idempotency.md`](verification/2026-11-180-reward-idempotency.md).
+**Learning:** A retry must be replayable even after the balance or club-ticket eligibility has changed; the replay lookup therefore precedes the current eligibility/balance checks.
+**Limitations:** Fault injection and independent verification pending. The client key survives while the form is mounted but not across a full page reload. Local Kong/Docker DNS workaround remains.
+
+**Links:** issue #180 · PR [#187](https://github.com/match-pulse/match-pulse/pull/187) · [`verification`](verification/2026-11-180-reward-idempotency.md) · [`findings register`](findings-register.md) · [`execution plan`](exec-plans/173-audit-remediation.md)
+
+---
+
 ## Standing rule
 
 AI may investigate, analyse, draft, implement within an approved scope, and run verification. The human retains every decision that affects business rules, architecture, schema, scope, priority, risk acceptance and merging. Contributions that cannot be verified are recorded as unverified rather than asserted.

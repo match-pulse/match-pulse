@@ -86,7 +86,7 @@ erDiagram
 5. **Check-in and name change:** staff check in by code (idempotent); a buyer may transfer a transferable ticket to a new named attendee before the deadline.
 6. **Prediction:** once the market opens, a fan enters a points position, may exit part or all, and is subject to the entry cooldown. New entries stop when the match is `FINISHED`; exits remain available while the market is open. Retries are idempotent.
 7. **Resolution:** club staff resolve the market once after the match is `FINISHED`, using the score-derived winner; winning shares pay one point each and losing shares pay nothing.
-8. **Rewards:** a fan redeems points for a club reward if they have a ticket for that club; the code is local and simulated.
+8. **Rewards:** a fan redeems points for a club reward if they have a ticket for that club; the code is local and simulated. Redemption is retry-safe with a request key.
 9. **Insights:** club staff/analysts read aggregate prediction choices and engagement for their own events; cohorts below 5 are suppressed and no attendee identity is included. `ELITE` can export CSV.
 10. **Admin and retention:** the platform admin manages clubs/plans and reviews audit. A service-role cleanup removes attendee identity from past-event tickets after the retention window.
 
