@@ -1,7 +1,7 @@
 # Verification Record — Privacy Retention and Cohort Suppression
 
 - **Issue:** [#179](https://github.com/match-pulse/match-pulse/issues/179)
-- **PR:** Pending
+- **PR:** [#190](https://github.com/match-pulse/match-pulse/pull/190)
 - **Date:** 2026-11-10
 - **Environment:** Local Fedora 44; Node 22.23.1; Bun 1.4.2; Docker CE 29.9.3; local Supabase PostgreSQL 17.11
 - **Status:** Partially verified — implementer evidence; independent verification pending
@@ -63,7 +63,7 @@ Observed behaviour:
 ## 6. Links
 
 - Issue: [#179](https://github.com/match-pulse/match-pulse/issues/179)
-- PR: Pending
+- PR: [#190](https://github.com/match-pulse/match-pulse/pull/190)
 - Execution plan / audit: [v3 audit](../audits/2026-11-10-171-v3-audit.md), [execution plan](../exec-plans/173-audit-remediation.md)
 - Findings register: FND-015, FND-016
 - AI transparency entry: Entry 57
@@ -71,4 +71,4 @@ Observed behaviour:
 
 ## 7. Addenda
 
-Pending PR link and independent verification.
+2026-11-10: PR [#190](https://github.com/match-pulse/match-pulse/pull/190) opened. After the subscription-limits PR #189 merged, `main` was merged into this branch; the only conflicts were record tables and the combined test tail. The privacy migration and its tests were unchanged by that merge. Independent verification is still pending.

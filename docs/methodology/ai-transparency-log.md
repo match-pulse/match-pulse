@@ -1010,7 +1010,7 @@ Secret hygiene re-verified: `release.env` in history contains only `APP_VERSION`
 **Learning:** Threshold suppression at market level does not protect a one-person outcome inside a larger market; the cohort must be counted and suppressed per outcome and time bucket. Retention must follow derived identity, not only the current ticket row.
 **Limitations:** Fault injection and independent verification pending. The 365-day window remains the existing product default. Time-series suppression is not separately E2E-tested. Local Kong/Docker DNS workaround remains.
 
-**Links:** issue #179 · [`verification`](verification/2026-11-179-privacy-retention.md) · [`findings register`](findings-register.md) · [`execution plan`](exec-plans/173-audit-remediation.md)
+**Links:** issue #179 · PR [#190](https://github.com/match-pulse/match-pulse/pull/190) · [`verification`](verification/2026-11-179-privacy-retention.md) · [`findings register`](findings-register.md) · [`execution plan`](exec-plans/173-audit-remediation.md)
 
 ---
 
