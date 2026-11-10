@@ -7,6 +7,7 @@
 import { describe, expect, test } from 'bun:test'
 import { randomUUID } from 'crypto'
 import { admin, createUser, deleteUsers, type TestUser } from '../support/auth'
+import { createTournament, deleteTournament } from '../support/fixtures'
 
 const TEST_TIMEOUT_MS = 60_000
 
@@ -504,6 +505,144 @@ describe('v3 attendee retention', () => {
       } finally {
         await cleanupClub(clubId)
         await deleteUsers([owner, fan])
+      }
+    },
+    TEST_TIMEOUT_MS
+  )
+})
+
+describe('v3 security boundary', () => {
+  test(
+    'removed staff cannot read attendee tickets and legacy organizer direct registration reads are closed',
+    async () => {
+      const owner = await createUser()
+      const staff = await createUser()
+      const buyer = await createUser()
+      const organizer = await createUser('ORGANIZER')
+      let clubId: string | null = null
+      let legacyTournamentId: string | null = null
+
+      try {
+        clubId = await createClub(owner, 'Security Boundary Club', 'PRO')
+        await admin.from('club_members').insert({
+          club_id: clubId,
+          profile_id: staff.id,
+          role: 'STAFF'
+        })
+
+        const eventId = await createEvent(staff, clubId)
+        const ticketTypeId = await createTicketType(owner, eventId, { allocation: 5 })
+        await publishEvent(owner, eventId)
+        const order = await buy(buyer, ticketTypeId, [attendee('Secure', 'Attendee')])
+
+        const staffView = await staff.client
+          .from('tickets')
+          .select('id')
+          .eq('order_id', order?.order_id as string)
+        expect(staffView.error).toBeNull()
+        expect(staffView.data?.length).toBe(1)
+
+        const removed = await owner.client.rpc('remove_club_member', {
+          p_club_id: clubId,
+          p_profile_id: staff.id
+        })
+        expect(removed.error).toBeNull()
+
+        const staffAfterRemoval = await staff.client
+          .from('tickets')
+          .select('id')
+          .eq('order_id', order?.order_id as string)
+        expect(staffAfterRemoval.error).toBeNull()
+        expect(staffAfterRemoval.data).toEqual([])
+
+        const ownerView = await owner.client
+          .from('tickets')
+          .select('id')
+          .eq('order_id', order?.order_id as string)
+        expect(ownerView.error).toBeNull()
+        expect(ownerView.data?.length).toBe(1)
+
+        legacyTournamentId = await createTournament(20, organizer.id)
+        await admin.from('registrations').insert({
+          tournament_id: legacyTournamentId,
+          user_id: buyer.id
+        })
+
+        const directRegistrations = await organizer.client
+          .from('registrations')
+          .select('id')
+          .eq('tournament_id', legacyTournamentId)
+        expect(directRegistrations.error).toBeNull()
+        expect(directRegistrations.data).toEqual([])
+
+        const organizerRpc = await organizer.client.rpc('organizer_tournament_registrations', {
+          p_tournament_id: legacyTournamentId
+        })
+        expect(organizerRpc.error).toBeNull()
+        expect((organizerRpc.data as Row[]).length).toBe(1)
+      } finally {
+        if (legacyTournamentId) await deleteTournament(legacyTournamentId)
+        await cleanupClub(clubId)
+        await deleteUsers([owner, staff, buyer, organizer])
+      }
+    },
+    TEST_TIMEOUT_MS
+  )
+
+  test(
+    'platform admin cannot directly read invitations or fan cards',
+    async () => {
+      const owner = await createUser()
+      const platformAdmin = await createUser()
+      let clubId: string | null = null
+
+      try {
+        clubId = await createClub(owner, 'Admin Boundary Club', 'PRO')
+        await admin.from('platform_admins').insert({ profile_id: platformAdmin.id })
+
+        const invite = await owner.client.rpc('invite_club_member', {
+          p_club_id: clubId,
+          p_email: `invite-${randomUUID()}@matchpulse.local`,
+          p_role: 'STAFF'
+        })
+        expect(invite.error).toBeNull()
+
+        const card = await owner.client.rpc('issue_club_fan_card', {
+          p_club_id: clubId,
+          p_card_number: `CARD-${randomUUID()}`
+        })
+        expect(card.error).toBeNull()
+
+        const adminInvites = await platformAdmin.client
+          .from('club_invites')
+          .select('id')
+          .eq('club_id', clubId)
+        expect(adminInvites.error).toBeNull()
+        expect(adminInvites.data).toEqual([])
+
+        const adminCards = await platformAdmin.client
+          .from('club_fan_cards')
+          .select('id')
+          .eq('club_id', clubId)
+        expect(adminCards.error).toBeNull()
+        expect(adminCards.data).toEqual([])
+
+        const ownerInvites = await owner.client
+          .from('club_invites')
+          .select('id')
+          .eq('club_id', clubId)
+        expect(ownerInvites.error).toBeNull()
+        expect(ownerInvites.data?.length).toBe(1)
+
+        const ownerCards = await owner.client
+          .from('club_fan_cards')
+          .select('id')
+          .eq('club_id', clubId)
+        expect(ownerCards.error).toBeNull()
+        expect(ownerCards.data?.length).toBe(1)
+      } finally {
+        await cleanupClub(clubId)
+        await deleteUsers([owner, platformAdmin])
       }
     },
     TEST_TIMEOUT_MS

@@ -918,6 +918,22 @@ Secret hygiene re-verified: `release.env` in history contains only `APP_VERSION`
 
 ---
 
+## Entry 52 — Security boundary remediation
+
+**Date:** 2026-11-10
+**Tool:** opencode CLI (`deepseek-v4.1-flash`)
+**Intent:** Close FND-009, FND-010 and FND-022 from the v3.0.0 audit.
+**Boundary:** Local auth configuration, one corrective RLS/policy migration, authorization and v3 tenancy tests, threat model and verification record. No application runtime feature changes.
+**Prior records reviewed:** audit report AUD-001/AUD-002/AUD-014; FND-001/FND-009/FND-010/FND-022; ADR-003/008/010; threat model; authorization verification; execution plan #173.
+**Work performed:** set `enable_anonymous_sign_ins = false`; added `20261206_security_boundary.sql` to drop `tickets_select_organizer`/`registrations_select_organizer` and remove direct platform-admin reads from invitation/fan-card policies; replaced the anonymous-auth test with a refusal test; added removed-member and platform-admin direct-read tests; updated the threat model and verification record.
+**Verification:** `bun test --env-file=.env.local tests/invariants/authorization.test.ts tests/integration/v3-club-tenancy.test.ts` — 14 pass / 0 fail. `bun run test` — 44 pass / 0 fail. `bun run lint`, `bun run typecheck`, `bun run build`, `bun run check:architecture`, `bun run check:secrets` and `bun audit --audit-level=high` passed. Details: [`verification/2026-11-174-security-boundary.md`](verification/2026-11-174-security-boundary.md).
+**Learning:** The legacy organizer policies survived the v3 RLS migration because the new policies were additive; policy review must include `DROP POLICY`, not only new `CREATE POLICY` statements. Local Docker 29 exposed a Kong 2.8.1 DNS-resolution issue; the running Kong config was patched to container IPs for this session and the local stack limitation is recorded.
+**Limitations:** The verification is implementer-authored; independent verification and the PR link are pending. The local Kong workaround is an environment issue, not an application fix. E2E, fault injection and smoke remain for the campaign final gate. FND-007/FND-008 remain open.
+
+**Links:** issue #174 · PR [#184](https://github.com/match-pulse/match-pulse/pull/184) · [`verification`](verification/2026-11-174-security-boundary.md) · [`findings register`](findings-register.md) · [`execution plan`](exec-plans/173-audit-remediation.md)
+
+---
+
 ## Standing rule
 
 AI may investigate, analyse, draft, implement within an approved scope, and run verification. The human retains every decision that affects business rules, architecture, schema, scope, priority, risk acceptance and merging. Contributions that cannot be verified are recorded as unverified rather than asserted.
