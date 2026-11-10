@@ -84,4 +84,4 @@ FND-001 to FND-008 retain their prior dispositions. FND-007 (real-user evidence)
 
 ## 7. Addenda
 
-PENDING final command results and independent verification.
+Final command results are recorded in §3. Independent verification remains pending.
