@@ -19,7 +19,12 @@ The decision and its limits are recorded in
 
 ## Changes
 
-There are no active changes. The first trial,
+Active changes:
+
+- [`add-club-tenancy-and-cli`](./changes/add-club-tenancy-and-cli/proposal.md) — v3.0.0 club tenancy, nominal ticketing and CLI foundation; implementation and release are complete, with remaining task checkboxes and archive pending.
+- [`v3-1-audit-remediation`](./changes/v3-1-audit-remediation/proposal.md) — approved remediation of the v3.0.0 audit findings (FND-009–FND-028); execution plan in [`173-audit-remediation.md`](../docs/methodology/exec-plans/173-audit-remediation.md).
+
+The first trial,
 [`add-market-fault-injections`](./changes/archive/2026-11-08-add-market-fault-injections/proposal.md),
 was implemented and verified in CI run
 [42474762811](https://github.com/match-pulse/match-pulse/actions/runs/42474762811)
