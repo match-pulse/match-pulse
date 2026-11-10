@@ -226,5 +226,286 @@ FOR EACH ROW EXECUTE FUNCTION public.fault_inject_trade_insert();`
     END IF;`
         }
       ])
+  },
+  {
+    id: 'm-inv1-finished-window',
+    invariant: 'M-INV1',
+    description: 'Remove the finished-match entry guard from the market-window trigger.',
+    kind: 'observed-red',
+    test: 'tests/invariants/market-lifecycle.test.ts',
+    expected: 'fail',
+    sql: ({ marketBinding }) =>
+      mutateFunction(marketBinding, 'enforce_market_window', [
+        {
+          find: `    IF v_match_status = 'FINISHED' THEN
+        RAISE EXCEPTION 'market is closed: match is finished';
+    END IF;`,
+          replace: ''
+        }
+      ])
+  },
+  {
+    id: 'm-inv1-disable-exit',
+    invariant: 'M-INV1',
+    description: 'Gate every trade, including exits, on the prediction-enabled flag.',
+    kind: 'observed-red',
+    test: 'tests/invariants/market-lifecycle.test.ts',
+    expected: 'fail',
+    sql: ({ marketBinding }) =>
+      mutateFunction(marketBinding, 'enforce_prediction_enabled', [
+        {
+          find: `    IF NEW.kind <> 'BUY' THEN
+        RETURN NEW;
+    END IF;`,
+          replace: ''
+        }
+      ])
+  },
+  {
+    id: 'm-inv6-score-binding',
+    invariant: 'M-INV6',
+    description: 'Remove the score-derived winner check from market resolution.',
+    kind: 'observed-red',
+    test: 'tests/invariants/market-lifecycle.test.ts',
+    expected: 'fail',
+    sql: ({ marketBinding }) =>
+      mutateFunction(marketBinding, 'enforce_market_resolution', [
+        {
+          find: `    IF NEW.winning_outcome IS DISTINCT FROM v_expected_winner THEN
+        RAISE EXCEPTION 'winning outcome does not match the final score';
+    END IF;`,
+          replace: ''
+        }
+      ])
+  },
+  {
+    id: 'm-inv6-premature-finish',
+    invariant: 'M-INV6',
+    description: 'Allow a match to be marked finished before kickoff.',
+    kind: 'observed-red',
+    test: 'tests/invariants/market-lifecycle.test.ts',
+    expected: 'fail',
+    sql: ({ marketBinding }) =>
+      mutateFunction(marketBinding, 'enforce_match_result_integrity', [
+        {
+          find: `    IF NEW.status = 'FINISHED' AND NOW() < NEW.kickoff_time THEN
+        RAISE EXCEPTION 'cannot finish a match before kickoff';
+    END IF;`,
+          replace: ''
+        }
+      ])
+  },
+  {
+    id: 'm-inv6-post-resolution-score',
+    invariant: 'M-INV6',
+    description: 'Allow a score change after the market has been resolved.',
+    kind: 'observed-red',
+    test: 'tests/invariants/market-lifecycle.test.ts',
+    expected: 'fail',
+    sql: ({ marketBinding }) =>
+      mutateFunction(marketBinding, 'enforce_match_result_integrity', [
+        {
+          find: `    IF (NEW.home_score IS DISTINCT FROM OLD.home_score
+        OR NEW.away_score IS DISTINCT FROM OLD.away_score)
+       AND EXISTS (
+           SELECT 1
+             FROM public.markets m
+            WHERE m.match_id = NEW.id
+              AND m.status = 'RESOLVED'
+       ) THEN
+        RAISE EXCEPTION 'cannot change a score after market resolution';
+    END IF;`,
+          replace: ''
+        }
+      ])
+  },
+  {
+    id: 't-inv4-buyer-cap',
+    invariant: 'T-INV4',
+    description: 'Remove the cumulative buyer-limit comparison from the order trigger.',
+    kind: 'observed-red',
+    test: 'tests/integration/v3-club-tenancy.test.ts',
+    expected: 'fail',
+    sql: ({ ticketing }) =>
+      mutateFunction(ticketing, 'enforce_ticket_buyer_limit', [
+        {
+          find: '    IF v_existing + NEW.quantity > v_max_per_buyer THEN',
+          replace: '    IF v_existing + NEW.quantity > 999999 THEN'
+        }
+      ])
+  },
+  {
+    id: 't-inv5-capacity-config',
+    invariant: 'T-INV5',
+    description: 'Allow an event allocation above its venue capacity.',
+    kind: 'observed-red',
+    test: 'tests/integration/v3-club-tenancy.test.ts',
+    expected: 'fail',
+    sql: ({ ticketing }) =>
+      mutateFunction(ticketing, 'enforce_event_capacity_config', [
+        {
+          find: '    IF NEW.ticket_allocation > NEW.max_capacity THEN',
+          replace: '    IF NEW.ticket_allocation > 999999 THEN'
+        }
+      ])
+  },
+  {
+    id: 't-inv11-legacy-claim',
+    invariant: 'T-INV11',
+    description: 'Remove the club-event refusal from the legacy ticket claim.',
+    kind: 'observed-red',
+    test: 'tests/integration/v3-club-tenancy.test.ts',
+    expected: 'fail',
+    sql: ({ ticketing }) =>
+      mutateFunction(ticketing, 'claim_ticket', [
+        {
+          find: `    IF v_club_id IS NOT NULL THEN
+        RAISE EXCEPTION 'legacy claim is not available for club events';
+    END IF;`,
+          replace: ''
+        }
+      ])
+  },
+  {
+    id: 't-inv11-legacy-registration',
+    invariant: 'T-INV11',
+    description: 'Remove the club-event refusal from legacy tournament registration.',
+    kind: 'observed-red',
+    test: 'tests/integration/v3-club-tenancy.test.ts',
+    expected: 'fail',
+    sql: ({ ticketing }) =>
+      mutateFunction(ticketing, 'register_for_tournament', [
+        {
+          find: `    IF v_club_id IS NOT NULL THEN
+        RETURN false;
+    END IF;`,
+          replace: ''
+        }
+      ])
+  },
+  {
+    id: 't-inv12-reward-replay',
+    invariant: 'T-INV12',
+    description: 'Remove the reward replay lookup so a reused request key cannot replay.',
+    kind: 'observed-red',
+    test: 'tests/integration/mvp-backend.test.ts',
+    expected: 'fail',
+    sql: ({ reward }) =>
+      mutateFunction(reward, 'redeem_reward', [
+        {
+          find: `    SELECT r.code, r.reward_id, r.points_spent, r.points_after
+      INTO v_existing_code, v_existing_reward, v_existing_spent, v_existing_after
+      FROM public.reward_redemptions r
+     WHERE r.user_id = v_user_id
+       AND r.request_id = p_request_id;
+
+    IF FOUND THEN
+        IF v_existing_reward <> p_reward_id OR v_existing_spent <> v_cost THEN
+            RAISE EXCEPTION 'request id reused with a different payload';
+        END IF;
+
+        code := v_existing_code;
+        points_after := COALESCE(v_existing_after, v_points);
+        RETURN NEXT;
+        RETURN;
+    END IF;`,
+          replace: '    -- fault injection: replay lookup removed'
+        }
+      ])
+  },
+  {
+    id: 't-inv3-entitlement',
+    invariant: 'T-INV3',
+    description: 'Remove the active-entitlement check from club event creation.',
+    kind: 'observed-red',
+    test: 'tests/integration/v3-club-tenancy.test.ts',
+    expected: 'fail',
+    sql: ({ subscription }) =>
+      mutateFunction(subscription, 'create_club_event', [
+        {
+          find: "    PERFORM public.require_entitlement(p_club_id, 'max_active_events');",
+          replace: ''
+        }
+      ])
+  },
+  {
+    id: 't-inv10-transfer-retention',
+    invariant: 'T-INV10',
+    description: 'Stop redacting the previous attendee identity from transfer history.',
+    kind: 'observed-red',
+    test: 'tests/integration/v3-club-tenancy.test.ts',
+    expected: 'fail',
+    sql: ({ privacy }) =>
+      mutateFunction(privacy, 'cleanup_expired_attendee_data', [
+        {
+          find: '       SET previous_first_name = NULL,',
+          replace: '       SET previous_first_name = previous_first_name,'
+        }
+      ])
+  },
+  {
+    id: 't-inv10-audit-retention',
+    invariant: 'T-INV10',
+    description: 'Stop removing the card number from old fan-card audit metadata.',
+    kind: 'observed-red',
+    test: 'tests/integration/v3-club-tenancy.test.ts',
+    expected: 'fail',
+    sql: ({ privacy }) =>
+      mutateFunction(privacy, 'cleanup_expired_attendee_data', [
+        {
+          find: "       SET metadata = metadata - 'card_number'",
+          replace: '       SET metadata = metadata'
+        }
+      ])
+  },
+  {
+    id: 't-inv10-invite-retention',
+    invariant: 'T-INV10',
+    description: 'Stop deleting accepted or expired invitation emails after the retention window.',
+    kind: 'observed-red',
+    test: 'tests/integration/v3-club-tenancy.test.ts',
+    expected: 'fail',
+    sql: ({ privacy }) =>
+      mutateFunction(privacy, 'cleanup_expired_attendee_data', [
+        {
+          find: `    DELETE FROM public.club_invites
+     WHERE (accepted_at IS NOT NULL AND accepted_at < NOW() - p_older_than)
+        OR (accepted_at IS NULL AND expires_at < NOW() - p_older_than);
+
+    GET DIAGNOSTICS v_invites = ROW_COUNT;`,
+          replace: '    v_invites := 0;'
+        }
+      ])
+  },
+  {
+    id: 't-inv8-cohort-suppression',
+    invariant: 'T-INV8',
+    description: 'Show every outcome cohort regardless of the five-predictor threshold.',
+    kind: 'observed-red',
+    test: 'tests/integration/v3-club-tenancy.test.ts',
+    expected: 'fail',
+    sql: ({ privacy }) =>
+      mutateFunction(privacy, 'club_prediction_insights', [
+        {
+          find: 'CASE WHEN COALESCE(mt.traders, 0) >= 5 THEN',
+          replace: 'CASE WHEN TRUE THEN',
+          all: true
+        }
+      ])
+  },
+  {
+    id: 't-inv13-ticket-payload',
+    invariant: 'T-INV13',
+    description: 'Ignore the stored attendee payload when replaying a ticket request key.',
+    kind: 'observed-red',
+    test: 'tests/integration/v3-club-tenancy.test.ts',
+    expected: 'fail',
+    sql: ({ payload }) =>
+      mutateFunction(payload, 'purchase_ticket', [
+        {
+          find: '           OR (v_existing_payload IS NOT NULL AND v_existing_payload <> v_payload_hash) THEN',
+          replace: '           OR FALSE THEN'
+        }
+      ])
   }
 ]

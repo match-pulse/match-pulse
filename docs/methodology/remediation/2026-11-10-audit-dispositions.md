@@ -41,3 +41,7 @@ Any future change to these dispositions requires a new dated decision or a new i
 - Findings register: FND-020, FND-023, FND-026, FND-027
 - AI transparency entry: included in the relevant remediation entries
 - Changelog row: release-based; record at release
+
+## 5. Addenda
+
+2026-11-10: FND-020 moved from **Partly fixed** to **Fixed** after the fault-injection workstream (#181). The matrix now has 27 entries, all matching their declared expectation, including the v3.1.0 market, ticketing, entitlement, reward, retention, cohort and ticket-payload guards. The automatic post-matrix suite required the documented local Kong workaround and then passed 57/57. Independent verification remains pending. See [`verification/2026-11-181-fault-injection.md`](../verification/2026-11-181-fault-injection.md).

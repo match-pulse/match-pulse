@@ -24,18 +24,20 @@ The approved v3.1.0 remediation plan (#173) is complete when every FND-009 to FN
 Final campaign commands (results below are the observed local results after the last merged fix):
 
 ```text
-bun run lint
-bun run typecheck
-bun run build
-bun run check:architecture
-bun run check:secrets
-bun audit --audit-level=high
-bun run test
-bun run test:agent
-bun run test:e2e
-bun run fault:inject
-bun run smoke
+bun run lint                         passed
+bun run typecheck                    passed
+bun run build                        passed (local .env.local)
+bun run check:architecture           passed
+bun run check:secrets                passed (312 tracked files)
+bun audit --audit-level=high         no vulnerabilities found
+bun run test                         57 pass / 0 fail, 469 expect() calls
+bun run test:agent                   2 pass / 0 fail, 30 expect() calls
+bun run test:e2e                     11 passed
+bun run smoke                        passed (health, login, home)
+bun run fault:inject                 27 entries expected; CI revalidated all 27
 ```
+
+The fault-injection matrix was run locally with all 27 entries matching their declared expectation before the cohort assertion was strengthened. CI then showed that the cohort mutation did not fail the test because the test checked only the `suppressed` flag; the test now asserts null metrics for suppressed rows and non-null metrics for the allowed cohort. With the mutation applied the strengthened test failed locally, and after restore it passed. CI run [42866095232](https://github.com/match-pulse/match-pulse/actions/runs/42866095232) then passed all 27 matrix entries and the restored suite.
 
 ## 4. Result
 

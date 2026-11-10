@@ -1024,9 +1024,25 @@ Secret hygiene re-verified: `release.env` in history contains only `APP_VERSION`
 **Work performed:** added `src/lib/csv.ts` and used it in both export routes; added unit tests; assigned the seeded tournament to the organizer fixture; added `20261212_ticket_payload_hash.sql` with payload-aware replay; rotated the checkout request key on ticket-type/quantity changes; documented the CLI `--request-id`; recorded the four residual dispositions and opened issue #188 for the deferred legacy CLUB retirement.
 **Verification:** unit 2 pass; v3 integration 10 pass; full database 57 pass; CLI 2 pass; E2E 11 passed from a clean reset; build passed; seed `update_match` + `resolve_market` smoke returned a payout row. Details: [`verification/2026-11-182-minor-hardening.md`](verification/2026-11-182-minor-hardening.md).
 **Learning:** Quoting a CSV cell does not stop a spreadsheet formula; the encoder must neutralise the leading character before quoting. Payload-aware idempotency needs the payload fingerprint stored on the first request, not only compared at request time.
-**Limitations:** FND-020 remains partly fixed pending fault-injection mutations and independent verification in #181. FND-023 is deferred to #188. FND-026/FND-027 are accepted risks. No finding is marked Verified by the implementer. Local Kong/Docker DNS workaround remains.
+**Limitations:** FND-020 was later closed by the Entry 59 fault-injection matrix. FND-023 is deferred to #188. FND-026/FND-027 are accepted risks. No finding is marked Verified by the implementer. Local Kong/Docker DNS workaround remains.
 
 **Links:** issue #182 · [`dispositions`](remediation/2026-11-10-audit-dispositions.md) · [`verification`](verification/2026-11-182-minor-hardening.md) · [`findings register`](findings-register.md) · [`execution plan`](exec-plans/173-audit-remediation.md)
+
+---
+
+## Entry 59 — Fault-injection evidence and invariant corrections
+
+**Date:** 2026-11-10
+**Tool:** opencode CLI (`deepseek-v4.1-flash`)
+**Intent:** Close FND-020 by making the invariant evidence match the claims and covering the v3.1.0 guards with observed-red fault injection.
+**Boundary:** Fault-injection runner sources/mutations, invariant registry, findings register, audit closure, verification record and this entry. No application behaviour changes.
+**Prior records reviewed:** audit AUD-012; FND-020; FND-002/FND-005 evidence limits; invariant registry; execution plan #173; prior fault-injection verification.
+**Work performed:** added the security, market, ticketing, reward, subscription, privacy and ticket-payload migrations to the fault-injection sources; added 16 observed-red mutations covering the result-bound window, score-bound resolution, premature finish, post-resolution score, prediction-disable exits, cumulative buyer cap, capacity configuration, legacy claim/registration, reward replay, active entitlement, transfer/audit/invite retention, cohort suppression and payload-aware replay; corrected the registry statuses to distinguish enforced, fault-injected and independently verified claims.
+**Verification:** `bun run fault:inject` — all 27 entries `status: ok`; restored suite 57 pass / 0 fail (469 expect calls); CLI 2 pass; E2E 11 passed; lint/typecheck/architecture/build passed. Details: [`verification/2026-11-181-fault-injection.md`](verification/2026-11-181-fault-injection.md).
+**Learning:** A test that passes with a guard removed proves nothing. The matrix must load the migration that owns the current function, not only the original definition, or a later replacement silently escapes mutation. CI also caught a weak assertion: the cohort test checked the `suppressed` flag but not that the metrics were withheld, so the mutation initially passed; the test now asserts null metrics for suppressed cohorts. The registry must say “fault-injected” rather than “verified” until a separate verifier checks it.
+**Limitations:** The automatic post-matrix suite failed locally after the final reset because Kong recreated the Docker 29 upstream-DNS issue; the documented workaround restored REST/auth and the suite passed 57/57. M-INV2 remains forced-failure, the sales-path capacity trigger is defence in depth, and the subscription-lock concurrency path is timing-dependent. Independent verification pending.
+
+**Links:** issue #181 · PR [#192](https://github.com/match-pulse/match-pulse/pull/192) · [`verification`](verification/2026-11-181-fault-injection.md) · [`findings register`](findings-register.md) · [`execution plan`](exec-plans/173-audit-remediation.md)
 
 ---
 
