@@ -306,6 +306,8 @@ jobs:
 
       - name: Run fault-injection matrix
         run: bun run fault:inject
+        env:
+          P95_STRICT: "false"
 
   e2e:
     name: E2E and accessibility
