@@ -41,6 +41,7 @@ ADRs remain in [`docs/architecture/adr/`](../architecture/adr/) and follow the e
 - [`verification/2026-11-169-v3-release.md`](verification/2026-11-169-v3-release.md) — verified v3.0.0 documentation and release package.
 - [`verification/2026-11-177-subscription-limits.md`](verification/2026-11-177-subscription-limits.md) — active-subscription and quota-concurrency evidence.
 - [`verification/2026-11-179-privacy-retention.md`](verification/2026-11-179-privacy-retention.md) — retention and outcome-level cohort-suppression evidence.
+- [`verification/2026-11-181-fault-injection.md`](verification/2026-11-181-fault-injection.md) — 27-entry observed-red fault-injection matrix and invariant corrections.
 - [`verification/2026-11-182-minor-hardening.md`](verification/2026-11-182-minor-hardening.md) — CSV safety, seed resolution and payload-aware ticket replay evidence.
 - [`../testing/agent-playbook.md`](../testing/agent-playbook.md) — CLI-driven agent scenarios and evidence.
 - [`../testing/capabilities.md`](../testing/capabilities.md) — capability-to-command parity manifest.

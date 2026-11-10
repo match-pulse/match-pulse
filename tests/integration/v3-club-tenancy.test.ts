@@ -890,6 +890,15 @@ describe('v3 prediction cohort privacy', () => {
         expect(firstInsights.error).toBeNull()
         const firstRows = firstInsights.data as Row[]
         expect(firstRows.every((row) => row.suppressed === true)).toBe(true)
+        expect(
+          firstRows.every(
+            (row) =>
+              row.trades === null &&
+              row.shares === null &&
+              row.last_price === null &&
+              row.unique_predictors === null
+          )
+        ).toBe(true)
 
         for (let index = 5; index < 9; index += 1) {
           const trade = await fans[index].client.rpc('open_trade', {
@@ -910,10 +919,20 @@ describe('v3 prediction cohort privacy', () => {
         const home = secondRows.find((row) => row.outcome === 'HOME')
         expect(home?.suppressed).toBe(false)
         expect(Number(home?.unique_predictors)).toBe(5)
+        expect(home?.trades).not.toBeNull()
+        expect(home?.shares).not.toBeNull()
+        expect(home?.last_price).not.toBeNull()
         expect(
           secondRows
             .filter((row) => row.outcome !== 'HOME')
-            .every((row) => row.suppressed === true)
+            .every(
+              (row) =>
+                row.suppressed === true &&
+                row.trades === null &&
+                row.shares === null &&
+                row.last_price === null &&
+                row.unique_predictors === null
+            )
         ).toBe(true)
       } finally {
         await cleanupClub(clubId)
