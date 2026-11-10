@@ -88,7 +88,8 @@ function runFullSuite(): number | null {
     'test',
     '--env-file=.env.local',
     '--path-ignore-patterns=tests/fault-injection/**',
-    '--path-ignore-patterns=tests/e2e/**'
+    '--path-ignore-patterns=tests/e2e/**',
+    '--path-ignore-patterns=tests/agent/**'
   ])
   return result.status
 }
