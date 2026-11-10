@@ -1,7 +1,7 @@
 # Verification Record — Result-Bound Market Lifecycle
 
 - **Issue:** [#175](https://github.com/match-pulse/match-pulse/issues/175)
-- **PR:** Pending
+- **PR:** [#185](https://github.com/match-pulse/match-pulse/pull/185)
 - **Date:** 2026-11-10
 - **Environment:** Local Fedora 44; Node 22.23.1; Bun 1.4.2; Docker CE 29.9.3; local Supabase PostgreSQL 17.11
 - **Status:** Partially verified — implementer evidence; full suite and independent verification pending
@@ -76,7 +76,7 @@ Observed behaviour:
 ## 6. Links
 
 - Issue: [#175](https://github.com/match-pulse/match-pulse/issues/175)
-- PR: Pending
+- PR: [#185](https://github.com/match-pulse/match-pulse/pull/185)
 - Execution plan / audit / ADR: [v3 audit](../audits/2026-11-10-171-v3-audit.md), [execution plan](../exec-plans/173-audit-remediation.md), [ADR-011](../../architecture/adr/011-result-bound-market-lifecycle.md)
 - Findings register: FND-011, FND-014
 - AI transparency entry: Entry 53
@@ -84,4 +84,4 @@ Observed behaviour:
 
 ## 7. Addenda
 
-Pending PR link, full-suite evidence and independent verification.
+2026-11-10: PR [#185](https://github.com/match-pulse/match-pulse/pull/185) opened; full-suite evidence recorded; independent verification pending.

@@ -946,7 +946,7 @@ Secret hygiene re-verified: `release.env` in history contains only `APP_VERSION`
 **Learning:** The result is public at full time, so "until resolution" is not a safe entry window. Exits and entries need different gates: a finished match closes buying but must not trap holders. Triggers enforce the rule on every mutation path and keep the check close to the data.
 **Limitations:** Fault injection for the new triggers is not added yet; full suite/E2E and independent verification are pending. Local Docker/Kong workaround remains.
 
-**Links:** issue #175 · [`ADR-011`](../architecture/adr/011-result-bound-market-lifecycle.md) · [`verification`](verification/2026-11-175-market-lifecycle.md) · [`findings register`](findings-register.md) · [`execution plan`](exec-plans/173-audit-remediation.md)
+**Links:** issue #175 · PR [#185](https://github.com/match-pulse/match-pulse/pull/185) · [`ADR-011`](../architecture/adr/011-result-bound-market-lifecycle.md) · [`verification`](verification/2026-11-175-market-lifecycle.md) · [`findings register`](findings-register.md) · [`execution plan`](exec-plans/173-audit-remediation.md)
 
 ---
 
