@@ -7,10 +7,10 @@ what did review change or keep, and what remains uncertain?
 
 | Risk | Control | Effort | Residual risk |
 | :--- | :--- | :--- | :--- |
-| **R1. Unauthorized access or role escalation** | Supabase Auth, RLS, least-privilege grants, `SECURITY DEFINER` RPCs with `auth.uid()`, role checks, authorization suite | High | No independent audit; legacy `CLUB` role remains (FND-023) |
+| **R1. Unauthorized access or role escalation** | Supabase Auth, RLS, least-privilege grants, `SECURITY DEFINER` RPCs with `auth.uid()`, role checks, authorization suite | High | No independent security audit |
 | **R2. Oversell or over-capacity** | Event/ticket row locks, capacity and allocation triggers, cumulative buyer-limit trigger, v3 tests, fault injection | High | Sales-path trigger not separately mutated; no production load |
 | **R3. Double charge or double payout** | Profile/market locks, conditional debit, request-key idempotency, terminal resolution, double-spend and lifecycle tests | High | M-INV2 forced-failure only; single database instance |
-| **R4. Privacy leak in insights** | Club-scoped RPCs, aggregate-only columns, outcome/time-bucket suppression, audited export, retention cleanup | High | No independent privacy review; legacy analytics deferred |
+| **R4. Privacy leak in insights** | Club-scoped RPCs, aggregate-only columns, outcome/time-bucket suppression, audited export, retention cleanup | High | No independent privacy review |
 | **R5. Operational failure without recovery** | Health, logs, smoke, CI delivery/recovery, runbook, public-schema restore | Medium | No hosted deployment, external monitoring or production recovery (FND-006) |
 
 **Non-test control:** the RLS/grants boundary, architecture guard, code review,
@@ -54,7 +54,7 @@ third-party audit.
 FND-002: 27 fault-injection entries, but M-INV2 is forced-failure only. FND-004:
 p95 is asserted in CI for the 100-registration and 20-ticket bursts; production
 and multi-instance load are not measured. FND-006: local/CI delivery, production
-deferred. FND-023: legacy `CLUB` analytics deferred. FND-026/027: simulated points
+deferred. FND-023 is closed by #188 (legacy analytics retired). FND-026/027: simulated points
 and manual subscription periods accepted. The next evidence is a hosted recovery
 drill and an independent privacy review.
 

@@ -9,7 +9,7 @@ map and the code disagree, the code and the
 | Element | Location | Responsibility |
 | :--- | :--- | :--- |
 | Root layout | `src/app/layout.tsx` | Shell and metadata |
-| Home route | `src/app/page.tsx` | Routes by platform admin, legacy role, club membership or fan |
+| Home route | `src/app/page.tsx` | Routes by platform admin, club membership or fan |
 | Login | `src/app/login/page.tsx` | Email/password sign-in, fan sign-up, `next` redirect |
 | Public events | `src/app/events/` | Published club events and event detail/checkout |
 | Fan area | `src/app/fan/` | Tickets, portfolio, rewards |
@@ -22,6 +22,7 @@ map and the code disagree, the code and the
 | ELITE export | `src/app/api/club/export-v3/route.ts` | Audited aggregate CSV |
 | Session proxy | `src/proxy.ts` | Refreshes the Supabase auth cookie |
 | CLI | `src/cli/` | `matchpulse` command tree, profiles and JSON output |
+
 | Shared domain | `src/lib/domain/` | Typed auth, club, event, ticket, prediction, analytics and admin wrappers |
 | Viewer seam | `src/lib/viewer.ts` | Profile, club memberships and admin flag for v3 pages |
 
@@ -70,7 +71,8 @@ Migrations in `supabase/migrations/`, replayed in filename order:
 | Auth/RLS | `20261108`–`20261112` | `profiles.role`, auth trigger, RLS, grants, `auth.uid()` RPCs, `trade_requests`, idempotent trades |
 | MVP | `20261120`–`20261130` | Tickets, rewards, audit, organizer ownership, match linkage, retention index |
 | v3 tenancy | `20261201`–`20261205` | Clubs, members, invites, plans, entitlements, subscriptions, ticket types/orders/transfers, fan cards, nominal ticket RPCs, retention |
-| v3 hardening | `20261206`–`20261212` | Security boundary, result binding, ticketing integrity, reward idempotency, subscription limits, privacy retention, ticket payload hash |
+| v3 hardening | `20261206`–`20261213` | Security boundary, result binding, ticketing integrity, reward idempotency, subscription limits, privacy retention, ticket payload hash, legacy `CLUB` retirement |
+
 
 The state-changing functions are `SECURITY DEFINER` with
 `search_path = public, pg_temp` and explicit `auth.uid()` checks. v3 functions

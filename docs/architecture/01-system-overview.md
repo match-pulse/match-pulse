@@ -48,9 +48,8 @@ in the database, not in the UI. Commerce is simulated.
 
 **Sign-in.** A fan, club member or platform admin signs in with email/password.
 The server client stores the session in cookies and refreshes it through the
-Next.js proxy. The home route chooses admin → legacy organizer/club → club
-membership → fan. The database still enforces authorization from the JWT; routing
-is not the boundary.
+Next.js proxy. The home route chooses admin → club membership → fan. The database
+still enforces authorization from the JWT; routing is not the boundary.
 
 **Club and event setup.** A user creates a club and becomes `OWNER`. The club gets
 a simulated subscription (`STARTER`, `PRO`, `ELITE`); only `ACTIVE` grants

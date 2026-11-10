@@ -57,7 +57,7 @@ Status values: `planned`, `implemented`, `verified`.
 | Resolve market | Club OWNER/ADMIN/STAFF | `club predictions resolve` | `resolve_market` | `/club/events/[id]` | `predictions` | verified |
 | Sales summary | Club member | `club analytics summary` | `club_sales_summary` | `/club` | `privacy` | verified |
 | Prediction insights | Club OWNER/ADMIN/ANALYST | `club analytics predictions` | `club_prediction_insights` | `/club/analytics` | `privacy` | verified |
-| Export analytics | Club OWNER/ADMIN/ANALYST (ELITE) | `club analytics export` | `record_club_export` + CSV | `/api/club/export` | `entitlements` | implemented |
+| Export analytics | Club OWNER/ADMIN/ANALYST (ELITE) | `club analytics export` | `record_club_export` + CSV | `/api/club/export-v3` | `entitlements` | implemented |
 | View plan | Club member | `club plan show` | `get_club_context` | `/club/plan` | `entitlements` | verified |
 | Request plan change | Club OWNER | `club plan request` | `request_plan_change` | `/club/plan` | `entitlements` | verified |
 | List clubs | Platform admin | `admin clubs list` | `admin_list_clubs` | `/admin/clubs` | `admin` | implemented |

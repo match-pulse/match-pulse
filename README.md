@@ -118,6 +118,6 @@ immediately.
 - M-INV2 is verified by forced-failure rollback, not observed-red.
 - The p95 latency is asserted in CI for the local registration and ticket bursts;
   production and multi-instance load are not measured.
-- Legacy v2 pages and the legacy `CLUB` role remain for compatibility.
+- Legacy v2 pages remain for compatibility; the v3 pages are the current surfaces.
 
 See [`AGENTS.md`](AGENTS.md) for the engineering rules and human decision gates.

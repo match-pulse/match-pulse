@@ -49,8 +49,8 @@ transaction model and the LMSR market.
 
 ## Technical debt and evolution
 
-Legacy v2 pages and the global `CLUB` role remain for local fixtures; retire them
-(#188). There is no hosted deployment, real payments, seat maps or turnstile
+Legacy v2 pages remain; the legacy `CLUB` role and analytics path were retired in
+#188. There is no hosted deployment, real payments, seat maps or turnstile
 integration; those are separate projects. Attendee retention is a local command.
 There is no independent security/privacy review.
 

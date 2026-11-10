@@ -12,9 +12,6 @@ const LINKS: Record<Profile['role'], Array<{ href: string; label: string }>> = {
   ],
   ORGANIZER: [
     { href: '/organizer', label: 'Dashboard' }
-  ],
-  CLUB: [
-    { href: '/club', label: 'Analytics' }
   ]
 }
 
