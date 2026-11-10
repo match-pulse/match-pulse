@@ -1110,6 +1110,22 @@ Secret hygiene re-verified: `release.env` in history contains only `APP_VERSION`
 
 ---
 
+## Entry 67 — p95 CI gate and ticket burst (FND-004 / #199)
+
+**Date:** 2026-11-10
+**Tool:** opencode CLI (`deepseek-v4.1-flash`)
+**Intent:** Turn the observed p95 into a CI gate and add a v3 ticket-purchase burst.
+**Boundary:** Two test files, performance documentation and verification record; no application behaviour changes.
+**Prior records reviewed:** FND-004; architecture characteristics §3.2; capacity and v3 ticketing tests.
+**Work performed:** asserted p95 < 1,000 ms in the 100-request registration burst; added a 20-buyer concurrent ticket burst with the same assertion, no-oversell and ticket-count checks; updated the architecture/README status.
+**Verification:** capacity p95 878.04 ms; ticket burst p95 240.90 ms; database 58 pass; CLI 2 pass. Details: [`verification/2026-11-199-p95-gate.md`](verification/2026-11-199-p95-gate.md).
+**Learning:** A recorded latency is not a quality gate until a test fails above the target; the ticket burst also proves the purchase path under concurrency.
+**Limitations:** Environment-specific; production and multi-instance load remain part of the final deployment step.
+
+**Links:** issue #199 · [`verification`](verification/2026-11-199-p95-gate.md) · [`findings register`](findings-register.md) · [`architecture characteristics`](../architecture/03-architecture-characteristics.md)
+
+---
+
 ## Standing rule
 
 AI may investigate, analyse, draft, implement within an approved scope, and run verification. The human retains every decision that affects business rules, architecture, schema, scope, priority, risk acceptance and merging. Contributions that cannot be verified are recorded as unverified rather than asserted.

@@ -6,12 +6,19 @@
  */
 import { describe, expect, test } from 'bun:test'
 import { randomUUID } from 'crypto'
-import { admin, createUser, deleteUsers, type TestUser } from '../support/auth'
+import { admin, createUser, createUsers, deleteUsers, type TestUser } from '../support/auth'
 import { createTournament, deleteTournament, setPoints } from '../support/fixtures'
 
 const TEST_TIMEOUT_MS = 60_000
 
 type Row = Record<string, unknown>
+
+function percentile(values: number[], fraction: number): number {
+  if (values.length === 0) return Number.NaN
+  const sorted = [...values].sort((a, b) => a - b)
+  const index = Math.min(sorted.length - 1, Math.ceil(fraction * sorted.length) - 1)
+  return sorted[index]
+}
 
 function first(data: unknown): Row | null {
   if (Array.isArray(data)) return (data[0] as Row) ?? null
@@ -1014,6 +1021,72 @@ describe('v3 subscription limits', () => {
       } finally {
         await cleanupClub(clubId)
         await deleteUsers([owner])
+      }
+    },
+    TEST_TIMEOUT_MS
+  )
+})
+
+describe('v3 ticket purchase burst', () => {
+  test(
+    '20 concurrent buyers each get one ticket and p95 stays under 1000 ms',
+    async () => {
+      const owner = await createUser()
+      const buyers = await createUsers(20)
+      let clubId: string | null = null
+
+      try {
+        clubId = await createClub(owner, 'Ticket Burst Club', 'PRO')
+        const eventId = await createEvent(owner, clubId, 20)
+        const typeId = await createTicketType(owner, eventId, { allocation: 20 })
+        await publishEvent(owner, eventId)
+
+        const started = performance.now()
+        const results = await Promise.all(
+          buyers.map(async (buyer, index) => {
+            const callStarted = performance.now()
+            const { data, error } = await buyer.client.rpc('purchase_ticket', {
+              p_ticket_type_id: typeId,
+              p_attendees: [attendee(`Burst${index}`, 'Buyer')],
+              p_accept_terms: true,
+              p_request_id: randomUUID(),
+              p_channel: 'WEB',
+              p_buyer_id: null
+            })
+            return {
+              ok: !error,
+              row: first(data),
+              message: error?.message,
+              durationMs: performance.now() - callStarted
+            }
+          })
+        )
+        const wallClockMs = performance.now() - started
+        const latencies = results.map((result) => result.durationMs)
+        const p95 = percentile(latencies, 0.95)
+
+        console.log(
+          JSON.stringify({
+            event: 'ticket.burst_latency',
+            requests: buyers.length,
+            wallClockMs: Number(wallClockMs.toFixed(2)),
+            p95Ms: Number(p95.toFixed(2)),
+            maxMs: Number(Math.max(...latencies).toFixed(2))
+          })
+        )
+
+        expect(results.filter((result) => !result.ok).map((result) => result.message)).toEqual([])
+        expect(results.every((result) => result.row?.order_id)).toBe(true)
+        expect(p95).toBeLessThan(1000)
+
+        const { data: tickets } = await admin
+          .from('tickets')
+          .select('id')
+          .eq('tournament_id', eventId)
+        expect(tickets?.length).toBe(20)
+      } finally {
+        await cleanupClub(clubId)
+        await deleteUsers([owner, ...buyers])
       }
     },
     TEST_TIMEOUT_MS

@@ -73,6 +73,7 @@ describe('INV-01 tournament capacity under a concurrent burst', () => {
       const refused = results.filter((result) => result.ok && result.value === false).length
 
       expect(transportErrors.map((result) => result.message)).toEqual([])
+      expect(p95).toBeLessThan(1000)
       expect(accepted).toBe(CAPACITY)
       expect(refused).toBe(BURST_SIZE - CAPACITY)
       expect(accepted + refused).toBe(BURST_SIZE)
