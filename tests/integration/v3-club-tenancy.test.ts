@@ -1094,3 +1094,70 @@ describe('v3 ticket purchase burst', () => {
     TEST_TIMEOUT_MS
   )
 })
+describe('v3 subscription expiry', () => {
+  test(
+    'keeps entitlements during the 7-day grace then denies them',
+    async () => {
+      const owner = await createUser()
+      let clubId: string | null = null
+
+      try {
+        clubId = await createClub(owner, 'Expiry Club', 'PRO')
+
+        await admin
+          .from('club_subscriptions')
+          .update({
+            status: 'ACTIVE',
+            current_period_end: new Date(Date.now() - 86_400_000).toISOString()
+          })
+          .eq('club_id', clubId)
+
+        const firstExpiry = await admin.rpc('expire_subscriptions')
+        expect(firstExpiry.error).toBeNull()
+
+        const { data: graceSubscription } = await admin
+          .from('club_subscriptions')
+          .select('status')
+          .eq('club_id', clubId)
+          .single()
+        expect(graceSubscription?.status).toBe('PAST_DUE')
+
+        const duringGrace = await owner.client.rpc('create_club_event', {
+          p_club_id: clubId,
+          p_name: 'Grace Event',
+          p_max_capacity: 10,
+          p_ticket_allocation: 10,
+          p_ticket_points: 0
+        })
+        expect(duringGrace.error).toBeNull()
+
+        await admin
+          .from('club_subscriptions')
+          .update({
+            status: 'ACTIVE',
+            current_period_end: new Date(Date.now() - 8 * 86_400_000).toISOString()
+          })
+          .eq('club_id', clubId)
+
+        const secondExpiry = await admin.rpc('expire_subscriptions')
+        expect(secondExpiry.error).toBeNull()
+
+        const afterGrace = await owner.client.rpc('create_club_event', {
+          p_club_id: clubId,
+          p_name: 'Expired Event',
+          p_max_capacity: 10,
+          p_ticket_allocation: 10,
+          p_ticket_points: 0
+        })
+        expect(afterGrace.error?.message).toContain(
+          'plan entitlement required: max_active_events'
+        )
+      } finally {
+        await cleanupClub(clubId)
+        await deleteUsers([owner])
+      }
+    },
+    TEST_TIMEOUT_MS
+  )
+})
+

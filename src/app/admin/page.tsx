@@ -55,6 +55,7 @@ export default async function AdminPage({ searchParams }: PageProps) {
                 <th className="px-3 py-2">Club</th>
                 <th className="px-3 py-2">Plan</th>
                 <th className="px-3 py-2">Status</th>
+                <th className="px-3 py-2">Period end</th>
                 <th className="px-3 py-2">Assign</th>
               </tr>
             </thead>
@@ -67,6 +68,7 @@ export default async function AdminPage({ searchParams }: PageProps) {
                   </td>
                   <td className="px-3 py-2">{club.plan_code ?? '—'}</td>
                   <td className="px-3 py-2">{club.subscription_status ?? '—'}</td>
+                  <td className="px-3 py-2">{club.current_period_end ? club.current_period_end.slice(0, 10) : '—'}</td>
                   <td className="px-3 py-2">
                     <form action={assignPlanAction} className="flex flex-wrap items-end gap-2">
                       <input type="hidden" name="clubId" value={club.club_id} />
