@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation'
 import Notice from '@/components/Notice'
 import V3Shell from '@/components/V3Shell'
-import { assignPlanAction } from '@/app/actions/v3'
+import { assignPlanAction } from '@/app/actions/admin'
 import { adminListAudit, adminListClubs } from '@/lib/domain/admin'
 import { listPlans } from '@/lib/domain/clubs'
 import { createSupabaseServerClient } from '@/lib/supabase/server'

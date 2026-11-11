@@ -3,14 +3,14 @@ import { notFound, redirect } from 'next/navigation'
 import Notice from '@/components/Notice'
 import V3Shell from '@/components/V3Shell'
 import {
-  checkInAction,
   createMatchAction,
   createTicketTypeAction,
   publishEventAction,
   resolveMarketAction,
   setPredictionAction,
   updateMatchAction
-} from '@/app/actions/v3'
+} from '@/app/actions/events'
+import { checkInAction } from '@/app/actions/tickets'
 import { getClubContext } from '@/lib/domain/clubs'
 import {
   getClubEvent,

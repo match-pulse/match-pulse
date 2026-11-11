@@ -4,14 +4,14 @@ import Notice from '@/components/Notice'
 import V3Shell from '@/components/V3Shell'
 import {
   createClubAction,
-  createEventAction,
-  createRewardAction,
   inviteMemberAction,
-  issueFanCardAction,
   removeMemberAction,
   requestPlanAction,
   setMemberRoleAction
-} from '@/app/actions/v3'
+} from '@/app/actions/clubs'
+import { createEventAction } from '@/app/actions/events'
+import { createRewardAction } from '@/app/actions/analytics'
+import { issueFanCardAction } from '@/app/actions/tickets'
 import { getClubContext, listClubMembers } from '@/lib/domain/clubs'
 import { listClubEvents } from '@/lib/domain/events'
 import { listClubRewards, predictionInsights, salesSummary } from '@/lib/domain/analytics'

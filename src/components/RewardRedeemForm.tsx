@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useFormStatus } from 'react-dom'
-import { redeemRewardAction } from '@/app/actions/v3'
+import { redeemRewardAction } from '@/app/actions/analytics'
 
 function SubmitButton({ cost }: { cost: number }) {
   const { pending } = useFormStatus()
