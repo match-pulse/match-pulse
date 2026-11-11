@@ -1171,19 +1171,19 @@ Secret hygiene re-verified: `release.env` in history contains only `APP_VERSION`
 
 ---
 
-## Entry 70 — Ticket-point caps (FND-026 / #200)
+## Entry 70 — Course submission brief rewrite (issue #217)
 
 **Date:** 2026-11-10
 **Tool:** opencode CLI (`deepseek-v4.1-flash`)
-**Intent:** Bound club-issued ticket points at 500 per ticket and 10,000 per event.
-**Boundary:** One migration with CHECK constraints and replaced create/update event RPCs, boundary tests, docs and verification record.
-**Prior records reviewed:** FND-026; AUD-018; event create/update RPCs; ticket-point issuance.
-**Work performed:** added per-ticket and per-event CHECK constraints (legacy club-less tournaments exempt), added explicit RPC checks with clear errors, and added boundary tests for 501/ticket and 10,500/event.
-**Verification:** targeted test 1 pass; database 58 pass; CLI 2 pass; typecheck/lint/architecture/secrets pass. Details: [`verification/2026-11-200-ticket-points-cap.md`](verification/2026-11-200-ticket-points-cap.md).
-**Learning:** The cap belongs in both the RPC and a table constraint; the RPC gives a usable error, the constraint protects every write path. Legacy tournaments need an explicit exemption.
-**Limitations:** Local/CI evidence only; production deployment is the final post-MVP step.
+**Intent:** Make the CM0639 submission documents match the course deliverables and timeboxes, with detail moved to linked records.
+**Boundary:** Course-facing documentation, checklist pages, submission index and PDF export script. No product, schema, authorization or runtime change. Issues #217 (parent), #218 (Development Methodologies), #219 (verification), #220 (Software Architectures). Branch `docs/217-course-submission-brief`.
+**Prior records reviewed:** findings register (no open documentation-length finding); SA L04/L07 and DM L04/L08/L12 transcripts/slides; `Project_Handbook.md`; old architecture reports and checkpoint folders; invariant, delivery and fault-injection verification records; full AI log.
+**Work performed:** replaced the kata with a one-page broad R1–R8 brief and a 108-word one-minute pitch, plus a separate detailed requirement register; cut the characteristics document to selection, traceability and quantified targets; cut the architecture description to a three-minute walkthrough with code references; cut checkpoints A–E to one page each; replaced the long methodology report with a one-page Markdown index; kept a one-page AI-use summary; updated the PDF exporter to produce 1+2+3+5 pages.
+**Verification:** link check 0 broken across the rewritten files; `bun run docs:pdf` produced kata 1 page, characteristics 2, architecture 3, methodology checkpoints 5; `bun run lint`, `bunx next typegen && bun run typecheck`, `bun run check:architecture` and `git diff --check` passed. No build, database, E2E or fault-injection run was performed because only documentation and the export script changed.
+**Learning:** The course artifacts are summaries with a timebox, not evidence dumps. The kata is a one-page problem brief; broad R requirements keep it explainable, while the detailed register preserves traceability. The checkpoints become usable when each is one page and three minutes.
+**Limitations:** No independent review; the course D/E materials are not available, so those pages answer the stated focus rather than a known rubric. At the time of this entry, the branch had no commit, push or pull request.
 
-**Links:** issue #200 · [`verification`](verification/2026-11-200-ticket-points-cap.md) · [`findings register`](findings-register.md) · [`audit`](audits/2026-11-10-171-v3-audit.md)
+**Links:** issue #217 · sub-issues [#218](https://github.com/match-pulse/match-pulse/issues/218), [#219](https://github.com/match-pulse/match-pulse/issues/219), [#220](https://github.com/match-pulse/match-pulse/issues/220) · [`course package`](../course/README.md) · [`submissions`](../submissions/README.md) · [`verification`](verification/2026-11-10-217-course-submission-brief.md)
 
 ---
 
@@ -1202,6 +1202,20 @@ Secret hygiene re-verified: `release.env` in history contains only `APP_VERSION`
 **Links:** issue #201 · [`verification`](verification/2026-11-201-subscription-expiry.md) · [`findings register`](findings-register.md) · [`audit`](audits/2026-11-10-171-v3-audit.md)
 
 ---
+
+## Entry 72 — Ticket-point caps (FND-026 / #200)
+
+**Date:** 2026-11-10
+**Tool:** opencode CLI (`deepseek-v4.1-flash`)
+**Intent:** Bound club-issued ticket points at 500 per ticket and 10,000 per event.
+**Boundary:** One migration with CHECK constraints and replaced create/update event RPCs, boundary tests, docs and verification record.
+**Prior records reviewed:** FND-026; AUD-018; event create/update RPCs; ticket-point issuance.
+**Work performed:** added per-ticket and per-event CHECK constraints (legacy club-less tournaments exempt), added explicit RPC checks with clear errors, and added boundary tests for 501/ticket and 10,500/event.
+**Verification:** targeted test 1 pass; database 58 pass; CLI 2 pass; typecheck/lint/architecture/secrets pass. Details: [`verification/2026-11-200-ticket-points-cap.md`](verification/2026-11-200-ticket-points-cap.md).
+**Learning:** The cap belongs in both the RPC and a table constraint; the RPC gives a usable error, the constraint protects every write path. Legacy tournaments need an explicit exemption.
+**Limitations:** Local/CI evidence only; production deployment is the final post-MVP step.
+
+**Links:** issue #200 · [`verification`](verification/2026-11-200-ticket-points-cap.md) · [`findings register`](findings-register.md) · [`audit`](audits/2026-11-10-171-v3-audit.md)
 
 ---
 
