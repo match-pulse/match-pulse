@@ -1267,6 +1267,22 @@ Secret hygiene re-verified: `release.env` in history contains only `APP_VERSION`
 
 ---
 
+## Entry 76 — Product-first README (issue #225)
+
+**Date:** 2026-11-11
+**Tool:** opencode CLI (`deepseek-v4.1-flash`)
+**Intent:** Make the README a short, ordered product front page and make the business model unambiguous.
+**Boundary:** `README.md`, new `docs/development.md` and this entry. No product, schema, authorization, runtime or dependency change. No OpenSpec change: this is a documentation-only task with no behavior delta.
+**Prior records reviewed:** current README; course package README; `docs/operations/runbook.md`; `docs/testing/README.md`; `openspec/README.md`; findings register (no README-structure finding); human clarification of the points/credit model.
+**Work performed:** reduced the README from 126 to 53 lines; removed the feature matrix, claim block, test catalogue, gaps list and developer detail; stated that clubs pay the subscription, fans need an account, registration is per named person, points are a per-person non-transferable credit system, points redeem for club rewards and never cash, and MatchPulse is not a ticket shop or rewards shop; moved setup, demo accounts, CLI, Docker and tests to `docs/development.md`.
+**Verification:** relative links in `README.md` and `docs/development.md` resolve; `git diff --check` passes. No code or database checks were run because only documentation changed.
+**Learning:** The README should explain the product and the money boundary, not enumerate capabilities or operational detail. The business model is clearer when “what it is not” is explicit.
+**Limitations:** No commit, push or PR existed at the time of this entry. The OpenSpec policy remains unchanged: OpenSpec is used for bounded behavior/spec/evidence changes, not docs-only tasks.
+
+**Links:** issue [#225](https://github.com/match-pulse/match-pulse/issues/225) · [README](../../README.md) · [development](../development.md)
+
+---
+
 ## Standing rule
 
 AI may investigate, analyse, draft, implement within an approved scope, and run verification. The human retains every decision that affects business rules, architecture, schema, scope, priority, risk acceptance and merging. Contributions that cannot be verified are recorded as unverified rather than asserted.
