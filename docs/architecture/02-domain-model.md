@@ -114,6 +114,7 @@ This is a summary. The [registry](../methodology/checkpoint-A/02-invariants.md) 
 | Plan entitlements and limits are enforced in the database | `has_entitlement`, subscription status, RPC checks | **Verified** (v3 integration/CLI) |
 | A buyer can buy 1–4 named tickets; identity fields and terms are required | `purchase_ticket` transaction | **Verified** (v3 integration/CLI) |
 | Ticket sales never exceed capacity or allocation | Ticket type/event locks, capacity triggers and configuration guard | **Enforced, unverified by independent verification** (T-INV5; targeted tests pass) |
+| Ticket points are capped at 500 per ticket and 10,000 per event | RPC checks + `tournaments` CHECK constraints | **Verified** (FND-026 tests) |
 | Ticket purchase replays only the same payload; check-in is idempotent | Request id + stored payload hash + ticket code guard | **Enforced, unverified by independent verification** (T-INV13; targeted tests pass) |
 | Fan-card, transferability and transfer-deadline rules are enforced | Ticket type rules + attendee validation | **Verified** (v3 integration) |
 | Clubs see aggregate prediction data only; each outcome/time-bucket cohort below 5 is suppressed; no attendee identity | `club_prediction_insights`/`club_prediction_timeseries` + privacy rule | **Enforced, unverified by independent verification** (T-INV8; skewed-cohort test passes) |

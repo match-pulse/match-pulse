@@ -301,7 +301,7 @@ Recorded so they are not mistaken for delivered work. Full detail in the [invari
 - **The sales-path capacity trigger and subscription-lock race are not separately mutated.** The former is defence in depth behind the allocation rule; the latter is timing-dependent and covered by the concurrent STARTER test.
 - **Request-key retention is a local maintenance command.** `bun run maintenance:cleanup` deletes completed requests older than 30 days; there is no scheduled production retention job.
 - **Attendee-data retention is a local maintenance command.** `bun run maintenance:cleanup-attendees` clears identity from past-event tickets, transfer history, old fan-card audit metadata and expired invitation emails older than 365 days; there is no scheduled production job or legal retention review.
-- **Ticket points are a simulated unbounded economy.** Clubs control `ticket_points` issuance; no platform cap exists until rewards become a real commercial promise.
+- **Ticket points are a simulated capped economy.** Clubs configure `ticket_points` within 500 per ticket and 10,000 per event; the caps are enforced by database constraints and RPC checks.
 - **Subscription expiry uses a 7-day grace.** At `current_period_end` the subscription moves to `PAST_DUE`; entitlements continue for 7 days, then are denied. A daily `pg_cron` job performs the transition; there is still no external billing provider.
 - **Club privacy has not had an independent review.** Aggregate-only insights and the threshold-5 rule are implemented; data resale is not implemented and personal data is not sold.
 - **p95 latency is asserted in CI.** The capacity burst and a 20-buyer ticket burst record p50/p95/max and fail above 1,000 ms; the values remain environment-specific.
