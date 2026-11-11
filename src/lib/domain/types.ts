@@ -235,6 +235,7 @@ export type AdminClub = {
   slug: string
   plan_code: string | null
   subscription_status: string | null
+  current_period_end: string | null
   created_at: string
 }
 

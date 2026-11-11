@@ -54,9 +54,10 @@ third-party audit.
 FND-002: 27 fault-injection entries, but M-INV2 is forced-failure only. FND-004:
 p95 is asserted in CI for the 100-registration and 20-ticket bursts; production
 and multi-instance load are not measured. FND-006: local/CI delivery, production
-deferred. FND-023 is closed by #188 (legacy analytics retired). FND-026/027: simulated points
-and manual subscription periods accepted. The next evidence is a hosted recovery
-drill and an independent privacy review.
+deferred. FND-023 is closed by #188 (legacy analytics retired). FND-026 is accepted
+(simulated points); FND-027 is verified with a 7-day grace and a daily `pg_cron`
+job. The next evidence is a hosted recovery drill and an independent privacy
+review.
 
 **Detail:** [risk map](../checkpoint-C/01-risk-control-map.md) ·
 [quality story](../checkpoint-C/02-quality-story.md) · [residual risk](../checkpoint-C/05-residual-risk.md) ·

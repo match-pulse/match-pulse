@@ -114,6 +114,7 @@ immediately.
 - No real payments, KYC, invoices, refunds or settlement.
 - No seat maps, wallet passes, turnstile hardware or FIGC/Questura integration.
 - Attendee retention is a local maintenance command, not a scheduled job.
+- Subscription expiry uses a 7-day grace and a daily `pg_cron` job; there is no external billing provider.
 - No independent privacy or security audit; no data resale.
 - M-INV2 is verified by forced-failure rollback, not observed-red.
 - The p95 latency is asserted in CI for the local registration and ticket bursts;

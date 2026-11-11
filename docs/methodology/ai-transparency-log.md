@@ -1093,7 +1093,6 @@ Secret hygiene re-verified: `release.env` in history contains only `APP_VERSION`
 **Links:** issue #188 · [`verification`](verification/2026-11-188-legacy-club-retirement.md) · [`findings register`](findings-register.md) · [`audit`](audits/2026-11-10-171-v3-audit.md)
 
 ---
-
 ## Entry 64 — Post-merge cleanup completion rule
 
 **Date:** 2026-11-10
@@ -1171,6 +1170,26 @@ Secret hygiene re-verified: `release.env` in history contains only `APP_VERSION`
 **Limitations:** No independent review; the course D/E materials are not available, so those pages answer the stated focus rather than a known rubric. At the time of this entry, the branch had no commit, push or pull request.
 
 **Links:** issue #217 · sub-issues [#218](https://github.com/match-pulse/match-pulse/issues/218), [#219](https://github.com/match-pulse/match-pulse/issues/219), [#220](https://github.com/match-pulse/match-pulse/issues/220) · [`course package`](../course/README.md) · [`submissions`](../submissions/README.md) · [`verification`](verification/2026-11-10-217-course-submission-brief.md)
+
+---
+
+## Entry 71 — Subscription expiry (FND-027 / #201)
+
+**Date:** 2026-11-10
+**Tool:** opencode CLI (`deepseek-v4.1-flash`)
+**Intent:** Enforce `current_period_end` with a 7-day grace and a daily expiry job.
+**Boundary:** One migration replacing entitlement helpers and event/invite locks, adding `expire_subscriptions()` and `pg_cron`; admin period-end display; tests and verification record.
+**Prior records reviewed:** FND-027; AUD-019; subscription RPCs; plan-entitlement tests.
+**Work performed:** at period end the subscription moves to `PAST_DUE`; `has_entitlement`/`entitlement_limit` allow a 7-day grace; `expire_subscriptions()` writes an audit event; `pg_cron` schedules the daily job; the admin club list shows the period end.
+**Verification:** targeted test 1 pass; database 58 pass; CLI 2 pass; `pg_cron` and job row verified directly. Details: [`verification/2026-11-201-subscription-expiry.md`](verification/2026-11-201-subscription-expiry.md).
+**Learning:** The lock must cover a `PAST_DUE` row during grace; filtering the lock to `ACTIVE` would lose the serialisation that protects member/event limits.
+**Limitations:** Hosted Supabase must enable `pg_cron` at production deployment; local/CI evidence only.
+
+**Links:** issue #201 · [`verification`](verification/2026-11-201-subscription-expiry.md) · [`findings register`](findings-register.md) · [`audit`](audits/2026-11-10-171-v3-audit.md)
+
+---
+---
+
 
 ---
 

@@ -14,7 +14,7 @@ The enforcement and test status for each rule is in the
 | **Club invite** | Single-use, expiring invitation for an email and club role. | `club_invites` |
 | **Platform admin** | Platform-level operator capability, separate from club roles. | `platform_admins` |
 | **Plan / entitlement** | `STARTER`, `PRO`, `ELITE` and their feature/limit rows. | `plans`, `plan_entitlements` |
-| **Subscription** | A club's plan and `ACTIVE`/`PAST_DUE`/`CANCELED` status. Only `ACTIVE` grants entitlements. | `club_subscriptions` |
+| **Subscription** | A club's plan and `ACTIVE`/`PAST_DUE`/`CANCELED` status. `ACTIVE` or `PAST_DUE` within the 7-day grace grants entitlements. | `club_subscriptions` |
 | **Event (tournament)** | Club-owned competition with capacity, allocation and a `DRAFT`/`PUBLISHED`/`FINISHED`/`CANCELLED` status. | `tournaments` |
 | **Registration** | Links a fan to an event and consumes one participant place. Legacy path for club-less events. | `registrations` |
 | **Match** | Fixture with teams, kickoff, status, scores and a prediction flag. | `matches` |
@@ -29,6 +29,7 @@ The enforcement and test status for each rule is in the
 | **Fan card** | Club-issued card number used by restricted ticket types. | `club_fan_cards` |
 | **Reward / redemption** | Club-scoped points reward and its one-time local code. | `rewards`, `reward_redemptions` |
 | **Audit event** | Actor, action, entity, optional club and metadata for sensitive actions. | `audit_events` |
+
 
 ## 2. Relationships
 
@@ -68,7 +69,7 @@ erDiagram
 
 | Object | States | Trigger |
 | :--- | :--- | :--- |
-| Subscription | `ACTIVE` ↔ `PAST_DUE` → `CANCELED` | Platform admin or simulated plan change |
+| Subscription | `ACTIVE` → `PAST_DUE` at period end; 7-day grace; `CANCELED` denies immediately | Platform admin, daily `pg_cron` expiry or simulated plan change |
 | Event | `DRAFT` → `PUBLISHED` → `FINISHED` / `CANCELLED` | Club staff; publish requires an active ticket type |
 | Ticket order | `SIMULATED_PAID` → `CANCELLED` | Simulated checkout; no real payment |
 | Ticket | valid → checked in; transferable → new attendee | Staff check-in or buyer name change before the deadline |
