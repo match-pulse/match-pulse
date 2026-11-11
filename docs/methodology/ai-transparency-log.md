@@ -1219,6 +1219,38 @@ Secret hygiene re-verified: `release.env` in history contains only `APP_VERSION`
 
 ---
 
+## Entry 73 — v3 Server Action refactor assessment (issue #222)
+
+**Date:** 2026-11-11
+**Tool:** opencode CLI (`deepseek-v4.1-flash`)
+**Intent:** Run the refactoring workflow for a bounded structural assessment of `src/app/actions/v3.ts`.
+**Boundary:** Read-only assessment, issue #222 creation, refactor assessment, execution plan, findings register and this log. No application code, branch, commit, push, PR, migration, dependency or deployment change.
+**Prior records reviewed:** findings register FND-001–FND-028; refactor, audit and incident indexes; v3.0.0 audit; ADRs 001/003/007/010; system overview, code map, architecture characteristics and ownership; OpenSpec and development practices; no open issues or pull requests.
+**Work performed:** created issue #222; inspected the action module and its seven import sites; mapped 21 actions to five domain modules; identified the zero-caller `recordExportAction` and the `requiredNumber` missing-value coercion; recorded REF-001–REF-004 as FND-029–FND-032; wrote the assessment and proposed execution plan.
+**Verification:** `bun run lint`, `bun run typecheck`, `bun run build` and `bun run check:architecture` all passed at baseline `5b053ba`. DB-backed tests and E2E were not run: `bunx supabase status` failed with a Docker API permission error.
+**Learning:** The file is a thin, low-risk adapter; the structural issue is file-level domain cohesion, not per-action size. `recordExportAction` is dead, and `requiredNumber` has a real validation gap that must not be fixed silently inside a behavior-neutral refactor. Splitting Server Actions changes generated action IDs, so the deployment note matters even though there is no production deployment.
+**Limitations:** No database-backed or browser evidence; no independent verifier yet; implementation has not started. The plan is Proposed and awaits decisions D1–D5.
+
+**Links:** issue [#222](https://github.com/match-pulse/match-pulse/issues/222) · [assessment](refactors/2026-11-11-222-v3-server-actions.md) · [plan](exec-plans/222-v3-server-action-modularity.md) · [findings register](findings-register.md)
+
+---
+
+## Entry 74 — v3 Server Action refactor implementation (issue #222)
+
+**Date:** 2026-11-11
+**Tool:** opencode CLI (`deepseek-v4.1-flash`)
+**Intent:** Implement the approved domain-aligned split of `src/app/actions/v3.ts` without changing observable behavior.
+**Boundary:** `src/app/actions/` modules, seven import sites, code map, assessment/plan, findings register and this log. No schema, RLS, RPC, UI, dependency, commit, push, PR or deployment change.
+**Prior records reviewed:** assessment RA-2026-11-11-222; plan D1–D5; FND-029–FND-032; baseline checks on `5b053ba`; `bunx supabase status` failure evidence.
+**Work performed:** extracted shared helpers to `form.ts`; created `clubs.ts`, `events.ts`, `analytics.ts` and `admin.ts`; extended `tickets.ts`; moved 20 actions verbatim; deleted `v3.ts` and the unused `recordExportAction`; updated seven import sites and the code map.
+**Verification:** `bun run lint`, `bun run typecheck`, `bun run build`, `bun run check:architecture` and `git diff --check` pass. An independent read-only verifier compared old/new function bodies: 29 retained bodies are byte-identical; `recordExportAction` is the only deletion; no code defect or scope creep. Its documentation notes were corrected and a follow-up pass returned `PASS`. Details: [`verification/2026-11-11-222-v3-server-actions.md`](verification/2026-11-11-222-v3-server-actions.md).
+**Learning:** A move-only script plus exact body comparison is stronger evidence than a visual diff for this kind of refactor. The verifier found documentation drift that the implementer missed: a table broken by an inserted paragraph, a stale action count, and missing implementation evidence. Those were corrected before the record was finalized.
+**Limitations:** DB-backed tests and E2E were not run because Docker/Supabase is unavailable; runtime form submission, Server Action ID resolution and revalidation remain unverified. No commit, push or PR exists, so there is no CI evidence. FND-032 remains open and is routed to separate issue #223.
+
+**Links:** issue [#222](https://github.com/match-pulse/match-pulse/issues/222) · [plan](exec-plans/222-v3-server-action-modularity.md) · [assessment](refactors/2026-11-11-222-v3-server-actions.md) · [verification](verification/2026-11-11-222-v3-server-actions.md) · [findings register](findings-register.md)
+
+---
+
 ## Standing rule
 
 AI may investigate, analyse, draft, implement within an approved scope, and run verification. The human retains every decision that affects business rules, architecture, schema, scope, priority, risk acceptance and merging. Contributions that cannot be verified are recorded as unverified rather than asserted.

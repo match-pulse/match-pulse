@@ -52,6 +52,10 @@ Findings FND-009 to FND-028 were appended on 2026-11-10 from the [v3.0.0 audit](
 | FND-026 | Product / Economy | Club-controlled `ticket_points` issuance is unbounded | Informational | Verified | [v3.0.0 audit](audits/2026-11-10-171-v3-audit.md) AUD-018 | [#171](https://github.com/match-pulse/match-pulse/issues/171), [#200](https://github.com/match-pulse/match-pulse/issues/200) | — | Capped at 500 per ticket and 10,000 per event; RPC checks and table constraints; boundary tests pass | [Ticket-point cap verification](verification/2026-11-200-ticket-points-cap.md) |
 | FND-027 | Billing model | Subscription `current_period_end` is stored but never enforced | Informational | Verified | [v3.0.0 audit](audits/2026-11-10-171-v3-audit.md) AUD-019 | [#171](https://github.com/match-pulse/match-pulse/issues/171), [#201](https://github.com/match-pulse/match-pulse/issues/201) | — | Period end moves to `PAST_DUE`; 7-day grace; daily pg_cron expiry; grace/expired tests pass | [Subscription expiry verification](verification/2026-11-201-subscription-expiry.md) |
 | FND-028 | Concurrency | Plan member and active-event limits are count-then-insert without a club lock | Minor | Verified | [v3.0.0 audit](audits/2026-11-10-171-v3-audit.md) AUD-020 | [#171](https://github.com/match-pulse/match-pulse/issues/171), [#177](https://github.com/match-pulse/match-pulse/issues/177) | — | Subscription lock serialises limit checks; concurrent STARTER test passes; human-verified 2026-11-10 | [Subscription limits verification](verification/2026-11-177-subscription-limits.md) |
+| FND-029 | Refactor | 21 v3 Server Actions from five domains share one version-named module | Medium | In Progress | [Refactor assessment](refactors/2026-11-11-222-v3-server-actions.md) REF-001 | [#222](https://github.com/match-pulse/match-pulse/issues/222) | — | Domain-aligned split implemented on branch; 20 retained actions; independent static verification PASS WITH NOTES | [Verification](verification/2026-11-11-222-v3-server-actions.md); static checks pass, DB/E2E unverified |
+| FND-030 | Refactor | `recordExportAction` is exported but unused; the export route calls the domain wrapper directly | Low | In Progress | [Refactor assessment](refactors/2026-11-11-222-v3-server-actions.md) REF-002 | [#222](https://github.com/match-pulse/match-pulse/issues/222) | — | Deleted per D2; no caller; export route unchanged | [Verification](verification/2026-11-11-222-v3-server-actions.md); import audit and build pass |
+| FND-031 | Refactor | Private form/action helpers have no shared seam and block a clean domain split | Low | In Progress | [Refactor assessment](refactors/2026-11-11-222-v3-server-actions.md) REF-003 | [#222](https://github.com/match-pulse/match-pulse/issues/222) | — | Extracted to `src/app/actions/form.ts`; `attendeeFrom` private in `tickets.ts` | [Verification](verification/2026-11-11-222-v3-server-actions.md); static checks pass |
+| FND-032 | Validation | `requiredNumber` coerces a missing value to zero; a missing match score can become 0–0 | Medium | Open | [Refactor assessment](refactors/2026-11-11-222-v3-server-actions.md) REF-004 | [#222](https://github.com/match-pulse/match-pulse/issues/222), [#223](https://github.com/match-pulse/match-pulse/issues/223) | — | Separate fix tracked in #223; not part of the behavior-neutral refactor | Not run; tracked in #223 |
 
 ## Relations
 
@@ -73,6 +77,8 @@ Findings FND-009 to FND-028 were appended on 2026-11-10 from the [v3.0.0 audit](
 | FND-025 | Related | FND-003, FND-005 | Ticket idempotency follows the trade principle but does not cover the payload or the CLI key | 2026-11-10 |
 | FND-027 | Related | FND-019 | Both findings concern whether subscription state and limits are actually enforced | 2026-11-10 |
 | FND-028 | Related | FND-019, FND-020 | The concurrency gap affects the same plan-limit control and is not covered by the current evidence | 2026-11-10 |
+| FND-029 | Related | FND-030, FND-031 | The same module split exposes the unused export and the private helper coupling | 2026-11-11 |
+| FND-032 | Related | FND-029 | The validation gap was found while assessing the v3 action module but is not part of the behavior-neutral refactor | 2026-11-11 |
 
 ## Lifecycle log
 
@@ -162,6 +168,14 @@ Findings FND-009 to FND-028 were appended on 2026-11-10 from the [v3.0.0 audit](
 | 2026-11-10 | FND-024 | Verified by the human decision owner; campaign #173 closed | [Final campaign verification](verification/2026-11-173-audit-remediation.md) |
 | 2026-11-10 | FND-025 | Verified by the human decision owner; campaign #173 closed | [Final campaign verification](verification/2026-11-173-audit-remediation.md) |
 | 2026-11-10 | FND-028 | Verified by the human decision owner; campaign #173 closed | [Final campaign verification](verification/2026-11-173-audit-remediation.md) |
+| 2026-11-11 | FND-029 | Recorded as Open from the refactor assessment | [Assessment](refactors/2026-11-11-222-v3-server-actions.md) |
+| 2026-11-11 | FND-030 | Recorded as Open from the refactor assessment | [Assessment](refactors/2026-11-11-222-v3-server-actions.md) |
+| 2026-11-11 | FND-031 | Recorded as Open from the refactor assessment | [Assessment](refactors/2026-11-11-222-v3-server-actions.md) |
+| 2026-11-11 | FND-032 | Recorded as Open from the refactor assessment; routed to a separate fix, not this refactor | [Assessment](refactors/2026-11-11-222-v3-server-actions.md) |
+| 2026-11-11 | FND-029 | Implementation complete on `refactor/222-v3-server-actions`; 20 retained actions split across five domain modules; `v3.ts` deleted; independent static verification PASS WITH NOTES | [Verification](verification/2026-11-11-222-v3-server-actions.md) |
+| 2026-11-11 | FND-030 | Implemented: `recordExportAction` deleted per D2; no caller; export route unchanged; independent static verification PASS WITH NOTES | [Verification](verification/2026-11-11-222-v3-server-actions.md) |
+| 2026-11-11 | FND-031 | Implemented: shared helpers in `src/app/actions/form.ts`; `attendeeFrom` private in `tickets.ts`; independent static verification PASS WITH NOTES | [Verification](verification/2026-11-11-222-v3-server-actions.md) |
+| 2026-11-11 | FND-032 | Routed to separate fix issue #223; current behavior preserved in the refactor | [#223](https://github.com/match-pulse/match-pulse/issues/223) |
 
 ## Historical baseline
 
