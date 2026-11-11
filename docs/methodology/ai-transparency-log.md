@@ -1109,6 +1109,22 @@ Secret hygiene re-verified: `release.env` in history contains only `APP_VERSION`
 
 ---
 
+## Entry 66 — M-INV2 observed-red mutation (FND-002 / #198)
+
+**Date:** 2026-11-10
+**Tool:** opencode CLI (`deepseek-v4.1-flash`)
+**Intent:** Make M-INV2 an observed-red fault-injection result.
+**Boundary:** Fault-injection runner and mutation only; no application migration.
+**Prior records reviewed:** FND-002; M-INV2; `atomic-rollback.fault.ts`; fault-injection verification record.
+**Work performed:** added a test-only dblink mutation that commits a trade row on a second connection before raising, plus a per-mutation `supabase_admin` apply path. The existing rollback test fails under the mutation and still passes under the forced-failure mutation.
+**Verification:** targeted fault test fails with one surviving trade under the mutation; baseline forced-failure test passes. Details: [`verification/2026-11-198-m-inv2-observed-red.md`](verification/2026-11-198-m-inv2-observed-red.md).
+**Learning:** A positive rollback test can be strengthened by making a side effect escape the transaction; dblink is sufficient, but it must run as a superuser-owned test-only function and never ship in production.
+**Limitations:** The full 28-entry matrix is revalidated in CI; the dblink helper is test-only.
+
+**Links:** issue #198 · [`verification`](verification/2026-11-198-m-inv2-observed-red.md) · [`findings register`](findings-register.md) · [`invariant registry`](checkpoint-A/02-invariants.md)
+
+---
+
 ## Entry 67 — p95 CI gate and ticket burst (FND-004 / #199)
 
 **Date:** 2026-11-10
@@ -1122,6 +1138,8 @@ Secret hygiene re-verified: `release.env` in history contains only `APP_VERSION`
 **Limitations:** Environment-specific; production and multi-instance load remain part of the final deployment step.
 
 **Links:** issue #199 · [`verification`](verification/2026-11-199-p95-gate.md) · [`findings register`](findings-register.md) · [`architecture characteristics`](../architecture/03-architecture-characteristics.md)
+
+---
 
 ---
 
@@ -1190,6 +1208,8 @@ Secret hygiene re-verified: `release.env` in history contains only `APP_VERSION`
 ---
 ---
 
+
+---
 
 ---
 

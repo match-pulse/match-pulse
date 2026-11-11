@@ -9,7 +9,7 @@ what did review change or keep, and what remains uncertain?
 | :--- | :--- | :--- | :--- |
 | **R1. Unauthorized access or role escalation** | Supabase Auth, RLS, least-privilege grants, `SECURITY DEFINER` RPCs with `auth.uid()`, role checks, authorization suite | High | No independent security audit |
 | **R2. Oversell or over-capacity** | Event/ticket row locks, capacity and allocation triggers, cumulative buyer-limit trigger, v3 tests, fault injection | High | Sales-path trigger not separately mutated; no production load |
-| **R3. Double charge or double payout** | Profile/market locks, conditional debit, request-key idempotency, terminal resolution, double-spend and lifecycle tests | High | M-INV2 forced-failure only; single database instance |
+| **R3. Double charge or double payout** | Profile/market locks, conditional debit, request-key idempotency, terminal resolution, double-spend and lifecycle tests | High | Single database instance; M-INV2 now observed-red |
 | **R4. Privacy leak in insights** | Club-scoped RPCs, aggregate-only columns, outcome/time-bucket suppression, audited export, retention cleanup | High | No independent privacy review |
 | **R5. Operational failure without recovery** | Health, logs, smoke, CI delivery/recovery, runbook, public-schema restore | Medium | No hosted deployment, external monitoring or production recovery (FND-006) |
 
@@ -51,7 +51,7 @@ third-party audit.
 
 ## Residual risk and next action
 
-FND-002: 27 fault-injection entries, but M-INV2 is forced-failure only. FND-004:
+FND-002 is verified: 28 fault-injection entries, including M-INV2 observed-red. FND-004:
 p95 is asserted in CI for the 100-registration and 20-ticket bursts; production
 and multi-instance load are not measured. FND-006: local/CI delivery, production
 deferred. FND-023 is closed by #188 (legacy analytics retired). FND-026 is accepted

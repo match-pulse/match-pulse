@@ -72,7 +72,7 @@ through a decision record, not by silently editing this table.
 ## 5. Detail
 
 - Enforcement and test status: [invariant registry](../methodology/checkpoint-A/02-invariants.md)
-- Fault-injection matrix: [verification record](../methodology/verification/2026-11-181-fault-injection.md)
+- Fault-injection matrix: [verification record](../methodology/verification/2026-11-181-fault-injection.md); [M-INV2 observed-red](../methodology/verification/2026-11-198-m-inv2-observed-red.md)
 - Delivery and recovery: [verification record](../methodology/verification/2026-11-111-delivery-operations-baseline.md)
 - p95 gate and ticket burst: [verification record](../methodology/verification/2026-11-199-p95-gate.md)
 - Broad and detailed requirements: [requirements.md](./requirements.md)

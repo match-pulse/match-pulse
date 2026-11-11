@@ -11,7 +11,7 @@ settlement. The project is a course prototype, not a production service.
 
 **Current code:** v3.0.0 plus the v3.1.0 security and integrity remediation
 (unreleased). **Last recorded check:** 58 database/application tests, 2 CLI
-scenarios, 11 Playwright journeys and a 27-entry fault-injection matrix.
+scenarios, 11 Playwright journeys and a 28-entry fault-injection matrix.
 
 ## What works
 
@@ -116,7 +116,7 @@ immediately.
 - Attendee retention is a local maintenance command, not a scheduled job.
 - Subscription expiry uses a 7-day grace and a daily `pg_cron` job; there is no external billing provider.
 - No independent privacy or security audit; no data resale.
-- M-INV2 is verified by forced-failure rollback, not observed-red.
+- M-INV2 is covered by forced-failure and observed-red evidence in the 28-entry matrix.
 - The p95 latency is asserted in CI for the local registration and ticket bursts;
   production and multi-instance load are not measured.
 - Legacy v2 pages remain for compatibility; the v3 pages are the current surfaces.

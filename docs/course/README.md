@@ -48,7 +48,7 @@ decisions, checkpoints for evidence, verification records for detail.
 ## What the evidence supports
 
 - The critical database rules have tests observed failing under deliberate
-  mutation: 27 fault-injection entries.
+  mutation: 28 fault-injection entries.
 - The recorded suite is 57 database/application tests, 2 CLI scenarios and 11
   Playwright journeys.
 - Authorization is tested at the database boundary: anonymous access, cross-club
