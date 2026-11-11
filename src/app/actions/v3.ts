@@ -5,7 +5,7 @@ import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { getCurrentUser } from '@/lib/session'
 import { createSupabaseServerClient } from '@/lib/supabase/server'
-import { DomainError, fromUnknownError } from '@/lib/domain/errors'
+import { attempt, back, checked, optionalNumber, requiredNumber, requiredText, text } from './form'
 import { createClub, requestPlanChange, acceptClubInvite, inviteClubMember, removeClubMember, setClubMemberRole } from '@/lib/domain/clubs'
 import {
   createClubEvent,
@@ -26,55 +26,6 @@ import {
 import { adminAssignPlan } from '@/lib/domain/admin'
 import { createClubReward, recordClubExport, redeemReward } from '@/lib/domain/analytics'
 import type { AttendeeInput } from '@/lib/domain/types'
-
-type Attempt<T> = { ok: true; data: T } | { ok: false; error: string }
-
-function text(formData: FormData, key: string): string | null {
-  const value = formData.get(key)
-  return typeof value === 'string' && value.trim().length > 0 ? value.trim() : null
-}
-
-function requiredText(formData: FormData, key: string): string {
-  const value = text(formData, key)
-  if (!value) throw new DomainError('VALIDATION', `${key} is required.`)
-  return value
-}
-
-function requiredNumber(formData: FormData, key: string): number {
-  const value = Number(text(formData, key))
-  if (!Number.isFinite(value)) throw new DomainError('VALIDATION', `${key} must be a number.`)
-  return value
-}
-
-function optionalNumber(formData: FormData, key: string): number | undefined {
-  const value = text(formData, key)
-  if (value === null) return undefined
-  const number = Number(value)
-  if (!Number.isFinite(number)) throw new DomainError('VALIDATION', `${key} must be a number.`)
-  return number
-}
-
-function checked(formData: FormData, key: string): boolean {
-  const value = formData.get(key)
-  return value === 'on' || value === 'true' || value === '1'
-}
-
-function back(path: string, key: 'message' | 'error', value: string): never {
-  const separator = path.includes('?') ? '&' : '?'
-  redirect(`${path}${separator}${key}=${encodeURIComponent(value)}`)
-}
-
-function messageFor(error: unknown): string {
-  return fromUnknownError(error).message
-}
-
-async function attempt<T>(operation: () => Promise<T>): Promise<Attempt<T>> {
-  try {
-    return { ok: true, data: await operation() }
-  } catch (error) {
-    return { ok: false, error: messageFor(error) }
-  }
-}
 
 function attendeeFrom(formData: FormData, index: number): AttendeeInput {
   return {
