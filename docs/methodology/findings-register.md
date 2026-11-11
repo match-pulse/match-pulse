@@ -180,6 +180,7 @@ Findings FND-009 to FND-028 were appended on 2026-11-10 from the [v3.0.0 audit](
 | 2026-11-11 | FND-030 | Fixed on PR #224; independent verifier PASS; CI run 42985722829 all five jobs pass | [Verification](verification/2026-11-11-222-v3-server-actions.md) |
 | 2026-11-11 | FND-031 | Fixed on PR #224; independent verifier PASS; CI run 42985722829 all five jobs pass | [Verification](verification/2026-11-11-222-v3-server-actions.md) |
 | 2026-11-11 | FND-032 | Fixed in #223; required-number unit and static checks pass; database regression and CI pending | [Verification](verification/2026-11-11-223-required-number.md) |
+| 2026-11-11 | FND-032 | CI run 43012435774 passed all five jobs, including the NULL-score database regression; PR #229 merged; independent verification still separate | [Verification](verification/2026-11-11-223-required-number.md); [PR #229](https://github.com/match-pulse/match-pulse/pull/229) |
 
 ## Historical baseline
 
