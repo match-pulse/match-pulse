@@ -15,7 +15,7 @@
 | **Club invite** | Single-use, expiring invitation for an email and club role. | `club_invites` | Implemented |
 | **Platform admin** | Separate platform-level operator capability, not a club role. | `platform_admins` | Implemented and verified |
 | **Plan and entitlement** | `STARTER`, `PRO`, `ELITE` and their feature/limit rows. | `plans`, `plan_entitlements` | Implemented and verified |
-| **Subscription** | A club's plan and `ACTIVE`/`PAST_DUE`/`CANCELED` status. Only `ACTIVE` grants entitlements. | `club_subscriptions` | Implemented and verified |
+| **Subscription** | A club's plan and `ACTIVE`/`PAST_DUE`/`CANCELED` status. `ACTIVE` or `PAST_DUE` within the 7-day grace grants entitlements. | `club_subscriptions` | Implemented and verified |
 | **Event (tournament)** | A club-owned competition with capacity, ticket allocation and a `DRAFT`/`PUBLISHED`/`FINISHED`/`CANCELLED` status. | `tournaments` | Implemented and verified |
 | **Registration** | Links a fan to an event and consumes one participant place. | `registrations` | Implemented and verified |
 | **Match** | A fixture with teams, kickoff, status, scores and a prediction flag. | `matches` | Implemented |
@@ -67,7 +67,7 @@ erDiagram
 
 | Object | States | Trigger |
 | :--- | :--- | :--- |
-| Subscription | `ACTIVE` ↔ `PAST_DUE` → `CANCELED` | Platform admin or simulated plan change |
+| Subscription | `ACTIVE` → `PAST_DUE` at period end; 7-day grace; `CANCELED` denies immediately | Platform admin, daily `pg_cron` expiry or simulated plan change |
 | Event | `DRAFT` → `PUBLISHED` → `FINISHED` / `CANCELLED` | Club staff; publish requires an active ticket type |
 | Ticket order | `SIMULATED_PAID` → `CANCELLED` | Simulated checkout; no real payment |
 | Ticket | valid → checked in; transferable → new attendee | Staff check-in or buyer name change before the deadline |

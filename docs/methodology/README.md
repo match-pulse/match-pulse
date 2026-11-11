@@ -48,6 +48,7 @@ ADRs remain in [`docs/architecture/adr/`](../architecture/adr/) and follow the e
 - [`verification/2026-11-197-legacy-findings-verification.md`](verification/2026-11-197-legacy-findings-verification.md) — FND-001/003/005 targeted verification.
 - [`verification/2026-11-199-p95-gate.md`](verification/2026-11-199-p95-gate.md) — p95 CI gate and ticket burst evidence.
 - [`verification/2026-11-200-ticket-points-cap.md`](verification/2026-11-200-ticket-points-cap.md) — ticket-point cap boundary evidence.
+- [`verification/2026-11-201-subscription-expiry.md`](verification/2026-11-201-subscription-expiry.md) — subscription period-end and grace evidence.
 - [`../testing/agent-playbook.md`](../testing/agent-playbook.md) — CLI-driven agent scenarios and evidence.
 - [`../testing/capabilities.md`](../testing/capabilities.md) — capability-to-command parity manifest.
 - [`../product/competitive-landscape.md`](../product/competitive-landscape.md) — TicketOne/Vivaticket positioning and nominal ticketing context.

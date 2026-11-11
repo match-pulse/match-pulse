@@ -50,4 +50,6 @@ Any future change to these dispositions requires a new dated decision or a new i
 
 2026-11-10: FND-026 was implemented in #200. Club ticket points are capped at 500 per ticket and 10,000 per event by RPC checks and table constraints; legacy club-less tournaments are exempt. FND-026 is now Verified. See the [ticket-point cap verification](../verification/2026-11-200-ticket-points-cap.md).
 
+2026-11-10: FND-027 was implemented in #201. At `current_period_end` the subscription moves to `PAST_DUE`; entitlements continue for 7 days, then are denied. A daily `pg_cron` job runs `expire_subscriptions()`, and the admin club list shows the period end. FND-027 is now Verified. See the [subscription expiry verification](../verification/2026-11-201-subscription-expiry.md).
+
 2026-11-10: FND-023 was implemented in #188. The legacy `/club` page, `/api/club/export`, `CLUB` role, legacy analytics/export RPCs and fixture were removed; existing `CLUB` profiles are converted to `FAN`. FND-023 is now Verified. See the [legacy CLUB retirement verification](../verification/2026-11-188-legacy-club-retirement.md).

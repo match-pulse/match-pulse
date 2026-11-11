@@ -1169,6 +1169,22 @@ Secret hygiene re-verified: `release.env` in history contains only `APP_VERSION`
 
 ---
 
+## Entry 71 — Subscription expiry (FND-027 / #201)
+
+**Date:** 2026-11-10
+**Tool:** opencode CLI (`deepseek-v4.1-flash`)
+**Intent:** Enforce `current_period_end` with a 7-day grace and a daily expiry job.
+**Boundary:** One migration replacing entitlement helpers and event/invite locks, adding `expire_subscriptions()` and `pg_cron`; admin period-end display; tests and verification record.
+**Prior records reviewed:** FND-027; AUD-019; subscription RPCs; plan-entitlement tests.
+**Work performed:** at period end the subscription moves to `PAST_DUE`; `has_entitlement`/`entitlement_limit` allow a 7-day grace; `expire_subscriptions()` writes an audit event; `pg_cron` schedules the daily job; the admin club list shows the period end.
+**Verification:** targeted test 1 pass; database 58 pass; CLI 2 pass; `pg_cron` and job row verified directly. Details: [`verification/2026-11-201-subscription-expiry.md`](verification/2026-11-201-subscription-expiry.md).
+**Learning:** The lock must cover a `PAST_DUE` row during grace; filtering the lock to `ACTIVE` would lose the serialisation that protects member/event limits.
+**Limitations:** Hosted Supabase must enable `pg_cron` at production deployment; local/CI evidence only.
+
+**Links:** issue #201 · [`verification`](verification/2026-11-201-subscription-expiry.md) · [`findings register`](findings-register.md) · [`audit`](audits/2026-11-10-171-v3-audit.md)
+
+---
+
 ## Standing rule
 
 AI may investigate, analyse, draft, implement within an approved scope, and run verification. The human retains every decision that affects business rules, architecture, schema, scope, priority, risk acceptance and merging. Contributions that cannot be verified are recorded as unverified rather than asserted.
