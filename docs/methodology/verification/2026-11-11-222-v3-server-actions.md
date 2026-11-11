@@ -1,10 +1,10 @@
 # Verification Record — v3 Server Action Modularity
 
 - **Issue:** [#222](https://github.com/match-pulse/match-pulse/issues/222)
-- **PR:** None yet; changes are uncommitted on branch `refactor/222-v3-server-actions`
+- **PR:** [#224](https://github.com/match-pulse/match-pulse/pull/224)
 - **Date:** 2026-11-11
-- **Environment:** Local Linux workspace; Bun 1.4.2, Next.js 16.4.2, TypeScript 5. Local Supabase/Docker unavailable.
-- **Status:** Partially verified — static and move-only evidence passed; DB/E2E not run
+- **Environment:** Local Linux workspace plus GitHub Actions CI; Bun 1.4.2, Next.js 16.4.2, TypeScript 5. Local Supabase/Docker unavailable; CI provides the database and E2E environment.
+- **Status:** Partially verified locally; CI passed — see Addendum 7
 - **Verifier:** Independent read-only AI verifier subagent (session `ses_e3676b037ffeHznkQ3FUZL7ZDI`), separate from the implementer; not a human review.
 
 ## 1. Claim or Acceptance Criterion
@@ -81,3 +81,5 @@ Module mapping:
 ## 7. Addenda
 
 **2026-11-11 — Follow-up verifier pass after documentation corrections.** The independent verifier re-checked the corrected code map, plan, assessment addendum, findings-register lifecycle entries, AI transparency Entry 74 and this record. It reported final verdict `PASS`: 29/29 retained bodies remain byte-identical, `claimTicket`/`describe` are unchanged, `recordExportAction` is absent, and all static checks still pass. FND-032 was subsequently routed to issue #223. Remaining non-blocking item: DB/E2E/CI evidence remains outstanding as documented above.
+
+**2026-11-11 — CI verification on PR #224.** GitHub Actions run [42985722829](https://github.com/match-pulse/match-pulse/actions/runs/42985722829) passed all five jobs: Lint, typecheck and build (25s); Delivery and recovery (2m41s); Domain invariants (3m3s); E2E and accessibility (3m15s); Fault injection (19m21s). This closes the local DB/E2E gap for the committed branch: the database-backed invariant suites, the browser journeys and the fault-injection matrix all ran and passed in CI. Current status: **Passed**. Merge remains a separate human decision; no merge has occurred.

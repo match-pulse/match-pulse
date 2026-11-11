@@ -1251,6 +1251,22 @@ Secret hygiene re-verified: `release.env` in history contains only `APP_VERSION`
 
 ---
 
+## Entry 75 — v3 Server Action refactor PR and CI evidence (issue #222)
+
+**Date:** 2026-11-11
+**Tool:** opencode CLI (`deepseek-v4.1-flash`)
+**Intent:** Commit, push and open the approved refactor PR, then record the CI evidence.
+**Boundary:** Three commits on `refactor/222-v3-server-actions`, push, PR #224 and documentation updates. No merge, deployment, schema, RLS, RPC or dependency change.
+**Prior records reviewed:** plan D1–D5; assessment; verification record; FND-029–FND-032; CI workflow definition; open PR list.
+**Work performed:** created three reviewable commits (helper extraction, domain split, records), pushed the branch, opened PR #224 with the required issue/scope/checks/risk/AI/changelog sections, moved issue #222 and PR #224 to Review Queue, and recorded the CI run.
+**Verification:** GitHub Actions run [42985722829](https://github.com/match-pulse/match-pulse/actions/runs/42985722829) passed all five jobs: Lint/typecheck/build (25s), Delivery and recovery (2m41s), Domain invariants (3m3s), E2E and accessibility (3m15s), Fault injection (19m21s). This closes the local DB/E2E gap. Details: [`verification/2026-11-11-222-v3-server-actions.md`](verification/2026-11-11-222-v3-server-actions.md).
+**Learning:** The PR body and verification record must distinguish local checks from CI checks; local Docker was unavailable, but CI supplied the database and browser environment. The board should show the issue and PR in Review Queue, not Build.
+**Limitations:** No human review or merge yet. CI is evidence, not approval. The independent verifier is an AI subagent, not a human (FND-008 still applies).
+
+**Links:** issue [#222](https://github.com/match-pulse/match-pulse/issues/222) · PR [#224](https://github.com/match-pulse/match-pulse/pull/224) · [CI run](https://github.com/match-pulse/match-pulse/actions/runs/42985722829) · [verification](verification/2026-11-11-222-v3-server-actions.md) · [findings register](findings-register.md)
+
+---
+
 ## Standing rule
 
 AI may investigate, analyse, draft, implement within an approved scope, and run verification. The human retains every decision that affects business rules, architecture, schema, scope, priority, risk acceptance and merging. Contributions that cannot be verified are recorded as unverified rather than asserted.

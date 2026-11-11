@@ -239,4 +239,11 @@ This is the first refactor assessment in the repository. No existing assessment,
 - An independent read-only verifier confirmed the 29 retained function bodies are byte-identical and found no code defect or scope creep. Its documentation notes were corrected.
 - `bun run lint`, `bun run typecheck`, `bun run build` and `bun run check:architecture` pass. DB-backed tests and E2E remain unverified because Docker/Supabase is unavailable.
 - FND-029–FND-031 are implemented and pending final verification; FND-032 remains open and outside this refactor.
-- No commit, push or PR exists yet. See the [verification record](../verification/2026-11-11-222-v3-server-actions.md).
+- No commit, push or PR exists yet at the time of that addendum. See the [verification record](../verification/2026-11-11-222-v3-server-actions.md).
+
+## Addendum 2 — 2026-11-11 (PR and CI)
+
+- The work was committed in three reviewable commits, pushed as branch `refactor/222-v3-server-actions`, and opened as PR [#224](https://github.com/match-pulse/match-pulse/pull/224).
+- GitHub Actions run [42985722829](https://github.com/match-pulse/match-pulse/actions/runs/42985722829) passed all five jobs: Lint/typecheck/build; Delivery and recovery; Domain invariants; E2E and accessibility; Fault injection.
+- FND-029–FND-031 moved to `Fixed`; FND-032 remains open in #223.
+- No merge has occurred; merge remains a separate human decision.

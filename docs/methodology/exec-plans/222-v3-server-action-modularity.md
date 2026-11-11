@@ -1,7 +1,7 @@
 # Execution Plan — v3 Server Action Modularity
 
 - **Issue:** [#222](https://github.com/match-pulse/match-pulse/issues/222)
-- **Status:** In Progress — implementation complete; independent static verification passed with notes; commit/PR pending
+- **Status:** Verified — independent review and CI passed; merge pending
 - **Owner:** Human decision owner
 - **Date:** 2026-11-11
 - **Workflow:** Refactoring
@@ -84,9 +84,9 @@ No implementation begins until D1–D5 are decided. Approval of this plan author
 - [x] Authorization checks and domain calls/arguments are unchanged.
 - [x] `bun run lint`, `bun run typecheck`, `bun run build` and `bun run check:architecture` pass.
 - [x] An independent verifier confirmed move-only changes, not rewrites, with documentation notes that were then corrected.
-- [ ] DB-backed tests and E2E either pass, or are explicitly recorded as unverified with the reason and the residual risk. Static verification is complete; DB/E2E remain unverified because Docker/Supabase is unavailable.
+- [x] DB-backed tests and E2E either pass, or are explicitly recorded as unverified with the reason and the residual risk. CI run 42985722829 passed Domain invariants, E2E and accessibility, and Fault injection.
 - [x] FND-029–FND-031 are updated with evidence; FND-032 is routed to separate issue #223. Register lifecycle entries are added.
-- [ ] The verification record, AI transparency entry and code-map update are present in the same PR. They are present in the working tree; no PR exists yet.
+- [x] The verification record, AI transparency entry and code-map update are present in PR #224.
 - [x] No historical record is overwritten, renamed or deleted.
 
 ## 7. Work Breakdown
@@ -141,7 +141,7 @@ No implementation begins until D1–D5 are decided. Approval of this plan author
 
 ## 11. Completion Evidence
 
-Implemented on branch `refactor/222-v3-server-actions`; no commit, push or PR exists yet.
+Implemented on branch `refactor/222-v3-server-actions`; pushed and opened as PR [#224](https://github.com/match-pulse/match-pulse/pull/224). No merge has occurred.
 
 **Code changes**
 
@@ -160,14 +160,15 @@ Implemented on branch `refactor/222-v3-server-actions`; no commit, push or PR ex
 | `bun run check:architecture` | Exit 0; five guards passed |
 | `bun run build` | Exit 0; compiled, TypeScript finished, 24/24 pages generated |
 | `git diff --check` | Exit 0 |
-| `bunx supabase status` | Exit 1; Docker API permission denied, so DB/E2E were not run |
+| `bunx supabase status` | Exit 1 locally; Docker API permission denied. CI supplied the database/E2E environment. |
+| GitHub Actions run [42985722829](https://github.com/match-pulse/match-pulse/actions/runs/42985722829) | All five jobs passed: Lint/typecheck/build; Delivery and recovery; Domain invariants; E2E and accessibility; Fault injection |
 
 **Equivalence evidence:** The independent verifier extracted all old and new function bodies and confirmed that the 29 retained functions are byte-identical and appear exactly once. `recordExportAction` is the only deletion. No changed literals, paths, messages, revalidation calls, domain calls, authorization checks or defaults were found.
 
 **Independent review:** A separate read-only verifier session returned `PASS WITH NOTES`. The notes were documentation-only: a broken code-map table, a stale "21 actions" acceptance criterion, an empty completion section, an assessment paragraph still saying the campaign was unapproved, and missing implementation/verification transparency evidence. All were corrected; a follow-up verifier pass returned final verdict `PASS`. No code defect or scope creep was found.
 
-**Limitations:** DB-backed tests and E2E were not run; Docker/Supabase is unavailable. Runtime redirects, form submissions, Server Action ID resolution, revalidation and RLS/RPC behavior remain unverified. No CI run exists because there is no commit or PR.
+**Limitations:** Local DB-backed tests and E2E could not run because Docker/Supabase is unavailable. CI ran and passed the database invariants, browser journeys and fault-injection matrix, so the committed branch has runtime evidence; the local environment gap remains for future runs. Merge is still a separate human decision.
 
-**Records produced:** refactor assessment `2026-11-11-222-v3-server-actions.md`; findings FND-029–FND-032; this execution plan; verification record `2026-11-11-222-v3-server-actions.md`; AI transparency Entries 73–74; no changelog row (internal refactor, no user-facing behavior change).
+**Records produced:** refactor assessment `2026-11-11-222-v3-server-actions.md`; findings FND-029–FND-032; this execution plan; verification record `2026-11-11-222-v3-server-actions.md`; AI transparency Entries 73–75; PR [#224](https://github.com/match-pulse/match-pulse/pull/224); no changelog row (internal refactor, no user-facing behavior change).
 
 **Historical record check:** No existing assessment, finding, ADR or verification record was overwritten, renamed or deleted. The findings register and AI transparency log were appended.
