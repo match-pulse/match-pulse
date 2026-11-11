@@ -43,6 +43,7 @@ ADRs remain in [`../architecture/adr/`](../architecture/adr/).
 
 
 
+
 ## Key evidence
 
 - [`verification/2026-11-173-audit-remediation.md`](verification/2026-11-173-audit-remediation.md) — v3.1.0 remediation and full local suite.
@@ -55,6 +56,7 @@ ADRs remain in [`../architecture/adr/`](../architecture/adr/).
 - [`verification/2026-11-197-legacy-findings-verification.md`](verification/2026-11-197-legacy-findings-verification.md) — FND-001/003/005 verification.
 - [`verification/2026-11-198-m-inv2-observed-red.md`](verification/2026-11-198-m-inv2-observed-red.md) — M-INV2 observed-red dblink evidence.
 - [`verification/2026-11-199-p95-gate.md`](verification/2026-11-199-p95-gate.md) — p95 CI gate and ticket burst.
+- [`verification/2026-11-200-ticket-points-cap.md`](verification/2026-11-200-ticket-points-cap.md) — ticket-point caps.
 - [`verification/2026-11-188-legacy-club-retirement.md`](verification/2026-11-188-legacy-club-retirement.md) — legacy `CLUB` analytics retirement.
 - [`verification/2026-11-201-subscription-expiry.md`](verification/2026-11-201-subscription-expiry.md) — subscription expiry and 7-day grace.
 - [`verification/2026-11-10-217-course-submission-brief.md`](verification/2026-11-10-217-course-submission-brief.md) — course submission page, link and check evidence.

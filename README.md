@@ -114,6 +114,7 @@ immediately.
 - No real payments, KYC, invoices, refunds or settlement.
 - No seat maps, wallet passes, turnstile hardware or FIGC/Questura integration.
 - Attendee retention is a local maintenance command, not a scheduled job.
+- Ticket points are capped at 500 per ticket and 10,000 per event.
 - Subscription expiry uses a 7-day grace and a daily `pg_cron` job; there is no external billing provider.
 - No independent privacy or security audit; no data resale.
 - M-INV2 is covered by forced-failure and observed-red evidence in the 28-entry matrix.

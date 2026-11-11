@@ -130,6 +130,7 @@ is authoritative for enforcement, tests and fault-injection evidence.
 | A caller is a real auth user; a fan acts only on their own rows | Auth, RLS, `auth.uid()` | Verified |
 | Club data is isolated; roles and entitlements are enforced | Club-scoped RLS + RPC checks | Verified |
 | Ticket sales stay within capacity/allocation; buyer cap is cumulative | Locks, triggers, configuration guard | Verified; partly fault-injected |
+| Ticket points are capped at 500 per ticket and 10,000 per event | RPC checks + CHECK constraints | Verified |
 | Attendee identity is removable after retention | `cleanup_expired_attendee_data`; redaction | Verified; fault-injected |
 | Insights suppress each outcome/time-bucket cohort below 5 | `club_prediction_insights` + privacy rule | Verified; fault-injected |
 

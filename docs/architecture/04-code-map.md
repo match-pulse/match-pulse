@@ -71,7 +71,8 @@ Migrations in `supabase/migrations/`, replayed in filename order:
 | Auth/RLS | `20261108`–`20261112` | `profiles.role`, auth trigger, RLS, grants, `auth.uid()` RPCs, `trade_requests`, idempotent trades |
 | MVP | `20261120`–`20261130` | Tickets, rewards, audit, organizer ownership, match linkage, retention index |
 | v3 tenancy | `20261201`–`20261205` | Clubs, members, invites, plans, entitlements, subscriptions, ticket types/orders/transfers, fan cards, nominal ticket RPCs, retention |
-| v3 hardening | `20261206`–`20261215` | Security boundary, result binding, ticketing integrity, reward idempotency, subscription limits, privacy retention, ticket payload hash, legacy `CLUB` retirement, subscription expiry |
+| v3 hardening | `20261206`–`20261215` | Security boundary, result binding, ticketing integrity, reward idempotency, subscription limits, privacy retention, ticket payload hash, legacy `CLUB` retirement, ticket-point caps, subscription expiry |
+
 
 
 
