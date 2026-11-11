@@ -15,7 +15,9 @@ export function requiredText(formData: FormData, key: string): string {
 }
 
 export function requiredNumber(formData: FormData, key: string): number {
-  const value = Number(text(formData, key))
+  const raw = text(formData, key)
+  if (raw === null) throw new DomainError('VALIDATION', `${key} is required.`)
+  const value = Number(raw)
   if (!Number.isFinite(value)) throw new DomainError('VALIDATION', `${key} must be a number.`)
   return value
 }
