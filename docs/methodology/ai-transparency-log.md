@@ -1299,6 +1299,22 @@ Secret hygiene re-verified: `release.env` in history contains only `APP_VERSION`
 
 ---
 
+## Entry 78 — Required numeric validation fix (issue #223)
+
+**Date:** 2026-11-11
+**Tool:** opencode CLI (`deepseek-v4.1-flash`)
+**Intent:** Apply the approved OpenSpec change that rejects missing or empty required numeric form values instead of coercing them to `0`.
+**Boundary:** `src/app/actions/form.ts`, `tests/unit/form.test.ts`, `tests/integration/v3-club-tenancy.test.ts`, findings register, verification record, OpenSpec change and this entry. No schema, RPC, UI or dependency change.
+**Prior records reviewed:** issue #223; FND-032; refactor assessment REF-004; OpenSpec proposal/spec/design/tasks; current `requiredNumber` and `update_club_match` RPC.
+**Work performed:** added the failing unit test, confirmed missing/empty values returned `0`, updated `requiredNumber` to reject `null` before conversion, and added a DB-boundary regression that sends `NULL` scores to `update_club_match`. Updated FND-032 to Fixed and added the verification record.
+**Verification:** `bun test tests/unit` 6 pass / 0 fail; `bun run lint`, `bun run typecheck`, `bun run build` and `bun run check:architecture` pass. The database regression was not run locally because Supabase health checks returned HTTP 502; it remains in the suite for CI.
+**Learning:** The action layer can defeat a database guard by converting an absent value before the RPC sees it. The helper test is the direct regression; the DB test is defence in depth.
+**Limitations:** No local database or CI evidence for the regression yet; no independent review. FND-032 is Fixed, not Verified.
+
+**Links:** issue [#223](https://github.com/match-pulse/match-pulse/issues/223) · [verification](verification/2026-11-11-223-required-number.md) · [OpenSpec change](../../openspec/changes/fix-required-number-validation/proposal.md)
+
+---
+
 ## Standing rule
 
 AI may investigate, analyse, draft, implement within an approved scope, and run verification. The human retains every decision that affects business rules, architecture, schema, scope, priority, risk acceptance and merging. Contributions that cannot be verified are recorded as unverified rather than asserted.

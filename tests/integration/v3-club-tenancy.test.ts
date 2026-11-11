@@ -1027,6 +1027,42 @@ describe('v3 subscription limits', () => {
   )
 })
 
+describe('v3 match update validation', () => {
+  test(
+    'refuses a NULL score instead of persisting a missing result',
+    async () => {
+      const owner = await createUser()
+      let clubId: string | null = null
+
+      try {
+        clubId = await createClub(owner, 'Match Validation Club', 'PRO')
+        const eventId = await createEvent(owner, clubId)
+        const match = await owner.client.rpc('create_club_match', {
+          p_event_id: eventId,
+          p_home_team: 'Home',
+          p_away_team: 'Away',
+          p_kickoff: new Date(Date.now() + 3_600_000).toISOString(),
+          p_prediction_enabled: false
+        })
+        expect(match.error).toBeNull()
+        const matchId = String(first(match.data)?.match_id)
+
+        const update = await owner.client.rpc('update_club_match', {
+          p_match_id: matchId,
+          p_home_score: null as unknown as number,
+          p_away_score: 0,
+          p_status: 'SCHEDULED'
+        })
+        expect(update.error?.message).toContain('scores must be non-negative')
+      } finally {
+        await cleanupClub(clubId)
+        await deleteUsers([owner])
+      }
+    },
+    TEST_TIMEOUT_MS
+  )
+})
+
 describe('v3 ticket point caps', () => {
   test(
     'refuses more than 500 points per ticket or 10000 points per event',
