@@ -102,3 +102,5 @@ that reason.
 The fault-injection matrix is accepted for the local course environment. The
 M-INV2 atomicity limit is explicit and is not counted as an observed-red result.
 No production risk is accepted by this record.
+
+2026-11-10: The M-INV2 limitation was closed by #198. A test-only dblink mutation now commits a trade row outside the failing transaction; the rollback test fails under that mutation while the forced-failure mutation still passes. See the [M-INV2 observed-red verification](2026-11-198-m-inv2-observed-red.md).

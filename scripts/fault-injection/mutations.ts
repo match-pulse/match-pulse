@@ -8,6 +8,7 @@ export type Mutation = {
   invariant: string
   description: string
   kind: MutationKind
+  applyAs?: 'postgres' | 'supabase_admin'
   test: string
   expected: ExpectedExit
   sql: (source: MigrationSource) => string
@@ -70,6 +71,46 @@ DROP TRIGGER IF EXISTS fault_inject_trade_insert ON public.market_trades;
 CREATE TRIGGER fault_inject_trade_insert
 BEFORE INSERT ON public.market_trades
 FOR EACH ROW EXECUTE FUNCTION public.fault_inject_trade_insert();`
+  },
+  {
+    id: 'm-inv2-nonateomic',
+    invariant: 'M-INV2',
+    description:
+      'Commit a profile debit on a second connection before raising, proving the rollback test catches a non-atomic side effect.',
+    kind: 'observed-red',
+    applyAs: 'supabase_admin',
+    test: 'tests/fault-injection/atomic-rollback.fault.ts',
+    expected: 'fail',
+    sql: () => `CREATE EXTENSION IF NOT EXISTS dblink;
+
+CREATE OR REPLACE FUNCTION public.fault_inject_nonateomic_trade()
+RETURNS trigger
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public, pg_temp
+AS $$
+BEGIN
+    PERFORM dblink_connect('fault_inject', 'dbname=postgres user=supabase_admin');
+    PERFORM dblink_exec('fault_inject', 'SET session_replication_role = replica');
+    PERFORM dblink_exec(
+        'fault_inject',
+        format(
+            'INSERT INTO public.market_trades (id, market_id, user_id, outcome, kind, shares, cost_points, proceeds_points, price_before, price_after, points_after, created_at) VALUES (gen_random_uuid(), %L, %L, %L, %L, %s, %s, %s, %s, %s, %s, NOW())',
+            NEW.market_id, NEW.user_id, NEW.outcome, NEW.kind,
+            NEW.shares, NEW.cost_points, NEW.proceeds_points,
+            NEW.price_before, NEW.price_after, NEW.points_after
+        )
+    );
+    PERFORM dblink_disconnect('fault_inject');
+    RAISE EXCEPTION 'fault injection: trade insert failed';
+END;
+$$;
+
+DROP TRIGGER IF EXISTS fault_inject_trade_insert ON public.market_trades;
+
+CREATE TRIGGER fault_inject_trade_insert
+BEFORE INSERT ON public.market_trades
+FOR EACH ROW EXECUTE FUNCTION public.fault_inject_nonateomic_trade();`
   },
   {
     id: 'm-inv3-oversell',

@@ -1,10 +1,12 @@
 /**
- * M-INV2 — forced-failure rollback check.
+ * M-INV2 — rollback and non-atomic side-effect check.
  *
- * This file is run only by the fault-injection runner, after the runner has
- * installed a trigger that raises when a trade row is inserted. It proves that
- * the profile debit, position update and market update do not survive the
- * failure. It is not part of the normal `bun test` discovery.
+ * This file is run only by the fault-injection runner. The forced-failure
+ * mutation installs a trigger that raises when a trade row is inserted and
+ * proves the profile debit, position and market update do not survive. The
+ * observed-red mutation commits a trade row through dblink before raising; the
+ * same assertions then fail, proving the test detects a non-atomic side effect.
+ * It is not part of the normal `bun test` discovery.
  */
 import { describe, expect, test } from 'bun:test'
 import { createUser, deleteUsers } from '../support/auth'
@@ -26,7 +28,7 @@ function normalize(data: unknown): Row | null {
   return (data as Row) ?? null
 }
 
-describe('M-INV2 forced-failure rollback', () => {
+describe('M-INV2 rollback', () => {
   test(
     'a trade-insert failure leaves no partial balance, position or trade',
     async () => {
