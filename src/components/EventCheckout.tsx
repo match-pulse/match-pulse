@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { purchaseTicketAction } from '@/app/actions/v3'
+import { purchaseTicketAction } from '@/app/actions/tickets'
 import type { PublicTicketType } from '@/lib/domain/types'
 
 export default function EventCheckout({

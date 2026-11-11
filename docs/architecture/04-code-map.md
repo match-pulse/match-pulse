@@ -31,15 +31,20 @@ map and the code disagree, the code and the
 | Action | Location | Database call |
 | :--- | :--- | :--- |
 | Fan sign-up/sign-in/out | `src/app/actions/auth.ts` | Supabase Auth |
-| Club onboarding/plan | `src/app/actions/v3.ts` | `create_club`, `request_plan_change` |
-| Members, fan cards, rewards | `src/app/actions/v3.ts` | `invite_club_member`, `accept_club_invite`, `set_club_member_role`, `remove_club_member`, `issue_club_fan_card`, `create_club_reward`, `redeem_reward` |
-| Events, matches, ticket types | `src/app/actions/v3.ts` | `create_club_event`, `create_ticket_type`, `publish_club_event`, `create_club_match`, `update_club_match`, `set_prediction_enabled` |
-| Purchase, transfer, check-in | `src/app/actions/v3.ts` | `purchase_ticket`, `transfer_ticket`, `check_in_ticket` |
-| Market resolution | `src/app/actions/v3.ts`; CLI | `resolve_market` |
+| Club onboarding/plan | `src/app/actions/clubs.ts` | `create_club`, `request_plan_change` |
+| Members and invites | `src/app/actions/clubs.ts` | `invite_club_member`, `accept_club_invite`, `set_club_member_role`, `remove_club_member` |
+| Fan cards, rewards | `src/app/actions/tickets.ts`; `src/app/actions/analytics.ts` | `issue_club_fan_card`, `create_club_reward`, `redeem_reward` |
+| Events, matches, ticket types | `src/app/actions/events.ts` | `create_club_event`, `create_ticket_type`, `publish_club_event`, `create_club_match`, `update_club_match`, `set_prediction_enabled` |
+| Purchase, transfer, check-in | `src/app/actions/tickets.ts` | `purchase_ticket`, `transfer_ticket`, `check_in_ticket` |
+| Market resolution | `src/app/actions/events.ts`; CLI | `resolve_market` |
 | Analytics export | `src/app/api/club/export-v3/route.ts` | `club_sales_summary`, `club_prediction_insights`, `record_club_export` |
-| Admin plan/status | `src/app/actions/v3.ts` | `admin_assign_plan`, `admin_set_subscription_status` |
+| Admin plan/status | `src/app/actions/admin.ts`; CLI | `admin_assign_plan`, `admin_set_subscription_status` |
 | Prediction entry/exit | `src/app/actions/market.ts` | `open_trade` / `close_trade` with `p_request_id` |
 | Legacy registration | `src/app/actions/register.ts` | `register_for_tournament` |
+
+The v3 actions are split by the same domain boundaries as `src/lib/domain/`.
+`src/app/actions/form.ts` holds shared `FormData`, redirect and error helpers; it
+is not a Server Action module.
 
 **Cross-cutting seams:**
 

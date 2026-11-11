@@ -2,7 +2,7 @@ import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import Notice from '@/components/Notice'
 import V3Shell from '@/components/V3Shell'
-import { acceptInviteAction } from '@/app/actions/v3'
+import { acceptInviteAction } from '@/app/actions/clubs'
 import { getViewer } from '@/lib/viewer'
 
 export const instant = false
