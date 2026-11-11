@@ -55,10 +55,10 @@ function databaseContainer(): string {
   return container
 }
 
-function applySql(container: string, sql: string) {
+function applySql(container: string, sql: string, user = 'postgres') {
   const result = run(
     'docker',
-    ['exec', '-i', container, 'psql', '-U', 'postgres', '-d', 'postgres', '-v', 'ON_ERROR_STOP=1'],
+    ['exec', '-i', container, 'psql', '-U', user, '-d', 'postgres', '-v', 'ON_ERROR_STOP=1'],
     sql
   )
 
@@ -110,7 +110,7 @@ async function main() {
 
     try {
       resetDatabase()
-      applySql(container, mutation.sql(source))
+      applySql(container, mutation.sql(source), mutation.applyAs ?? 'postgres')
       observedExit = runTest(mutation.test)
       const passed =
         mutation.expected === 'fail' ? observedExit !== 0 : observedExit === 0
