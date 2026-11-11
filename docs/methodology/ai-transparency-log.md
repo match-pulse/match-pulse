@@ -1283,6 +1283,22 @@ Secret hygiene re-verified: `release.env` in history contains only `APP_VERSION`
 
 ---
 
+## Entry 77 — Done board history archived and recovered (issue #227)
+
+**Date:** 2026-11-11
+**Tool:** opencode CLI (`deepseek-v4.1-flash`)
+**Intent:** Record and prevent the accidental archive of the Release & Learn history.
+**Boundary:** GitHub Project 1 items, `AGENTS.md` §8, incident record and this entry. No product, schema, authorization, runtime or dependency change.
+**Prior records reviewed:** project item count before and after; `AGENTS.md` §8/§12; incident template; findings register (no product finding); human recovery instruction.
+**Work performed:** during a requested board cleanup, archived 222 Done items; the human reported the loss; listed the archived items with GraphQL `archivedStates: [ARCHIVED]`, unarchived all 222, verified 222 Done + 1 Enter and 0 archived remaining; added a permanent rule that Release & Learn is never archived, deleted, cleared, bulk-edited or hidden; added incident record `docs/methodology/incidents/2026-11-11-board-archive.md`.
+**Verification:** all 222 archived items were closed issues (114) or merged PRs (108); all 222 were restored; current project list shows 1 Enter and 222 Done; GraphQL archived query returns 0. No issue or PR was deleted.
+**Learning:** “Done” is permanent history, not clutter; archiving is not cleanup; a bulk operation on project history needs explicit, item-level human authorization.
+**Limitations:** The recovery restored project cards and their field values; it did not recreate any deleted GitHub object because none were deleted. The rule is policy, not an automated guard.
+
+**Links:** issue [#227](https://github.com/match-pulse/match-pulse/issues/227) · [incident](incidents/2026-11-11-board-archive.md) · [`AGENTS.md`](../../AGENTS.md)
+
+---
+
 ## Standing rule
 
 AI may investigate, analyse, draft, implement within an approved scope, and run verification. The human retains every decision that affects business rules, architecture, schema, scope, priority, risk acceptance and merging. Contributions that cannot be verified are recorded as unverified rather than asserted.

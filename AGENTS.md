@@ -138,6 +138,8 @@ The project board is <https://github.com/orgs/match-pulse/projects/1> and uses e
 
 Keep the existing column names. The board status must reflect actual work. Do not move work forward to make the board look complete. Issue and pull-request lifecycle details follow the existing project board configuration; inspect it before making automation or field changes.
 
+**Release & Learn is permanent history. Never archive, delete, clear, bulk-edit or hide its items.** Archiving is not cleanup. The Done column is the project's historical record of accepted work; completed issues and pull requests stay visible there. Only the human decision owner may authorize a specific, item-level correction, and the correction must be recorded. This rule overrides any request to “clean up” the board.
+
 **Every task starts as an issue.** Do not create a branch, commit, or pull request without an issue. Use sub-issues only for independently testable and reviewable deliverables.
 
 ### GitHub Flow
