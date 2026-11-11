@@ -63,3 +63,10 @@ The database regression was **not run locally**: the local Supabase stack failed
 - Unit test: `tests/unit/form.test.ts`
 - DB test: `tests/integration/v3-club-tenancy.test.ts` — `v3 match update validation`
 - Findings register: FND-032
+
+## 7. Addendum 2026-11-11 — CI and merge
+
+- CI run [43012435774](https://github.com/match-pulse/match-pulse/actions/runs/43012435774) passed all five jobs. The `Domain invariants` job ran the full database suite, including the new `update_club_match` NULL-score regression.
+- PR [#229](https://github.com/match-pulse/match-pulse/pull/229) merged at `35312b4` on 2026-11-11.
+- The local Supabase health-check failure is an environment limitation, not a remaining evidence gap; CI supplied the database run.
+- FND-032 remains **Fixed** pending separate independent verification; this addendum does not self-verify it.
